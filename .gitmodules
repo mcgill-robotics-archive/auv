@@ -1,0 +1,3 @@
+[submodule "catkin_ws/src/tritech_micron"]
+	path = catkin_ws/src/tritech_micron
+	url = git@github.com:mcgill-robotics/ros-tritech-micron.git
