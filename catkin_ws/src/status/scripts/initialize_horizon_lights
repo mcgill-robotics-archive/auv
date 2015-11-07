@@ -1,0 +1,105 @@
+#!/usr/bin/env python
+import roslib
+import rospy
+
+from auv_msgs.msg import InitializeHorizonActionGoal, InitializeHorizonActionFeedback, InitializeHorizonActionResult
+from blinky.msg import *
+from blinky.srv import *
+from time import sleep
+
+
+GREEN = RGB(0,255,0)
+RED = RGB(255,0,0)
+YELLOW = RGB(180,180,0)
+BLACK = RGB(0,0,0)
+
+# Global variable to store the duration of action
+goal = 0
+
+#Draw animations
+def process_feedback(ref):
+    global goal
+    completion_level = 0 
+    if goal > 0:
+        completion_level = (int)(ref.feedback.time_left.to_sec() / goal * 25) 
+    colors = []
+    
+    if completion_level < 0:
+        completion_level = 0
+    elif completion_level > 25:
+        completion_level = 25
+
+    for i in range(25):
+        if completion_level > i:
+            colors.append(BLACK)
+        else:
+            colors.append(GREEN)
+    send_colors(colors)
+
+# Parse different result 
+def process_result(ref):
+    colors = []
+    result = ref.status.status
+    # Sucess result
+    if(result == 3):
+        sleep(0.5)
+        send_color(BLACK)
+        sleep(0.5)
+        send_color(GREEN)
+        sleep(0.5)
+        send_color(BLACK)
+    # Failed result 
+    elif(result == 4):
+        sleep(0.1)
+        send_color(RED)
+        sleep(1)
+        send_color(BLACK)
+    # Canceled Resuilt
+    elif(result == 2):
+        sleep(0.1)
+        send_color(YELLOW)
+        sleep(1)
+        send_color(BLACK)
+    else:
+        rospy.logwarn("Unknown result status code : {0}!".format(result))
+        send_color(BLACK)
+
+# Get goal duration
+def process_goal(ref):
+    global goal
+    goal = ref.goal.countdown.to_sec()
+
+# Set the strip to a solid color
+def send_color(color):
+    colors = []
+    for i in range(25):
+        colors.append(color) 
+    send_colors(colors)
+
+# Set the strip to a list of colors
+def send_colors(colors):
+    try:
+
+        blinky_proxy = rospy.ServiceProxy('update_planner_lights',UpdatePlannerLights)
+
+        res = blinky_proxy(colors)
+        if res.success != 0:
+            print "UpdatePlannerLights request unsuccessful: %s"%res
+
+    except Exception as e:
+        print "Exception: %s"%e
+
+
+def InitializeHorizonListener():
+    rospy.init_node('initialization_feeback')
+    rospy.Subscriber("initialize_horizon/feedback",
+            InitializeHorizonActionFeedback, process_feedback, queue_size=1)
+    rospy.Subscriber("initialize_horizon/goal",
+            InitializeHorizonActionGoal, process_goal,queue_size = 1)
+    rospy.Subscriber("initialize_horizon/result",
+            InitializeHorizonActionResult, process_result,queue_size = 1)
+    rospy.spin()
+
+
+if __name__ == "__main__":
+    InitializeHorizonListener()

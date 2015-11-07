@@ -1,0 +1,4 @@
+<launch>
+    <node pkg="rosserial_python" type="serial_node.py" name="electrical_interface" args="/dev/teensy" output="screen" respawn="true" />
+    <node pkg="rosserial_python" type="serial_node.py" name="depth_sensor" args="/dev/depth" output="screen" respawn="true" />
+</launch>

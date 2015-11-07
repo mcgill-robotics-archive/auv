@@ -1,0 +1,104 @@
+#!/usr/bin/env python
+import rospy
+from rospkg import RosPack
+from geometry_msgs.msg import Wrench
+from auv_msgs.msg import MotorCommands
+from numpy import matrix, interp, genfromtxt
+from numpy.linalg import pinv
+
+#set length from axis for each thruster ex:l_1z is distance from T1 to z-axis
+#z-axis is down, x-axis is towards bow
+#T1 = surge port         \surges positive thrust towards stern
+#T2 = surge starboard     \surges positive thrust towards stern
+#T3 = sway bow        \positive thrust towards starboard
+#T4 = sway stern    \positive thrust towards port
+#T5 = heave port bow        \heaves positive thrust towards bottom
+#T6 = heave starboard bow    \heaves positive thrust towards bottom
+#T7 = heave starboard stern    \heaves positive thrust towards bottom
+#T8 = heave port stern        \heaves positive thrust towards bottom
+l_1z = 8.176*.0254
+l_2z = 8.176*.0254
+l_3z = 18.216*.0254
+l_4z = -12.003*.0254
+l_5x = 8.297*.0254
+l_6x = 8.297*.0254
+l_7x = -8.297*.0254
+l_8x = -8.297*.0254
+l_5y = 13.169*.0254
+l_6y = -13.169*.0254
+l_7y = 6.331*.0254
+l_8y = -6.331*.0254
+
+T1234_to_Fx_Fy_Mz = matrix([[1,-1,0,0],[0,0,-1,-1],[l_1z,l_2z,-l_3z,l_4z]])
+print T1234_to_Fx_Fy_Mz
+Fx_Fy_Mz_to_T1234 = pinv(T1234_to_Fx_Fy_Mz, rcond = 1e-15)
+print Fx_Fy_Mz_to_T1234
+T5678_to_Fz_Mx_My = matrix([[-1,-1,-1,-1],[l_5x,-l_6x,l_7x,-l_8x],[l_5y,-l_6y,-l_7y,l_8y]])
+print T5678_to_Fz_Mx_My
+Fz_Mx_My_to_T5678 = pinv(T5678_to_Fz_Mx_My, rcond= 1e-15)
+print Fz_Mx_My_to_T5678
+
+def Wrench_to_thrust_callback(data):
+    # Calculations are decoupled into those using the four in-plane thrusters
+    # and the four out of plane thrusters
+    Fx_Fy_Mz = matrix([data.force.x, data.force.y, data.torque.z]).T
+    Fz_Mx_My = matrix([data.force.z, data.torque.x, data.torque.y]).T
+
+    
+    # TODO: Use seabotics calibration too
+    T1234 = t100_pwm(Fx_Fy_Mz_to_T1234*Fx_Fy_Mz)
+    T5678 = t100_pwm(Fz_Mx_My_to_T5678*Fz_Mx_My)
+    print T1234
+    print T5678
+
+    #T1 = surge port         \surges positive thrust towards stern
+    #T2 = surge starboard     \surges positive thrust towards stern
+    #T3 = sway bow        \positive thrust towards starboard
+    #T4 = sway stern    \positive thrust towards port
+    #T5 = heave port bow        \heaves positive thrust towards bottom
+    #T6 = heave starboard bow    \heaves positive thrust towards bottom
+    #T7 = heave starboard stern    \heaves positive thrust towards bottom
+    #T8 = heave port stern        \heaves positive thrust towards bottom
+    cmds_msg = MotorCommands()
+    cmds_msg.port_surge = T1234[0]
+    cmds_msg.starboard_surge = T1234[1]
+    cmds_msg.bow_sway = T1234[2]
+    cmds_msg.stern_sway = T1234[3]
+    cmds_msg.port_bow_heave = T5678[0]
+    cmds_msg.starboard_bow_heave = T5678[1]
+    cmds_msg.starboard_stern_heave = T5678[2]
+    cmds_msg.port_stern_heave = T5678[3]
+    thrust_pub.publish(cmds_msg)
+
+def pwm(thrust, data):
+    min_thrust = 0.01
+    pwm = interp(thrust, data[:,0], data[:,1])
+    pwm[abs(thrust) < min_thrust] = 0
+    return pwm
+
+def loadCharacterization(filename):
+    data = genfromtxt(filename, delimiter=',')
+    # Sort by pwm level. This is necessary so interpolation
+    # doesn't mess up
+    data = data[data[:,1].argsort()]
+    f = lambda x: pwm(x, data)
+
+    # Uncomment to visualize. Probably a good idea when adding
+    # a new characterization file
+    #import matplotlib.pyplot as plt
+    #x = arange(-50, 50, 0.01)
+    #plt.plot(x, f(x))
+    #plt.show()
+    return f
+
+if __name__ == '__main__':
+    global thrust_pub, t100_pwm 
+    # TODO: Access resources in a better way
+    filename = RosPack().get_path('controls') + \
+            '/config/t100_characterization.csv'
+    t100_pwm = loadCharacterization(filename)
+    rospy.init_node('thrust_mapper')
+    thrust_pub = rospy.Publisher('thrust_cmds', MotorCommands, queue_size = 5)
+    sub = rospy.Subscriber('controls/wrench', Wrench, Wrench_to_thrust_callback)
+    rospy.spin()
+

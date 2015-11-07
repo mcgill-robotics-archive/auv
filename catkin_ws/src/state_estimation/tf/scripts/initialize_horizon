@@ -1,0 +1,241 @@
+#!/usr/bin/env python2.7
+# -*- coding: utf-8 -*-
+
+"""Initialize horizon orientation."""
+
+import tf
+import rospy
+import numpy as np
+import auv_msgs.msg
+from actionlib import SimpleActionServer
+from geometry_msgs.msg import PoseStamped, Quaternion
+
+__author__ = "Anass Al-Wohoush"
+
+
+class RPY(object):
+
+    """Roll, Pitch and Yaw class."""
+
+    def __init__(self, roll, pitch, yaw):
+        """Construct RPY instance.
+
+        Args:
+            roll: Roll in radians.
+            pitch: Pitch in radians.
+            yaw: Yaw in radians.
+        """
+        self.roll = float(roll)
+        self.pitch = float(pitch)
+        self.yaw = float(yaw)
+
+    def __repr__(self):
+        """Constructs string representation of RPY instance."""
+        return "<{rpy.roll}, {rpy.pitch}, {rpy.yaw}>".format(rpy=self)
+
+    @classmethod
+    def from_quaternion(cls, rot):
+        """Constructs RPY instance from quaternion rotation.
+
+        Args:
+            rot: Quaternion rotation.
+
+        Returns:
+            RPY instance.
+        """
+        (roll, pitch, yaw) = tf.transformations.euler_from_quaternion(rot)
+        return cls(roll, pitch, yaw)
+
+    def to_quaternion(self):
+        """Converts RPY instance to quaternion rotation.
+
+        Returns:
+            Quaternion rotation.
+        """
+        return tf.transformations.quaternion_from_euler(
+            self.roll,
+            self.pitch,
+            self.yaw)
+
+
+class InitializeHorizonActionServer(object):
+
+    """Horizon initialization action server."""
+
+    def __init__(self):
+        """Constructs InitializeHorizonActionServer."""
+        self.lay_of_the_land = []
+        self.listener = tf.TransformListener()
+        self.feedback = auv_msgs.msg.InitializeHorizonFeedback()
+        self._server = SimpleActionServer(
+            "initialize_horizon",
+            auv_msgs.msg.InitializeHorizonAction,
+            execute_cb=self.initialize_horizon,
+            auto_start=False)
+
+    def start(self):
+        """Starts action server."""
+        self._server.start()
+
+    def update_lay_of_the_land(self):
+        """Updates lay_of_the_land with latest transform between robot and
+        raw_horizon.
+        """
+        # Get current ROS time.
+        now = rospy.Time.now()
+
+        try:
+            # Wait until next transform.
+            self.listener.waitForTransform(
+                # From
+                "/robot",
+                # To
+                "/raw_horizon",
+                # Now
+                now,
+                # Timeout
+                rospy.Duration(0.1))
+
+            # Try to get latest transform.
+            trans, rot = self.listener.lookupTransform(
+                # From
+                "/robot",
+                # To
+                "/raw_horizon",
+                # Now
+                now)
+        except tf.Exception as e:
+            # Give up.
+            rospy.logerr(e)
+            return
+
+        # Add rotation.
+        rpy = RPY.from_quaternion(rot)
+        self.lay_of_the_land.append(rpy)
+
+    def gather_data(self, countdown):
+        """Gathers data until countdown is complete.
+
+        All data can then be found in lay_of_the_land.
+
+        Args:
+            countdown: ROS Duration.
+
+        Returns:
+            True if successful, False otherwise.
+        """
+        # Reset accumulated data.
+        self.lay_of_the_land = []
+
+        # Determine end time.
+        self.feedback.time_left = countdown
+        rospy.loginfo("Starting %f s countdown", countdown.to_sec())
+        end_time = rospy.get_rostime() + countdown
+
+        # Hold until countdown is over.
+        while self.feedback.time_left.to_sec() > 0:
+            # Publish time left as feedback.
+            self._server.publish_feedback(self.feedback)
+            rospy.logdebug(
+                "Countdown: %f s left...",
+                self.feedback.time_left.to_sec())
+
+            # Stop if initialization was preempted.
+            if self._server.is_preempt_requested() or rospy.is_shutdown():
+                rospy.logerr("Initialization preempted")
+                self._server.set_preempted()
+                return False
+
+            # Update pose.
+            self.update_lay_of_the_land()
+
+            # Compute time left.
+            self.feedback.time_left = end_time - rospy.get_rostime()
+
+        # Send 0 seconds time left feedback.
+        self.feedback.time_left = rospy.Duration(0)
+        self._server.publish_feedback(self.feedback)
+        rospy.loginfo("Countdown: complete")
+
+        # Verify sufficient data was accumulated.
+        rospy.loginfo("Received %d data points", len(self.lay_of_the_land))
+        if not self.lay_of_the_land:
+            rospy.logerr("Collected insufficient data")
+            self._server.set_aborted()
+            return False
+
+        # Success.
+        return True
+
+    def initialize_horizon(self, goal):
+        """Initializes horizon.
+
+        Args:
+            goal: InitializeHorizonGoal.
+        """
+        # Gather data.
+        rospy.logwarn("Initializing horizon...")
+        data_ok = self.gather_data(goal.countdown)
+
+        # Stop if data gathered is not ok: aborted or preempted.
+        if not data_ok:
+            return
+
+        # Compute median.
+        rotations = [
+            (rpy.roll, rpy.pitch, rpy.yaw)
+            for rpy in self.lay_of_the_land
+        ]
+        median = RPY(*np.median(rotations, axis=0))
+
+        # Log median RPY.
+        rospy.loginfo("Median roll:  %f", median.roll)
+        rospy.loginfo("Median pitch: %f", median.pitch)
+        rospy.loginfo("Median yaw:   %f", median.yaw)
+        rospy.logdebug("Median rot:   %r", median.to_quaternion().tolist())
+
+        # Only initialize horizon's yaw.
+        global horizon
+        horizon = RPY(0, 0, median.yaw)
+
+        # Construct result.
+        result = auv_msgs.msg.InitializeHorizonResult()
+        offset = PoseStamped()
+        offset.header.frame_id = "initial_horizon"
+        offset.header.stamp = rospy.get_rostime()
+        offset.pose.orientation = Quaternion(*horizon.to_quaternion())
+        result.offset = offset
+
+        # Success.
+        rospy.logwarn("Initialization complete")
+        self._server.set_succeeded(result)
+
+
+# Initial horizon is set to be the same as the raw horizon.
+horizon = RPY(0, 0, 0)
+
+
+def broadcast_horizon():
+    """Continuously broadcasts raw_horizon to initial_horizon transform.
+
+    Note: This is a blocking function.
+    """
+    broadcaster = tf.TransformBroadcaster()
+    rate = rospy.Rate(256)  # Same frequency as IMU in Hz, but doesn't matter.
+    while not rospy.is_shutdown():
+        broadcaster.sendTransform(
+            (0, 0, 0), horizon.to_quaternion(),
+            # Now
+            rospy.get_rostime(),
+            # To
+            "/raw_horizon",
+            # From
+            "/initial_horizon")
+        rate.sleep()
+
+
+if __name__ == "__main__":
+    rospy.init_node("horizon")
+    server = InitializeHorizonActionServer()
+    server.start()
+    broadcast_horizon()

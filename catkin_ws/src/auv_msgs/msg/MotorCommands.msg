@@ -1,0 +1,8 @@
+int32 port_surge
+int32 starboard_surge
+int32 bow_sway
+int32 stern_sway
+int32 port_bow_heave
+int32 starboard_bow_heave
+int32 port_stern_heave
+int32 starboard_stern_heave

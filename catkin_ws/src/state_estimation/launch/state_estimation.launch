@@ -1,0 +1,25 @@
+<launch>
+	<node
+		name="XimuPublisher"
+		type="XimuPublisher"
+		pkg="state_estimation"
+    respawn="true"
+	/>
+
+	<node
+		name="tf_broadcaster"
+		type="tf_broadcaster"
+		pkg="state_estimation"
+	/>
+
+	<node
+		name="initialize_horizon"
+		type="initialize_horizon"
+		pkg="state_estimation"
+	/>
+
+    <node name="depth" type="depth" pkg="state_estimation">
+        <param name="offset" value="0.00" />
+        <param name="window" value="10" />
+    </node>
+</launch>

@@ -1,0 +1,74 @@
+#! /usr/bin/env python2.7
+import os
+import rospy
+from std_msgs.msg import Float32
+from auv_msgs.msg import CPUTemperature
+import numpy as np
+
+
+class RingBuffer(object):
+    def __init__(self, size):
+        self.data = np.zeros(size)
+
+    def push(self, datum):
+        self.data = np.roll(self.data, 1)
+        self.data[0] = datum
+
+min_real_voltage = 5
+# Must be an odd size so median doesn't average
+computer_voltages = RingBuffer(51)
+computer_warn = 21.0
+computer_shutoff = 20.0
+motor_voltages = RingBuffer(51)
+motor_warn = 11.0
+motor_shutoff = 10.5
+temperature_values = RingBuffer(11)
+temperature_warn = 85
+
+
+def motor_voltage_cb(msg):
+    motor_voltages.push(msg.data)
+    if (np.all(motor_voltages.data > min_real_voltage) and
+            np.all(motor_voltages.data < motor_warn)):
+        warn('Motor voltage low! {} V'.format(np.average(motor_voltages.data)))
+    if (np.all(motor_voltages.data > min_real_voltage) and
+            np.all(motor_voltages.data < motor_shutoff)):
+        shutdown()
+
+
+def computer_voltage_cb(msg):
+    computer_voltages.push(msg.data)
+    if (np.all(computer_voltages.data > min_real_voltage) and
+            np.all(computer_voltages.data < computer_warn)):
+        warn('Computer voltage low! {} V'
+             .format(np.average(computer_voltages.data)))
+    if (np.all(computer_voltages.data > min_real_voltage) and
+            np.all(computer_voltages.data < computer_shutoff)):
+        shutdown()
+
+
+def temperature_cb(msg):
+    temperature_values.push(msg.temperature)
+    if np.all(temperature_values.data > temperature_warn):
+        warn('Computer temperature high! {} V'
+             .format(np.average(temperature_values.data)))
+
+
+def warn(msg):
+    rospy.logerr(msg)
+    os.system("echo '{}' | wall".format(msg))
+
+
+def shutdown():
+    os.system('shutdown -H -P now "Automatic shutdown now!"')
+
+
+if __name__ == '__main__':
+    rospy.init_node('auto_shutdown')
+    s1 = rospy.Subscriber(
+        'electrical_interface/motor_voltage', Float32, motor_voltage_cb)
+    s2 = rospy.Subscriber(
+        'electrical_interface/computer_voltage', Float32, computer_voltage_cb)
+    s3 = rospy.Subscriber(
+        'temperature/temperature', CPUTemperature, temperature_cb)
+    rospy.spin()
