@@ -1,0 +1,3 @@
+<launch>
+    <node name="blinky" pkg="blinky" type="blinky_server.py" respawn="true"/>
+</launch>

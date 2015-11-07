@@ -1,0 +1,30 @@
+<launch>
+	<arg name="debug" default="0"/>
+    <node
+		name="slam_ukf"
+		type="slam_ukf"
+		pkg="state_estimation"
+		launch-prefix="xterm -e gdb --args"
+        if="$(arg debug)"
+	/>
+    <node
+        name="slam_ukf"
+        type="slam_ukf"
+        pkg="state_estimation"
+        unless="$(arg debug)"
+    />
+	
+	<node
+		name="sim_slam_input"
+		type="sim_slam_input"
+		pkg="state_estimation"
+	/>
+
+    <arg name="visualize" default="0"/>
+    <node
+        name="visualize_slam"
+        type="visualize_slam"
+        pkg="state_estimation"
+        if="$(arg visualize)"
+    />
+</launch>

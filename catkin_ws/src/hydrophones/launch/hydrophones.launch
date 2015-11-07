@@ -1,0 +1,7 @@
+<launch>
+    <node name="tdoa" type="tdoa.py" pkg="hydrophones" output="screen" respawn="true"/>
+    <node name="nucleo" type="nucleo.py" pkg="nucleo" output="screen" respawn="true">
+      <param name="twelve_bit_mode" value="true"/>
+      <param name="buffersize" value="1024"/>
+    </node>
+</launch>

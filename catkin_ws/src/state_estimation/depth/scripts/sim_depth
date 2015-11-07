@@ -1,0 +1,38 @@
+#!/usr/bin/env python2.7
+
+import rospy
+from std_msgs.msg import Float64
+from geometry_msgs.msg import PoseStamped
+from gazebo_msgs.msg import ModelStates
+
+time = None
+
+def callback(modelStates):
+    global time
+    if time:
+        if (rospy.get_time() - time) > 0.03:
+            index = modelStates.name.index('robot')
+            pub.publish(10- modelStates.pose[index].position.z)
+            time = rospy.get_time()
+    else:
+        time = rospy.get_time()
+
+
+# Init the ros node, subscribers and publishers
+# And run the node
+def init():
+    global pub, time
+    rospy.init_node('sim_depth')
+
+    # Subscribe to different inputing topics
+    rospy.Subscriber('/gazebo/model_states', ModelStates, callback)
+
+    # Publish the filtered data to a topic
+    pub = rospy.Publisher('/state_estimation/depth', Float64, queue_size=10)
+    rospy.spin()
+
+if __name__ == '__main__':
+    try:
+        init()
+    except rospy.ROSInterruptException:
+        pass

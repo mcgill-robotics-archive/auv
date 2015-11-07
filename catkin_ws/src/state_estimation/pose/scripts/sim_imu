@@ -1,0 +1,88 @@
+#!/usr/bin/env python2.7
+
+import rospy
+from geometry_msgs.msg import PoseStamped
+from gazebo_msgs.msg import ModelStates
+from tf import transformations
+import numpy
+
+time = None
+resetInitialPoseFlag = True
+initialPose = None
+
+def inverseQuaternion(quat):
+    inverse = transformations.quaternion_inverse(numpy.array((quat.pose.orientation.x, quat.pose.orientation.y, quat.pose.orientation.z, quat.pose.orientation.w), dtype=numpy.float64))
+
+    result = PoseStamped()
+    result.header = quat.header
+    result.pose.orientation.x = inverse[0]
+    result.pose.orientation.y = inverse[1]
+    result.pose.orientation.z = inverse[2]
+    result.pose.orientation.w = inverse[3]
+    return result
+
+def multQuaternion(quat1, quat2):
+    product = transformations.quaternion_multiply(numpy.array((quat1.pose.orientation.x, quat1.pose.orientation.y, quat1.pose.orientation.z, quat1.pose.orientation.w), dtype=numpy.float64), numpy.array((quat2.pose.orientation.x, quat2.pose.orientation.y, quat2.pose.orientation.z, quat2.pose.orientation.w), dtype=numpy.float64))
+
+    quatProduct = PoseStamped()
+    quatProduct.header = quat1.header
+    quatProduct.pose.orientation.x = product[0]
+    quatProduct.pose.orientation.y = product[1]
+    quatProduct.pose.orientation.z = product[2]
+    quatProduct.pose.orientation.w = product[3]
+    return quatProduct
+
+def handle_set_initial_pose(req):
+    global resetInitialPoseFlag
+    resetInitialPoseFlag = True
+
+    return True
+
+def callback(modelStates):
+    global time
+    global resetInitialPoseFlag
+    global initialPose
+    if time:
+        if (rospy.get_time() - time) > 0.03:
+            index = modelStates.name.index('robot')
+            poseStamped = PoseStamped()
+            poseStamped.pose = modelStates.pose[index]
+            poseStamped.pose.position.x = 0
+            poseStamped.pose.position.y = 0
+            poseStamped.pose.position.z = 0
+
+	    # Reset the initial pose
+            if resetInitialPoseFlag == True:
+                initialPose = PoseStamped()
+                initialPose.header = poseStamped.header
+                initialPose.pose = poseStamped.pose
+                resetInitialPoseFlag = False
+
+            # Relative orientation relative to the initial pose
+            relativePose = multQuaternion(initialPose, inverseQuaternion(poseStamped))
+            relativePose.pose.orientation.z = relativePose.pose.orientation.z * -1.0
+            # relativePose = multQuaternion(poseStamped, inverseQuaternion(initialPose))
+
+            pub.publish(relativePose)
+            time = rospy.get_time()
+    else:
+        time = rospy.get_time()
+
+# Init the ros node, subscribers and publishers
+# And run the node
+def init():
+    global pub
+    rospy.init_node('sim_imu')
+
+    # Subscribe to different inputing topics
+    rospy.Subscriber('/gazebo/model_states', ModelStates, callback)
+
+    # Publish the filtered data to a topic
+    pub = rospy.Publisher('state_estimation/pose', PoseStamped, queue_size=10)
+    rospy.spin()
+
+if __name__ == '__main__':
+    try:
+        init()
+    except rospy.ROSInterruptException:
+        pass

@@ -1,0 +1,5 @@
+<launch>
+    <group ns="electrical_interface">
+            <node pkg="rosserial_python" type="serial_node.py" name="radio" args="_baud:=921600 /dev/radio" output="screen" />
+    </group>
+</launch>

@@ -1,0 +1,38 @@
+#! /usr/bin/env python2.7
+import rospy
+from geometry_msgs.msg import Wrench
+from auv_msgs.msg import RadioCommands
+
+rc_center = 1500
+
+
+def rc_callback(msg):
+    # Check if radio off.
+    if (msg.channel1 == 1500 and
+        msg.channel2 == 1500 and
+        msg.channel3 == 1500 and 
+        msg.channel4 == 1500 and
+        msg.channel5 == 1500 and
+        msg.channel6 == 1500 and
+        msg.channel7 == 1500 and
+        msg.channel8 == 1500):
+        return
+    wrench = Wrench()
+    wrench.torque.z = (msg.channel1 - 1459) / 250.
+    wrench.force.z = (msg.channel2 - 1048) / 250.
+    if msg.channel5 > 1500:
+        wrench.force.z *= -1.
+    wrench.force.x = (msg.channel3 - 1458) / 250.
+    wrench.force.y = (msg.channel4 - 1456) / 250.
+    wrench.torque.x = (msg.channel8 - 1463) / 1000.
+    wrench.torque.y = (msg.channel7 - 1439) / 1000.
+    pub.publish(wrench)
+
+
+if __name__ == '__main__':
+    global pub, sub
+    rospy.init_node('remote_control')
+    pub = rospy.Publisher('controls/wrench', Wrench, queue_size=10)
+    sub = rospy.Subscriber(
+        'electrical_interface/radio', RadioCommands, rc_callback)
+    rospy.spin()

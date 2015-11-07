@@ -1,0 +1,122 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
+"""Temperature monitor."""
+
+import rospy
+import sensors
+import numpy as np
+from std_msgs.msg import Bool
+from auv_msgs.msg import CPUTemperature
+from sensor_msgs.msg import Temperature
+
+__author__ = "Anass Al-Wohoush"
+
+# Filter window.
+window = []
+
+
+def get_temperatures():
+    """Gets latest temperature values in degrees Celsius.
+
+    Returns:
+        List of CPU core temperatures.
+    """
+    temperatures = []
+    features = set()
+    for chip in sensors.iter_detected_chips():
+        # Verify this is a CPU sensor.
+        if not "coretemp" in str(chip):
+            continue
+
+        for feature in chip:
+            # Make sure this is indeed a CPU core temperature reading.
+            if feature.name.startswith("temp") and feature.name != "temp1":
+                # Make sure this is not a duplicate feature.
+                if feature.name in features:
+                    continue
+
+                # It's good.
+                features.add(feature.name)
+                temperatures.append(feature.get_value())
+
+    return temperatures
+
+
+def is_overheating(temperatures, threshold):
+    """Verify if any temperatures are above threshold.
+
+    Args:
+        temperatures: List of CPU core temperatures.
+        threshold: Temperature threshold in degrees Celsius.
+
+    Returns:
+        True if at least one core is too hot, False otherwise.
+    """
+    for core in temperatures:
+        if core > threshold:
+            return True
+    return False
+
+
+def get_mean_temperatures(temperatures, window_size=10):
+    """Filters CPU temperatures over window size.
+
+    Args:
+        temperatures: List of CPU core temperatures.
+        window_size: Window size.
+
+    Returns:
+        List of mean CPU core temperatures.
+    """
+    while len(window) >= window_size:
+        window.pop(0)
+
+    window.append(temperatures)
+    mean = np.mean(window, axis=0)
+
+    return mean.tolist()
+
+
+def publish():
+    """Publishes temperatures."""
+    # Get data.
+    raw_temperatures = get_temperatures()
+    filtered_temperatures = get_mean_temperatures(raw_temperatures)
+
+    # Construct CPUTemperature message.
+    filtered_temperature_msgs = []
+    for t in filtered_temperatures:
+        temp_msg = Temperature()
+        temp_msg.header.stamp = rospy.get_rostime()
+        temp_msg.header.frame_id = "robot"
+        temp_msg.temperature = t
+        filtered_temperature_msgs.append(temp_msg)
+
+    # Publish temperature.
+    cpu_temperature_msg = CPUTemperature(cores=filtered_temperature_msgs)
+    temperature_topic.publish(cpu_temperature_msg)
+
+    # Determine and publish whether overheating or not.
+    max_temp = float(rospy.get_param("~max"))
+    overheating = is_overheating(filtered_temperatures, max_temp)
+    overheating_topic.publish(overheating)
+
+
+if __name__ == "__main__":
+    # Initialize sensors.
+    sensors.init()
+
+    rospy.init_node("temperature")
+    rate = rospy.Rate(1)  # Hz.
+    temperature_topic = rospy.Publisher("~cpu", CPUTemperature, queue_size=10)
+    overheating_topic = rospy.Publisher("~overheating", Bool, queue_size=10)
+
+    try:
+        while not rospy.is_shutdown():
+            publish()
+            rate.sleep()
+    except Exception:
+        # Clean up sensors.
+        sensors.cleanup()
+        raise

@@ -1,0 +1,139 @@
+#!/usr/bin/env python2.7
+
+import tf
+import rospy
+from math import sqrt
+import tf.transformations as transform
+from gazebo_msgs.msg import ModelStates
+
+FREQUENCY = 500  # Hz
+
+time = None
+
+
+def positionToList(pos):
+    """Converts position message into list and converts from z-up to z-down
+    frame.
+
+    Args:
+        pos: Position.
+
+    Returns:
+        List of (x, y, z).
+    """
+    return [pos.x, pos.y, pos.z]
+
+
+def quaternionToList(q):
+    """Converts quaternion message into list and converts from z-up to z-down
+    frame.
+
+    Args:
+        q: Quaternion.
+
+    Returns:
+        List of (x, y, z, w).
+    """
+    return [q.x, q.y, q.z, q.w]
+
+
+def invertTransform(pos, rot):
+    """Inverts a transform.
+
+    Args:
+        pos: Position.
+        rot: Rotation.
+
+    Returns:
+        Inverted quaternion.
+    """
+    # Where rot is a quaternion [x, y, z, w] and pos is a translation [x, y, z]
+    _, _, angles, x, _ = transform.decompose_matrix(
+        transform.inverse_matrix(
+            transform.concatenate_matrices(
+                transform.translation_matrix(pos),
+                transform.quaternion_matrix(rot))))
+    return (x, transform.quaternion_from_euler(*angles))
+
+
+def broadcastIMU(modelStates):
+    """Sends the robot"s orientation.
+
+    Args:
+        modelStates: State of robot model from simulator.
+    """
+    index = modelStates.name.index("robot")
+    pose = modelStates.pose[index]
+    # We need to subtract out the initial rotation of pi around x
+    q_imu = transform.quaternion_multiply(
+        [sqrt(2)/2, sqrt(2)/2, 0, 0],
+        quaternionToList(pose.orientation))
+    t = rospy.get_rostime()
+    broadcaster.sendTransform(
+        (0, 0, 0), q_imu, t,
+        "/robot", "/raw_horizon")
+    q_yaw = transform.quaternion_from_euler(
+        0, 0, transform.euler_from_quaternion(q_imu)[2])
+    broadcaster.sendTransform(
+        (0, 0, 0), q_yaw, t,
+        "/horizon", "/raw_horizon")
+    broadcaster.sendTransform(
+        (0, 0, pose.position.z - 4.8768), (0, 0, 0, 1.0),
+        t, "/floating_horizon", "/horizon")
+
+    q, x = invertTransform(
+        positionToList(pose.position),
+        quaternionToList(pose.orientation))
+    broadcaster.sendTransform(q, x, t, "/simulation/world", "/robot")
+
+
+def broadcastTransform(modelStates, name):
+    """Sends the position of an object in the world.
+
+    Args:
+        modelStates: State of robot model from simulator.
+        name: Name of object.
+    """
+    target = modelStates.pose[modelStates.name.index(name)]
+    t = rospy.get_rostime()
+    broadcaster.sendTransform(
+        positionToList(target.position),
+        quaternionToList(target.orientation), t, name, "/simulation/world")
+
+
+def broadcastWorld(modelStates):
+    """Sends the world"s position relative to the robot.
+
+    Args:
+        modelStates: State of robot model from simulator.
+    """
+    modelStates.pose[modelStates.name.index("robot")]
+
+
+def callback(modelStates):
+    """Callback for change in model state.
+
+    Args:
+        modelStates: State of robot model from simulator.
+    """
+    global time, broadcaster
+    if time:
+        if (rospy.get_time() - time)*FREQUENCY > 1:
+            time = rospy.get_time()
+            broadcastIMU(modelStates)
+            for name in modelStates.name:
+                if name != "robot":
+                    broadcastTransform(modelStates, name)
+    else:
+        time = rospy.get_time()
+
+
+if __name__ == "__main__":
+    try:
+        rospy.init_node("sim_depth")
+        broadcaster = tf.TransformBroadcaster()
+        listener = tf.TransformListener()
+        rospy.Subscriber("/gazebo/model_states", ModelStates, callback)
+        rospy.spin()
+    except rospy.ROSInterruptException:
+        pass

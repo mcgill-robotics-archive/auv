@@ -1,0 +1,142 @@
+#!/usr/bin/env python
+import roslib; roslib.load_manifest('blinky')
+import rospy
+
+from std_msgs.msg import Float32
+from blinky.msg import *
+from blinky.srv import *
+
+CYAN = RGB(0,189,189)
+ORANGE = RGB(255,80,0)
+GREEN = RGB(0,255,0)
+BLACK = RGB(0,0,0)
+
+# Minimum and maximum battery voltage values in volts
+# Ask power section for accurate values
+
+MIN_COMPUTER_VOLTAGE = 20.0
+MAX_COMPUTER_VOLTAGE = 24.0
+MIN_MOTOR_VOLTAGE= 10.0
+MAX_MOTOR_VOLTAGE= 12.0
+
+LOW_BATTERY = False
+
+# Handles the ROS-specific communication with the service
+# colors: array of RGB
+def Computer_battery_sendColors(colors):
+    try:
+        # wait for the update_battery1_lights service
+        rospy.wait_for_service('update_computer_battery_lights')
+
+        # get access to the UpdateBattery1Lights service from the blinky server
+        blinky_proxy = rospy.ServiceProxy('update_computer_battery_lights', UpdateComputerBatteryLights)
+
+        # call service
+        res = blinky_proxy(colors)
+
+        if res.success != 0:
+            print "UpdateComputerBatteryLights request unsuccessful: %s"%res
+
+    except Exception as e:
+        print "Exception: %s"%e
+
+
+def Motor_battery_sendColors(colors):
+    try:
+        # wait for the update_battery2_lights service
+        rospy.wait_for_service('update_motor_battery_lights')
+
+        # get access to the UpdateBattery2Lights service from the blinky server
+        blinky_proxy = rospy.ServiceProxy('update_motor_battery_lights', UpdateMotorBatteryLights)
+
+        # call service
+        res = blinky_proxy(colors)
+
+        if res.success != 0:
+            print "UpdateMotorBatteryLights request unsuccessful: %s"%res
+
+    except Exception as e:
+        print "Exception: %s"%e
+
+# Recieves a voltage message and displays in on the blinky tape.
+# Units are in volts, in floating point.
+def process_computer_voltage(voltage):
+    global LOW_BATTERY
+
+    volts = voltage.data
+
+    charge_level = (int)(((volts - MIN_COMPUTER_VOLTAGE) / (MAX_COMPUTER_VOLTAGE - MIN_COMPUTER_VOLTAGE)) * 25)
+    colors = []
+
+    if volts <= MIN_COMPUTER_VOLTAGE and volts >= 10.0:
+        LOW_BATTERY = True
+        warn_low_battery(True)
+    elif LOW_BATTERY:
+        LOW_BATTERY = False
+        warn_low_battery(False)
+
+    if charge_level < 0:
+        charge_level = 0
+    elif charge_level > 25:
+        charge_level = 25
+
+    for i in range(25):
+        if charge_level > i:
+            colors.append(CYAN)
+        else:
+            colors.append(ORANGE)
+
+    Computer_battery_sendColors(colors)
+
+
+def process_motor_voltage(voltage):
+    global LOW_BATTERY
+
+    volts = voltage.data
+
+    charge_level = (int)(((volts - MIN_MOTOR_VOLTAGE) / (MAX_MOTOR_VOLTAGE - MIN_MOTOR_VOLTAGE)) * 25)
+    colors = []
+
+    if volts <= MIN_MOTOR_VOLTAGE and volts >= 5.0:
+        LOW_BATTERY = True
+        warn_low_battery(True)
+    elif LOW_BATTERY:
+        LOW_BATTERY = False
+        warn_low_battery(False)
+
+    if charge_level < 0:
+        charge_level = 0
+    elif charge_level > 25:
+        charge_level = 25
+
+    for i in range(25):
+        if charge_level > i:
+            colors.append(CYAN)
+        else:
+            colors.append(ORANGE)
+
+    Motor_battery_sendColors(colors)
+
+
+def warn_low_battery(state):
+    try:
+        rospy.wait_for_service('warning_lights')
+        blinky_proxy = rospy.ServiceProxy('warning_lights', WarningLights)
+        result = blinky_proxy([RED], 0.5, state)
+
+        if result.success != 0:
+            print 'WarningUpdateLights request unsuccessful: %s' % (result)
+
+    except rospy.exceptions.ROSInterruptException:
+        pass
+
+
+def BatteryListener():
+    rospy.init_node('battery_lights')
+    rospy.Subscriber("electrical_interface/computer_voltage", Float32, process_computer_voltage)
+    rospy.Subscriber("electrical_interface/motor_voltage", Float32, process_motor_voltage)
+    rospy.spin()
+
+
+if __name__ == "__main__":
+    BatteryListener()

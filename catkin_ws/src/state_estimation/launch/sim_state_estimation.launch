@@ -1,0 +1,7 @@
+<launch>
+  <node name="sim_tf_broadcaster" type="sim_tf_broadcaster" pkg="state_estimation"/>
+  <node name="sim_imu" type="sim_imu" pkg="state_estimation" />
+  <node name="sim_depth" type="sim_depth" pkg="state_estimation" />
+  <node name="initialize_horizon" type="initialize_horizon" pkg="state_estimation" />
+  <node pkg="tf" type="static_transform_publisher" name="link1_broadcaster" args="0.1 0 0.2 0 0 0.707 0.707 robot camera3_link 500" />
+</launch>

@@ -1,0 +1,37 @@
+#All gains
+kp_xPos: 0.0
+ki_xPos: 0.0
+kd_xPos: 0.0
+
+kp_yPos: 0.0
+ki_yPos: 0.0
+kd_yPos: 0.0
+
+kp_xHydro: 0.5e6
+ki_xHydro: 0.0
+kd_xHydro: 0.0
+
+kp_yHydro: 0.5e6
+ki_yHydro: 0.0
+kd_yHydro: 0.0
+
+kp_depth: 20.0
+ki_depth: 2.0
+kd_depth: 85.0
+
+kp_pitch: 5.0
+ki_pitch: 0.1
+kd_pitch: 5.0
+
+kp_roll: 5.0
+ki_roll: 0.1
+kd_roll: 5.0
+
+kp_yaw: 20.0
+ki_yaw: 0.0
+kd_yaw: 5.0
+
+#Speed Coefficients, they don't really mean anything right now...
+
+surge_coeff: 5
+sway_coeff: 5
