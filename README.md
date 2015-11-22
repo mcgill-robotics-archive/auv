@@ -15,13 +15,11 @@ properly.
 1. Connect to the AUV's network, either by connecting the ethernet cable to our
 router and connecting to McGill Robotics WiFi, or by connecting the ethernet
 cable directly to your computer.
-
 2. In a terminal, type:
 ```bash
 robotx
 ```
 This creates an SSH session to the AUV.
-
 3. In the session, type
 ```bash
 mux auv
