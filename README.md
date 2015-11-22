@@ -16,14 +16,18 @@ properly.
 router and connecting to McGill Robotics WiFi, or by connecting the ethernet
 cable directly to your computer.
 2. In a terminal, type:
+
    ```bash
    robotx
    ```
+
    This creates an SSH session to the AUV.
-3. In the session, type
+3. In the session, type:
+
    ```bash
    mux auv
    ```
+
    This will open a [tmuxinator](https://github.com/tmuxinator/tmuxinator)
    session with all nodes running. You can then view all the processes in
    separate windows.
