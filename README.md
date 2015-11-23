@@ -25,7 +25,7 @@ cable directly to your computer.
 3. In the session, type:
 
    ```bash
-   mux auv
+   mux start auv
    ```
 
    This will open a [tmuxinator](https://github.com/tmuxinator/tmuxinator)
