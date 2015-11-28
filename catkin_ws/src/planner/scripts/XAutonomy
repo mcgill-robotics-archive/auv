@@ -1,0 +1,104 @@
+#! /usr/bin/env python2.7
+# -*- coding: utf-8 -*-
+
+import smach
+import smach_ros
+import rospy
+from threading import Thread
+from planner.primitives import (
+    SetVelocityState, FireDropperState, AcousticServoState)
+from planner import tasks
+from numpy import sign
+
+__author__ = 'Max Krogius'
+
+
+def create_state_machine():
+    pause = rospy.get_param('~pause')
+    countdown = rospy.get_param('~countdown')
+    stop_time = rospy.get_param('~stop_time')
+    speed = rospy.get_param('~speed')
+    yaws = rospy.get_param('~yaws')
+    times = rospy.get_param('~times')
+    depths = rospy.get_param('~depths')
+    dropper_index = rospy.get_param('~dropper_index')
+    torp_yaw = rospy.get_param('~torp_yaw')
+    if len(yaws) != len(times):
+        raise ValueError('~yaws and ~times must have the same length')
+
+    motion_sm = smach.StateMachine(
+        outcomes=['succeeded', 'aborted', 'preempted'])
+    with motion_sm:
+        smach.StateMachine.add_auto(
+            'Initialize', tasks.initialize(pause, countdown, depths[0]),
+            connector_outcomes=['succeeded'])
+        for i in range(len(yaws)):
+            smach.StateMachine.add_auto(
+                'Yaw {}'.format(yaws[i]),
+                SetVelocityState.create_set_yaw_state(yaws[i]),
+                connector_outcomes=['succeeded'])
+            smach.StateMachine.add_auto(
+                'Depth {}'.format(depths[i]),
+                SetVelocityState.create_set_depth_state(
+                    depths[i], tolerance=0.1),
+                connector_outcomes=['succeeded'])
+            smach.StateMachine.add_auto(
+                'Move Forward {}'.format(times[i]),
+                SetVelocityState.create_move_forward_state(
+                    speed*sign(times[i]),
+                    rospy.Duration.from_sec(abs(times[i]))),
+                connector_outcomes=['succeeded'])
+            smach.StateMachine.add_auto(
+                'Stop {}'.format(i),
+                SetVelocityState.create_move_forward_state(
+                    0, rospy.Duration.from_sec(stop_time)),
+                connector_outcomes=['succeeded'])
+            if i == dropper_index:
+                smach.StateMachine.add_auto(
+                    'Yaw {}'.format(torp_yaw),
+                    SetVelocityState.create_set_yaw_state(torp_yaw),
+                    connector_outcomes=['succeeded'])
+                smach.StateMachine.add_auto(
+                    'Fire',
+                    FireDropperState(),
+                    connector_outcomes=['succeeded'])
+                smach.StateMachine.add_auto(
+                    'Yaw {}'.format(-torp_yaw),
+                    SetVelocityState.create_set_yaw_state(-torp_yaw),
+                    connector_outcomes=['succeeded'])
+
+        # smach.StateMachine.add_auto(
+        #     'Hydrophones',
+        #     AcousticServoState(tdoa_tol=1.4e-6),
+        #     connector_outcomes=['succeeded'])
+        smach.StateMachine.add(
+            'Sleep',
+            smach_ros.ConditionState(
+                lambda x: False,
+                poll_rate=rospy.Duration(1),
+                max_checks=-1),
+            transitions={
+                'false': 'succeeded',
+                'true': 'aborted'})
+
+    return tasks.mission_switch_wrapper(motion_sm)
+
+
+if __name__ == '__main__':
+    rospy.init_node('yaw_test')
+    sm = create_state_machine()
+    sis = smach_ros.IntrospectionServer('yaw_test', sm, '/SM_ROOT')
+    sis.start()
+
+    # In order to get smach to respond to ctrl+c we run it in a different
+    # thread and request a preempt on ctrl+c.
+    smach_thread = Thread(target=lambda: sm.execute())
+    smach_thread.start()
+
+    # It is necessary to use the on_shutdown method to request the preempt
+    # rather than waiting until after rospy spin to do so. Otherwise, the
+    # state machine will not respond to ctrl+c.
+    rospy.on_shutdown(sm.request_preempt)
+    rospy.spin()
+    smach_thread.join()
+    sis.stop()
