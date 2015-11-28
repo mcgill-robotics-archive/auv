@@ -6,7 +6,7 @@ from auv_msgs.msg import MotorCommands
 from numpy import matrix, interp, genfromtxt
 from numpy.linalg import pinv
 
-#set length from axis for each thruster ex:l_1z is distance from T1 to z-axis
+#set length in meters from axis for each thruster ex:l_1z is distance from T1 to z-axis
 #z-axis is down, x-axis is towards bow
 #T1 = surge port         \surges positive thrust towards stern
 #T2 = surge starboard     \surges positive thrust towards stern
@@ -16,27 +16,26 @@ from numpy.linalg import pinv
 #T6 = heave starboard bow    \heaves positive thrust towards bottom
 #T7 = heave starboard stern    \heaves positive thrust towards bottom
 #T8 = heave port stern        \heaves positive thrust towards bottom
-l_1z = 8.176*.0254
-l_2z = 8.176*.0254
-l_3z = 18.216*.0254
-l_4z = -12.003*.0254
-l_5x = 8.297*.0254
-l_6x = 8.297*.0254
-l_7x = -8.297*.0254
-l_8x = -8.297*.0254
-l_5y = 13.169*.0254
-l_6y = -13.169*.0254
-l_7y = 6.331*.0254
-l_8y = -6.331*.0254
 
+l_1z = 0.208 #or 8.176 inches
+l_2z = 0.208 #or 8.176 inches
+l_3z = 0.463 #or 18.216 inches
+l_4z = 0.305 #or 12.003 inches
+l_5x = 0.211 #or 8.297 inches
+l_6x = 0.211 #or 8.297 inches
+l_7x = 0.211 #or 8.297 inches
+l_8x = 0.211 #or 8.297 inches
+l_5y = 0.334 #or 13.169 inches
+l_6y = 0.334 #or 13.169 inches
+l_7y = 0.161 #or 6.331 inches
+l_8y = 0.161 #or 6.331 inches
+
+# Thruster T2 is wired in the opposite direction so the sign is reversed for 
+# the second column of matrix T1234_to_Fx_Fy_Mz
 T1234_to_Fx_Fy_Mz = matrix([[1,-1,0,0],[0,0,-1,-1],[l_1z,l_2z,-l_3z,l_4z]])
-print T1234_to_Fx_Fy_Mz
 Fx_Fy_Mz_to_T1234 = pinv(T1234_to_Fx_Fy_Mz, rcond = 1e-15)
-print Fx_Fy_Mz_to_T1234
-T5678_to_Fz_Mx_My = matrix([[-1,-1,-1,-1],[l_5x,-l_6x,l_7x,-l_8x],[l_5y,-l_6y,-l_7y,l_8y]])
-print T5678_to_Fz_Mx_My
+T5678_to_Fz_Mx_My = matrix([[-1,-1,-1,-1],[l_5x,-l_6x,-l_7x,l_8x],[l_5y,l_6y,-l_7y,-l_8y]])
 Fz_Mx_My_to_T5678 = pinv(T5678_to_Fz_Mx_My, rcond= 1e-15)
-print Fz_Mx_My_to_T5678
 
 def Wrench_to_thrust_callback(data):
     # Calculations are decoupled into those using the four in-plane thrusters
@@ -48,17 +47,7 @@ def Wrench_to_thrust_callback(data):
     # TODO: Use seabotics calibration too
     T1234 = t100_pwm(Fx_Fy_Mz_to_T1234*Fx_Fy_Mz)
     T5678 = t100_pwm(Fz_Mx_My_to_T5678*Fz_Mx_My)
-    print T1234
-    print T5678
 
-    #T1 = surge port         \surges positive thrust towards stern
-    #T2 = surge starboard     \surges positive thrust towards stern
-    #T3 = sway bow        \positive thrust towards starboard
-    #T4 = sway stern    \positive thrust towards port
-    #T5 = heave port bow        \heaves positive thrust towards bottom
-    #T6 = heave starboard bow    \heaves positive thrust towards bottom
-    #T7 = heave starboard stern    \heaves positive thrust towards bottom
-    #T8 = heave port stern        \heaves positive thrust towards bottom
     cmds_msg = MotorCommands()
     cmds_msg.port_surge = T1234[0]
     cmds_msg.starboard_surge = T1234[1]
