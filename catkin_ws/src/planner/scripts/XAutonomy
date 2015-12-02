@@ -12,7 +12,6 @@ from numpy import sign
 
 __author__ = 'Max Krogius'
 
-
 def create_state_machine():
     pause = rospy.get_param('~pause')
     countdown = rospy.get_param('~countdown')
