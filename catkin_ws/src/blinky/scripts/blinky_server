@@ -181,7 +181,7 @@ def BlinkyTapeServer():
             blt.sendPixel(rgb.r, rgb.g, rgb.b)
         # actually print the led colors on the tape
         blt.show()
-        time.sleep(0.005)
+        time.sleep(0.01)
 
 if __name__ == "__main__":
     BlinkyTapeServer()
