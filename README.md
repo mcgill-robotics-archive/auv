@@ -10,6 +10,15 @@ Before working on this repository, please clone the [CompSys](https://github.com
 repository and follow the instructions in the README to set up your environment
 properly.
 
+## Cloning & Updating the Repository
+
+This repository contains [submodules](https://git-scm.com/book/en/v2/Git-Tools-Submodules).
+To update the submodules, do:
+
+```bash
+git pull && git submodule update --init --recursive
+```
+
 ## How to Run the AUV
 
 1. Connect to the AUV's network, either by connecting the ethernet cable to our
