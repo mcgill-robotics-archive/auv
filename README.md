@@ -8,7 +8,12 @@ at the TRANSDEC facility in San Diego.
 
 Before working on this repository, please clone the [CompSys](https://github.com/mcgill-robotics/compsys)
 repository and follow the instructions in the README to set up your environment
-properly.
+properly. In addition, manually install the following packages:
+
+```bash
+sudo apt-get install ros-jade-rosserial ros-jade-rosserial-arduino ros-jade-pointgrey-camera-driver
+```
+
 
 ## Cloning & Updating the Repository
 
