@@ -25,7 +25,7 @@
   >If the sensor is detected: Returns data published by the sensor
     inside the topic.
 
-Each connection is done within a finite time thanks to a timer. The value of Timout can be modified.
+Every connection is tested within a finite time thanks to a timer. The value of Timout can be modified.
 
 
 ###*Motors Dry test*
