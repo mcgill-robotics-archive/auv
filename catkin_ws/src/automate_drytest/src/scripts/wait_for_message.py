@@ -3,6 +3,7 @@ import rospy
 
 class TimeoutException(Exception):
     """Timeout exception."""
+    # return Exception
     pass
 
 
@@ -33,7 +34,7 @@ class _WaitForMessage(object):
 
         Args:
             msg: Message.
-        """ 
+        """
         self.message = msg
         self.received = True
         self.stop()
