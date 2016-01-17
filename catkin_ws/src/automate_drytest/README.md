@@ -1,6 +1,6 @@
-###**AUTOMATE DRYTEST**
+#**AUTOMATE DRYTEST**
 
-##**Test**
+#**Test**
 
 #*Sensors Dry Test*
 
@@ -13,7 +13,7 @@
 *wait_for_for message.py* defines the node as a Subscriber and subsribes to the topic. It detect whether or not the selected sensor is connected to the robot.
 
 A message is returned to *sensors_dry_test.py*.
->If the sensor is not detected: Returns "None"
->If the sensor is detected: Returns data published by the sensor inside the topic.
+-If the sensor is not detected: Returns "None"
+-If the sensor is detected: Returns data published by the sensor inside the topic.
 
 Each connection is done within a finite time thanks to a timer. The value of Timout can be modified.
