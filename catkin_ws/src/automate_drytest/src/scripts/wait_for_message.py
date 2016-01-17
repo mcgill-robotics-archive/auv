@@ -3,7 +3,7 @@ import rospy
 
 class TimeoutException(Exception):
     """Timeout exception."""
-    # return Exception
+    # return Exception (Would that return the message in wait_for_message)
     pass
 
 
