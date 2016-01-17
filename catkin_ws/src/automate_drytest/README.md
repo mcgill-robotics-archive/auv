@@ -20,9 +20,12 @@
 
   A message is returned to *sensors_dry_test.py*:
 
-  ->If the sensor is not detected: Returns "None"
+  >If the sensor is not detected: Returns "None"
 
-  ->If the sensor is detected: Returns data published by the sensor
+  >If the sensor is detected: Returns data published by the sensor
     inside the topic.
 
 Each connection is done within a finite time thanks to a timer. The value of Timout can be modified.
+
+
+###*Motors Dry test*
