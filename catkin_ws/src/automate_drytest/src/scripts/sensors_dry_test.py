@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-
+import time
 from wait_for_message import *
 from std_msgs.msg import Float64
 
@@ -16,19 +16,37 @@ if __name__ == "__main__":
 
     """
     rospy.init_node("Testing")
-    print("Beginning of the sensors dry test.")
-    print("Depth sensor:")
-    try:
-        wait_for_message("/raw_depth", Float64, 3)
+    print("Are you ready to begin the dry test? Yes? No?")
 
-    except Exception:
-        print ("Sensor is not connected.")
-        pass
+    Agreement = raw_input()
 
-    # print("Moving on to ____ test:")
-    # try:
-        # wait_for_message("/raw_depth", Float64, 3)
+    if Agreement == 'no' or Agreement == 'No':
+        print ("Maybe later. Goodbye!")
 
-    # except Exception:
-        # print ("Sensor not connected.")
-        # pass
+    elif Agreement == 'yes' or Agreement == 'Yes':
+        print("Excellent choice!")
+        time.sleep(1)
+        print("We will begin with the Depth Sensor dry test.")
+
+        try:
+            wait_for_message("/raw_depth", Float64, 3)
+
+        except Exception:
+            print ("> The Depth Sensor is not connected.")
+            pass
+
+        # time.sleep(1)
+
+        # print("Moving on to Sonar:")
+
+        # try:
+            # wait_for_message("/raw_depth", Float64, 3)
+
+        # except Exception:
+            # print ("> The Sonar is not connected.")
+            # pass
+
+    else:
+        print("I don't know what that means.")
+        time.sleep(1)
+        print("Try later you drunk engineer.")

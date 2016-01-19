@@ -3,7 +3,6 @@ import rospy
 
 class TimeoutException(Exception):
     """Timeout exception."""
-    # return Exception (Would that return the message in wait_for_message)
     pass
 
 
@@ -67,5 +66,5 @@ def wait_for_message(topic, msg_type, timeout):
             # Unregister from topic.
             waiter.stop()
             raise TimeoutException("No message received on {}".format(topic))
-
+            return Exception
     return waiter.message
