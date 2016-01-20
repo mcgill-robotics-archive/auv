@@ -47,6 +47,6 @@ if __name__ == "__main__":
             # pass
 
     else:
-        print("I don't know what that means.")
+        print("I don't know what that means!")
         time.sleep(1)
-        print("Try later you drunk engineer.")
+        print("Try again.")
