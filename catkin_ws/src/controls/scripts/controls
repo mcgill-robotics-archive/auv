@@ -4,7 +4,7 @@ import numpy as np
 import rospy
 from geometry_msgs.msg import Wrench
 from auv_msgs.msg import (
-    SetVelocityAction, SetVelocityFeedback, SetPositionAction,
+    SetVelocityAction, SetVelocityFeedback, SetVelocityResult, SetPositionAction,
     SetPositionFeedback, TDOAs, AcousticServoAction, AcousticServoFeedback)
 import tf
 from tf.transformations import euler_from_quaternion, euler_matrix
@@ -236,6 +236,11 @@ def loop(event):
             feedback.yaw_error = proportional_error[2]
             feedback.depth_error = proportional_error[3]
             vel_server.publish_feedback(feedback)
+            if feedback.yaw_error < 0.1:
+                # Close enough, tell client we're done turning
+                result = SetVelocityResult()
+                result.success = True
+                vel_server.set_result(result)
         elif pos_server.is_active():
             feedback = SetPositionFeedback()
             feedback.yaw_error = proportional_error[2]

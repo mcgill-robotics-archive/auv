@@ -2,6 +2,7 @@
 SetVelocity cmd
 ---
 # Result definition.
+bool success
 ---
 # Feedback definition.
 float32 yaw_error
