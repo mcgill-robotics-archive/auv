@@ -35,16 +35,38 @@ if __name__ == "__main__":
             print ("> The Depth Sensor is not connected.")
             pass
 
-        # time.sleep(1)
+        time.sleep(1)
 
-        # print("Moving on to Sonar:")
+        """
+        print("Moving on to Ximu:")
 
-        # try:
-            # wait_for_message("/raw_depth", Float64, 3)
+        try:
+            wait_for_message("", Float64, 3)
 
-        # except Exception:
-            # print ("> The Sonar is not connected.")
-            # pass
+        except Exception:
+            print ("> The Ximu is not connected.")
+            pass
+
+        print("Testing the Sonar:")
+
+        try:
+            wait_for_message("", Float64, 3)
+
+        except Exception:
+            print ("> The Sonar is not connected.")
+            pass
+
+        print("Testing the front camera:")
+
+        try:
+            wait_for_message("", Float64, 3)
+
+        except Exception:
+            print ("> The front camera is not connected.")
+            pass
+        """
+
+        print('Sensors connection have been tested.')
 
     else:
         print("I don't know what that means!")

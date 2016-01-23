@@ -28,4 +28,10 @@
 Every connection is tested within a finite time thanks to a timer. The value of Timout can be modified.
 
 
+####*How to run the code*
+  >Start roscore on one terminal.
+  >Run /auv/catkin_ws/scr/automate_dry_test/src/scripts/sensors_dry_test
+
+
+
 ###*Motors Dry test*
