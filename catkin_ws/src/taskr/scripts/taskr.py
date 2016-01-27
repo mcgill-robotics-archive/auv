@@ -1,11 +1,11 @@
+#!/usr/bin/env python
+
 import rospy
 from actionlib import *
 from actionlib_msgs.msg import *
 from planner.msg import *
 from geometry_msgs.msg import *
-from auv_msgs.msg import (
-    SetVelocityAction, SetVelocityFeedback, SetVelocityResult
-)
+from auv_msgs.msg import SetVelocityAction, SetVelocityFeedback, SetVelocityResult, SetVelocity
 from actionlib import SimpleActionServer, SimpleActionClient
 
 class Taskr(object):
@@ -23,13 +23,14 @@ class Taskr(object):
         vel_client = SimpleActionClient('controls_velocity', SetVelocityAction)
 
         time = int(goal.time.secs)
-        velocity = int(goal.velocity)
-        theta = int(goal.theta)
-        depth = int(goal.depth)
+        velocity = goal.velocity
+        theta = goal.theta
+        depth = goal.depth
+
+        ctrl_goal = SetVelocity()
 
         if theta != 0:
             # Turn first before surging
-            ctrl_goal = SetVelocity()
             ctrl_goal.yaw = theta
             # Send to velocity server
             vel_client.send_goal(ctrl_goal)
@@ -38,8 +39,8 @@ class Taskr(object):
         # Surge
         rate = rospy.Rate(1)
         for s in range(1, time, 1):
-            ctrl_goal = SetVelocity()
-            ctrl_goal.surge_speed = velocity
+            ctrl_goal.surgeSpeed = velocity
+            vel_client.send_goal(ctrl_goal)
             # Sleep for the amount of time that makes the for-loop run for 1 second
             rate.sleep()
         self._result.success = True
