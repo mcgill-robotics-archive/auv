@@ -45,13 +45,40 @@ def pointcloud_to_laserscan(cloud):
     scan.angle_max = angle + 1/16
     scan.angle_increment = 1/16
 
+    scan.time_increment = 0
+    scan.scan_time = 1 / 22.28
+
+    scan.range_min = 0
+    scan.range_max = 5
+
     # Range
     # num_of_headings = 1
-    scan.ranges = [math.hypot(point.x, point.y)]
+    # scan.ranges = [math.hypot(point.x, point.y)]
+    scan.ranges = [2.5, 2.5]
+    scan.intensities = [100, 100]
     # scan.intensities = [255, 255]
 
     return scan
 
+    """
+    scan = LaserScan()
+
+    scan.header = cloud.header
+
+    scan.angle_min = - math.pi
+    scan.angle_max = math.pi
+    scan.angle_increment = 2 * math.pi / 200
+
+    scan.time_increment = 8.6 / 200
+    scan.scan_time = 8.6
+
+    scan.range_min = 0
+    scan.range_max = 30
+
+    scan.ranges = [2.5 for x in range(200)]
+    scan.intensities = [100 for x in range(200)]
+    return scan
+    """
     """
     # Get latest N slices.
     queued_slices = sorted(
