@@ -5,7 +5,7 @@ from actionlib import *
 from actionlib_msgs.msg import *
 from planner.msg import *
 from geometry_msgs.msg import *
-from auv_msgs.msg import SetVelocityAction, SetVelocityFeedback, SetVelocityResult, SetVelocity
+from auv_msgs.msg import SetVelocityAction, SetVelocityFeedback, SetVelocityResult, SetVelocityGoal
 from actionlib import SimpleActionServer, SimpleActionClient
 
 class Taskr(object):
@@ -19,6 +19,8 @@ class Taskr(object):
         self._as.start()
 
     def execute_cb(self, goal):
+        print 'Received goal'
+        print goal
         # Create velocity action client
         vel_client = SimpleActionClient('controls_velocity', SetVelocityAction)
 
@@ -27,11 +29,12 @@ class Taskr(object):
         theta = goal.theta
         depth = goal.depth
 
-        ctrl_goal = SetVelocity()
+        ctrl_goal = SetVelocityGoal()
 
         if theta != 0:
+            print 'Sending Yaw'
             # Turn first before surging
-            ctrl_goal.yaw = theta
+            ctrl_goal.cmd.yaw = theta
             # Send to velocity server
             vel_client.send_goal(ctrl_goal)
             vel_client.wait_for_result()
@@ -39,13 +42,14 @@ class Taskr(object):
         # Surge
         rate = rospy.Rate(1)
         for s in range(1, time, 1):
-            ctrl_goal.surgeSpeed = velocity
+            print 'Sending Surge'
+            ctrl_goal.cmd.surgeSpeed = velocity.linear.x
             vel_client.send_goal(ctrl_goal)
             # Sleep for the amount of time that makes the for-loop run for 1 second
             rate.sleep()
         self._result.success = True
         self._as.set_succeeded(self._result)
-
+        print 'Success!'
 if __name__ == '__main__':
     rospy.init_node('taskr')
     Taskr('square_action')
