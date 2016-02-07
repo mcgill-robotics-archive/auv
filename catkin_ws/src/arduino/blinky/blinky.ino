@@ -2,7 +2,7 @@
 #include "sin_table.h"
 
 #define NUM_LED_PER_STRIP   25
-#define NUM_LED_STRIP       6
+#define NUM_LED_STRIP       7
 #define LED_COUNT           NUM_LED_PER_STRIP * NUM_LED_STRIP
 #define LED_OUT_PIN         13
 #define LED_BRIGHTNESS      120
@@ -19,7 +19,7 @@ long lastTime;
 
 void setup()
 {
-  Serial.begin(57600);
+  Serial.begin(1000000);
   LEDS.addLeds<WS2812B, LED_OUT_PIN, GRB>(leds, LED_COUNT);
   LEDS.setBrightness(LED_BRIGHTNESS);
   LEDS.show();
