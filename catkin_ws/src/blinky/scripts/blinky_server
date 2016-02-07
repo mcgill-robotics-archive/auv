@@ -20,6 +20,7 @@ import math
 # number of leds per blinky segment
 NUM_LED_PER_SIDE = 75
 NUM_LED_PER_STRIP = 25
+NUM_LED_STRIP = 7
 
 # COLORS
 BLACK = RGB(0, 0, 0)
@@ -34,7 +35,8 @@ LIGHT_GREEN = RGB(0, 127, 0)
 # blinky tape class handle (accesses 2 segments)
 # change first argument with usb serial port
 # where the tape is found
-blt = bt.BlinkyTape("/dev/blinky", 2 * NUM_LED_PER_SIDE)
+blt = bt.BlinkyTape("/dev/blinky", NUM_LED_STRIP * NUM_LED_PER_STRIP, 
+        buffered = True)
 
 # Color to separate subsections in the planner segment
 separation_color = RGB(0,0,0)
@@ -56,7 +58,7 @@ warning_freq = 0.0
 warning_on = False
 
 # Speed animation for the middle strip
-animation_index = 0
+animation_index = 0.0
 surge_cmd = 0
 
 # set all leds to (0,0,0)
@@ -197,13 +199,13 @@ def BlinkyTapeServer():
             blt.sendPixel(rgb.r, rgb.g, rgb.b)
 
         for n in range(NUM_LED_PER_STRIP):
-            if (math.abs(surge_cmd) > 100):
+            if (math.fabs(surge_cmd) > 100):
                 intensity = math.sin(n - animation_index)
                 blt.sendPixel(int(127 + 127 * intensity),0,0)
-                animation_index += 2 * math.pi * surge_cmd/ 10000
+                animation_index += 2 * math.pi * math.sqrt(surge_cmd)/ 6000
             else:
                 blt.sendPixel(int(127 + 127 * math.sin(animation_index)),0,0)
-                animation_index += 2 * math.pi / 200
+                animation_index += 2 * math.pi / 2000
 
         for n in range(NUM_LED_PER_SIDE):
             rgb = colorList[74 - n]
