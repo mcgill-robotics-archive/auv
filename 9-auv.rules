@@ -6,6 +6,7 @@ KERNEL=="ttyACM*", ATTRS{idProduct}=="1005", ATTRS{idVendor}=="4d52", SYMLINK+="
 ATTRS{idProduct}=="1001", ATTRS{idVendor}=="4d52", SYMLINK+="radio"
 ATTRS{idProduct}=="1003", ATTRS{idVendor}=="4d52", SYMLINK+="imu"
 ATTRS{idProduct}=="6001", ATTRS{idVendor}=="0403", SYMLINK+="imu"
+ATTRS{idProduct}=="1002", ATTRS{idVendor}=="4d52", SYMLINK+="sonar"
 ATTRS{interface}=="Sonar RS232", SYMLINK+="sonar"
 ATTRS{interface}=="ST-Link VCP Ctr", SYMLINK+="nucleo", MODE:="0666"
 
