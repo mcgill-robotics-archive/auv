@@ -2,10 +2,10 @@
 #include "sin_table.h"
 
 #define NUM_LED_PER_STRIP   25
-#define NUM_LED_STRIP       6
+#define NUM_LED_STRIP       7
 #define LED_COUNT           NUM_LED_PER_STRIP * NUM_LED_STRIP
 #define LED_OUT_PIN         13
-#define LED_BRIGHTNESS      120
+#define LED_BRIGHTNESS      50
 
 #define TIMEOUT_PERIOD      1000
 #define PHASE_STEP          30
