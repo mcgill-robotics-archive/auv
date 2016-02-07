@@ -11,8 +11,11 @@ import time
 from std_msgs.msg import Float32
 from blinky.msg import *
 from blinky.srv import *
+from auv_msgs.msg import MotorCommands 
 
 import BlinkyTape as bt
+
+import math
 
 # number of leds per blinky segment
 NUM_LED_PER_SIDE = 75
@@ -51,6 +54,10 @@ warning_freq = 0.0
 
 # Flags indicating whether to display a warning
 warning_on = False
+
+# Speed animation for the middle strip
+animation_index = 0
+surge_cmd = 0
 
 # set all leds to (0,0,0)
 def initialize_blinkies():
@@ -148,16 +155,28 @@ def warn_lights(req):
 
     return WarningLightsResponse(0)
 
+def motorcommands(cmd):
+    global surge_cmd
+
+    lock = threading.Lock()
+
+    with lock:
+        surge_cmd = cmd.port_surge + cmd.starboard_surge
 
 def BlinkyTapeServer():
+    global animation_index
+    global surge_cmd
+
     initialize_blinkies()
     time.sleep(0.01)
     rospy.init_node('blinky')
+    
     upl = rospy.Service('update_planner_lights', UpdatePlannerLights, update_planner)
     ub1l = rospy.Service('update_motor_battery_lights', UpdateMotorBatteryLights, update_motor_battery)
     ub2l = rospy.Service('update_computer_battery_lights', UpdateComputerBatteryLights, update_computer_battery)
     wl = rospy.Service('warning_lights', WarningLights, warn_lights)
-
+    rospy.Subscriber('/electrical_interface/motor', MotorCommands, motorcommands, queue_size = 1)
+    
     lock = threading.Lock()
     edge_time = time.time()
     state = 0   # alternates between 0 (normal display) and 1 (warning display)
@@ -178,7 +197,13 @@ def BlinkyTapeServer():
             blt.sendPixel(rgb.r, rgb.g, rgb.b)
 
         for n in range(NUM_LED_PER_STRIP):
-            blt.sendPixel(255,0,0)
+            if (math.abs(surge_cmd) > 100):
+                intensity = math.sin(n - animation_index)
+                blt.sendPixel(int(127 + 127 * intensity),0,0)
+                animation_index += 2 * math.pi * surge_cmd/ 10000
+            else:
+                blt.sendPixel(int(127 + 127 * math.sin(animation_index)),0,0)
+                animation_index += 2 * math.pi / 200
 
         for n in range(NUM_LED_PER_SIDE):
             rgb = colorList[74 - n]
