@@ -176,9 +176,14 @@ def BlinkyTapeServer():
         for m in range(NUM_LED_PER_SIDE):
             rgb = colorList[m]
             blt.sendPixel(rgb.r, rgb.g, rgb.b)
+
+        for n in range(NUM_LED_PER_STRIP):
+            blt.sendPixel(255,0,0)
+
         for n in range(NUM_LED_PER_SIDE):
             rgb = colorList[74 - n]
             blt.sendPixel(rgb.r, rgb.g, rgb.b)
+
         # actually print the led colors on the tape
         blt.show()
         time.sleep(0.01)
