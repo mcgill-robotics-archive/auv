@@ -30,6 +30,7 @@ class Taskr(object):
         depth = goal.depth
 
         ctrl_goal = SetVelocityGoal()
+        ctrl_goal.cmd.depth = depth
 
         if theta != 0:
             print 'Sending Yaw'
@@ -41,9 +42,10 @@ class Taskr(object):
 
         # Surge
         rate = rospy.Rate(1)
-        for s in range(1, time, 1):
+        for s in range(1, time+1, 1):
             print 'Sending Surge'
             ctrl_goal.cmd.surgeSpeed = velocity.linear.x
+            ctrl_goal.cmd.yaw = theta
             vel_client.send_goal(ctrl_goal)
             # Sleep for the amount of time that makes the for-loop run for 1 second
             rate.sleep()

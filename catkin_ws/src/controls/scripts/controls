@@ -204,7 +204,7 @@ def loop(event):
         angles_estimated = list(euler_from_quaternion(rot))
         (trans, rot) = get_transform('/floating_horizon', '/robot')
         depth_estimated = trans[2]
-        #angles_estimated[2] += 0.01
+        # angles_estimated[2] += 0.01
 
         if pos_server.is_active():
             (x_err, y_err, _), quaternion = \
@@ -232,7 +232,7 @@ def loop(event):
         proportional_error[3] = depth_desired - depth_estimated
         integral_error += proportional_error * dt
         derivative_error = (proportional_error - proportional_error_prev) / dt
-        
+
         print 'angles_estimated'
         print angles_estimated
         print 'angles_desired'
