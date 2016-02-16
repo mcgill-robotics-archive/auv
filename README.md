@@ -8,7 +8,21 @@ at the TRANSDEC facility in San Diego.
 
 Before working on this repository, please clone the [CompSys](https://github.com/mcgill-robotics/compsys)
 repository and follow the instructions in the README to set up your environment
-properly.
+properly. In addition, manually install the following packages:
+
+```bash
+sudo apt-get install ros-jade-rosserial ros-jade-rosserial-arduino ros-jade-pointgrey-camera-driver
+```
+
+
+## Cloning & Updating the Repository
+
+This repository contains [submodules](https://git-scm.com/book/en/v2/Git-Tools-Submodules).
+To update the submodules, do:
+
+```bash
+git pull && git submodule update --init --recursive
+```
 
 ## How to Run the AUV
 
