@@ -43,7 +43,7 @@ wrenchPublisher = None
 mission = False
 
 # For testing
-angles_estimated = [0,0,0]
+# angles_estimated = [0,0,0]
 depth_estimated = 10
 
 
@@ -186,7 +186,7 @@ def rosInit():
 def loop(event):
     global pos_proportional_error, pos_integral_error, proportional_error
     global integral_error, tdoas_prev, tdoas_integral
-    global angles_estimated, depth_estimated
+    global angles_estimated, depth_estimated, surge_speed
 
     if not mission:
         return
@@ -200,9 +200,9 @@ def loop(event):
         fy = sway_coeff*sway_speed
 
         # TODO: Use one get_transform
-        # (trans, rot) = get_transform("/initial_horizon", "/robot")
-        # angles_estimated = list(euler_from_quaternion(rot))
-        # (trans, rot) = get_transform('/floating_horizon', '/robot')
+        (trans, rot) = get_transform("/initial_horizon", "/robot")
+        angles_estimated = list(euler_from_quaternion(rot))
+        (trans, rot) = get_transform('/floating_horizon', '/robot')
         # depth_estimated = trans[2]
         # angles_estimated[2] += 0.05
 
@@ -242,6 +242,12 @@ def loop(event):
         print depth_estimated
         print 'depth_desired'
         print depth_desired
+
+        print "surge speed"
+        print surge_speed
+
+        print "fx: "
+        print fx
 
         # Correct yaw angle error for wrap around. The other angles are
         # not corrected only small roll and pitch are supported.
@@ -285,6 +291,9 @@ def loop(event):
         matrix = euler_matrix(angles_estimated[0], angles_estimated[1], 0).T
         # force = np.dot(matrix, [fx, fy, output[3] + 8, 1])[:3]
         force = np.dot(matrix, [fx, fy, output[3], 1])[:3]
+        
+        print "force: "
+        print force
 
         wrenchMsg = Wrench()
         wrenchMsg.force.x = force[0]

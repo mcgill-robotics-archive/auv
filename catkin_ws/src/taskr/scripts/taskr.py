@@ -41,14 +41,15 @@ class Taskr(object):
             vel_client.wait_for_result()
 
         # Surge
-        rate = rospy.Rate(1)
-        for s in range(1, time+1, 1):
+        rate = rospy.Rate(10)
+        for s in range(1, time*10+1, 1):
             print 'Sending Surge'
             ctrl_goal.cmd.surgeSpeed = velocity.linear.x
             ctrl_goal.cmd.yaw = theta
             vel_client.send_goal(ctrl_goal)
             # Sleep for the amount of time that makes the for-loop run for 1 second
             rate.sleep()
+        
         self._result.success = True
         self._as.set_succeeded(self._result)
         print 'Success!'
