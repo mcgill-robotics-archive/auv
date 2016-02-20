@@ -14,7 +14,7 @@ from sensor_msgs.msg import ChannelFloat32
 from tritech_micron.msg import TritechMicronConfig
 
 
-__author__ = "Jana Pavlasek"
+__author__ = "Jana Pavlasek, Anass Al-Wohoush, Max Krogius"
 
 scan = None
 scan_config = {}
