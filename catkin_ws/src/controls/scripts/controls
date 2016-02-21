@@ -44,7 +44,7 @@ mission = False
 
 # For testing
 # angles_estimated = [0,0,0]
-depth_estimated = 10
+#depth_estimated = 10
 
 
 def normalize_angle(angle, max_angle=pi):
@@ -203,7 +203,7 @@ def loop(event):
         (trans, rot) = get_transform("/initial_horizon", "/robot")
         angles_estimated = list(euler_from_quaternion(rot))
         (trans, rot) = get_transform('/floating_horizon', '/robot')
-        # depth_estimated = trans[2]
+        depth_estimated = trans[2]
         # angles_estimated[2] += 0.05
 
         if pos_server.is_active():
@@ -217,6 +217,7 @@ def loop(event):
                                     - pos_proportional_error_prev)/dt
             fx, fy = (pos_integral_error * pos_integral_gains
                       + pos_proportional_error * pos_proportional_gains
+        
                       + pos_derivative_error * pos_derivative_gains)
             angles_estimated[2] = yaw_err
         elif hydro_server.is_active():
@@ -291,9 +292,6 @@ def loop(event):
         matrix = euler_matrix(angles_estimated[0], angles_estimated[1], 0).T
         # force = np.dot(matrix, [fx, fy, output[3] + 8, 1])[:3]
         force = np.dot(matrix, [fx, fy, output[3], 1])[:3]
-        
-        print "force: "
-        print force
 
         wrenchMsg = Wrench()
         wrenchMsg.force.x = force[0]
