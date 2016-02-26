@@ -151,6 +151,6 @@ if __name__ == '__main__':
                                   make_config, queue_size=1)
     slice_sub = rospy.Subscriber("/tritech_micron/scan", PointCloud,
                                  stitch, queue_size=1)
-    scan_pub = rospy.Publisher("~full_scan", PointCloud, queue_size=1)
+    scan_pub = rospy.Publisher("full_scan", PointCloud, queue_size=1)
 
     rospy.spin()
