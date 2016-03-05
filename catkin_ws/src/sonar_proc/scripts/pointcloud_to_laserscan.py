@@ -63,5 +63,5 @@ if __name__ == '__main__':
     rospy.init_node('pointcloud_to_laserscan')
     rospy.Subscriber(
         "/tritech_micron/scan", PointCloud, callback, queue_size=1)
-    pub = rospy.Publisher("~laserscan", LaserScan, queue_size=1)
+    pub = rospy.Publisher("laserscan", LaserScan, queue_size=1)
     rospy.spin()
