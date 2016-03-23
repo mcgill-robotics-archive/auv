@@ -26,6 +26,7 @@ from sklearn.preprocessing import StandardScaler
 __author__ = "Jana Pavlasek"
 
 X = None
+X_initial = None
 
 
 def populate(data):
@@ -50,16 +51,16 @@ def populate(data):
         i += 1
 
     # Transform data into usable NumPy arrays.
-    global X
-    X = np.array(pts)
-    X = StandardScaler().fit_transform(X)
+    global X, X_initial
+    X_initial = np.array(pts)
+    X = StandardScaler().fit_transform(X_initial)
 
     cluster()
 
 
 def cluster():
     """Clusters the data then publishes markers for RVIZ visualization."""
-    # Compute DBSCAN
+    # Compute DBSCAN. Default: eps=0.3, min_samples=10
     db = DBSCAN(eps=0.3, min_samples=10).fit(X)
     core_samples_mask = np.zeros_like(db.labels_, dtype=bool)
     core_samples_mask[db.core_sample_indices_] = True
@@ -79,14 +80,14 @@ def cluster():
         m.id = i
 
         # Position is that of the point at the same index.
-        m.pose.position.x = X[i][0]
-        m.pose.position.y = X[i][1]
+        m.pose.position.x = X_initial[i][0]
+        m.pose.position.y = X_initial[i][1]
         m.pose.position.z = 0
 
         # Points list holds a single point.
         p = Point()
-        p.x = X[i][0]
-        p.y = X[i][1]
+        p.x = X_initial[i][0]
+        p.y = X_initial[i][1]
         p.z = 0
         m.points = [p]
 
@@ -111,6 +112,11 @@ def cluster():
             m.color.r = 1.0
             m.color.g = 1.0
             m.color.b = 0
+        if label == 4:
+            # Cyan.
+            m.color.r = 0
+            m.color.g = 1.0
+            m.color.b = 1.0
         if label == -1:
             # White. Outliers.
             m.color.r = 1.0
@@ -146,6 +152,7 @@ def construct_marker(m):
 
 if __name__ == '__main__':
     rospy.init_node("test_cluster")
-    sub = rospy.Subscriber("/full_scan", PointCloud, populate, queue_size=1)
+    sub = rospy.Subscriber("/filtered_scan", PointCloud,
+                           populate, queue_size=1)
     pub = rospy.Publisher("/cluster_markers", Marker, queue_size=1)
     rospy.spin()
