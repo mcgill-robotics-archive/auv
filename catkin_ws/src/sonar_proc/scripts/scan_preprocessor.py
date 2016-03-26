@@ -1,7 +1,11 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-"""Sonar Scan Preprocessor."""
+"""Sonar Scan Preprocessor.
+
+Listens to PointCloud scan objects and eliminates all points below a certain
+intensity or below a certain radius.
+"""
 
 import rospy
 from sensor_msgs.msg import PointCloud
