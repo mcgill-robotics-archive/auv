@@ -50,4 +50,4 @@ include_directories(${Boost_INCLUDE_DIRS} ${catkin_INCLUDE_DIRS})
 add_subdirectory(pose)
 add_subdirectory(tf)
 add_subdirectory(ukf)
-
+add_subdirectory(servo)
