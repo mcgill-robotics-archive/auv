@@ -1,6 +1,5 @@
 <launch>
     <node name="planner" pkg="planner" type="static_state_machine" >
-        <rosparam command "load"  file="~/auv-2015/catkin_ws/src/planner/config/square.yaml" />
     </node>
-    
+     <rosparam file="$(find planner)/config/square.yaml" />
 </launch>
