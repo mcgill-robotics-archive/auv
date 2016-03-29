@@ -38,6 +38,14 @@ class Taskr(object):
             ctrl_goal.cmd.yaw = theta
             # Send to velocity server
             vel_client.send_goal(ctrl_goal)
+            # Check if we received preempt request from Planner
+            if self._as.is_preempt_requested():
+                print "Taskr preempted"
+                # Send preempt request to Controls
+                vel_client.cancel_goal()
+                # Handle preemption
+                self._as.set_preempted()
+                return
             vel_client.wait_for_result()
 
         # Surge
@@ -47,12 +55,22 @@ class Taskr(object):
             ctrl_goal.cmd.surgeSpeed = velocity.linear.x
             ctrl_goal.cmd.yaw = theta
             vel_client.send_goal(ctrl_goal)
+            # Check if we received preempt request from Planner
+            if self._as.is_preempt_requested():
+                print "Taskr preempted"
+                # Send preempt request to Controls
+                vel_client.cancel_goal()
+                # Handle preemption
+                self._as.set_preempted()
+                return
             # Sleep for the amount of time that makes the for-loop run for 1 second
             rate.sleep()
-        
+
         self._result.success = True
         self._as.set_succeeded(self._result)
         print 'Success!'
+
+
 if __name__ == '__main__':
     rospy.init_node('taskr')
     Taskr('square_action')
