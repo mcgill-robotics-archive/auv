@@ -1,0 +1,10 @@
+#Goal definition.
+VisualServo cmd
+---
+# Result definition.
+---
+# Feedback definition.
+float32 x_error
+float32 y_error
+float32 depth_error
+

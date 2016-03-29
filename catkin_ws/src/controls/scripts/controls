@@ -5,7 +5,7 @@ import rospy
 from geometry_msgs.msg import Wrench
 from auv_msgs.msg import (
     SetVelocityAction, SetVelocityFeedback, SetVelocityResult, SetPositionAction,
-    SetPositionFeedback)
+    SetPositionFeedback, VisualServoAction, VisualServoFeedback)
 import tf
 from tf.transformations import euler_from_quaternion, euler_matrix
 from actionlib import SimpleActionServer
@@ -14,6 +14,7 @@ from std_msgs.msg import Bool
 # flake8 wants these declared up here
 pos_server = None
 vel_server = None
+vservo_server = None
 
 depth_desired = 0.0
 depth_estimated = 0.0
@@ -52,7 +53,7 @@ def normalize_angle(angle, max_angle=pi):
 def set_velocity_callback():
     global angles_desired, surge_speed, sway_speed, depth_desired, last_heading
     set_position_preempt()
-    acoustic_servo_preempt()
+    visual_servo_preempt()
     cmd = vel_server.accept_new_goal().cmd
     angles_desired[0] = cmd.roll
     angles_desired[1] = cmd.pitch
@@ -67,7 +68,7 @@ def set_velocity_callback():
 def set_position_callback():
     global angles_desired, pos_desired, depth_desired, target_frame_id
     set_velocity_preempt()
-    acoustic_servo_preempt()
+    visual_servo_preempt()
     cmd = pos_server.accept_new_goal().cmd
     target_frame_id = cmd.target_frame_id
     angles_desired[0] = cmd.roll
@@ -77,6 +78,16 @@ def set_position_callback():
     pos_desired[1] = cmd.yPos
     depth_desired = cmd.depth
 
+def visual_servo_callback():
+    global angles_desired, target_frame_id
+    set_velocity_preempt()
+    set_position_preempt()
+    cmd = vservo_server.accept_new_goal().cmd
+    target_frame_id = cmd.target_frame_id
+    angles_desired[0] = cmd.roll
+    angles_desired[1] = cmd.pitch
+    angles_desired[2] = cmd.yaw
+
 def set_velocity_preempt():
     if vel_server.is_active():
         vel_server.set_preempted()
@@ -84,6 +95,10 @@ def set_velocity_preempt():
 def set_position_preempt():
     if pos_server.is_active():
         pos_server.set_preempted()
+
+def visual_servo_preempt():
+    if vservo_server.is_active():
+        vservo_server.set_preempted()
 
 def get_transform(origin_frame, target_frame):
     global listener
@@ -104,7 +119,7 @@ def mission_cb(msg):
     mission = msg.data
 
 def rosInit():
-    global wrenchPublisher, listener, pos_server, vel_server
+    global wrenchPublisher, listener, pos_server, vel_server, vservo_server
     global mission_sub
 
     rospy.init_node('controls')
@@ -126,7 +141,14 @@ def rosInit():
     pos_server.register_goal_callback(set_position_callback)
     pos_server.register_preempt_callback(set_position_preempt)
     pos_server.start()
-    
+   
+    vservo_server = SimpleActionServer('controls_vservo',
+            VisualServoAction,
+            auto_start=False)
+    vservo_server.register_goal_callback(visual_servo_callback)
+    vservo_server.register_preempt_callback(visual_servo_preempt)
+    vservo_server.start()
+
     wrenchPublisher = rospy.Publisher('controls/wrench',
             /Wrench,
             queue_size=100)
@@ -176,7 +198,17 @@ def loop(event):
                       + pos_proportional_error * pos_proportional_gains
                       + pos_derivative_error * pos_derivative_gains)
             angles_estimated[2] = yaw_err
-        elif vservo_server.is_active():
+        elif vservo_server.is_active()
+            (x_err, y_err, z_err), quaternion = get_transform(target_frame_id, '/robot')
+            pos_proportional_error_prev = pos_proportional_error
+            pos_proportional_error = np.array([x_err, y_err])
+            pos_integral_error += pos_proportional_error * dt
+            pos_derivative_error = (pos_proportional_error
+                                    - pos_proportional_error_prev)/dt
+            fx, fy = (pos_integral_error * pos_integral_gains
+                      + pos_proportional_error * pos_proportional_gains
+                      + pos_derivative_error * pos_derivative_gains)
+            depth_desired = z_err
 
         proportional_error_prev = proportional_error.copy()
         proportional_error[0:3] = angles_desired - angles_estimated
@@ -188,7 +220,6 @@ def loop(event):
         print angles_estimated
         print 'angles_desired'
         print angles_desired
-
         print 'depth_estimated'
         print depth_estimated
         print 'depth_desired'
@@ -223,6 +254,11 @@ def loop(event):
             feedback.x_error = pos_proportional_error[0]
             feedback.y_error = pos_proportional_error[1]
             pos_server.publish_feedback(feedback)
+        elif vservo_server.is_active():
+            feedback = VisualServoFeedback()
+            feedback.x_error = pos_proportional_error[0]
+            feedback.y_error = pos_proportional_error[1]
+            feedback.depth_error = proportional_error[3]
 
         output = (integral_error * integral_gains
                   + proportional_error * proportional_gains
