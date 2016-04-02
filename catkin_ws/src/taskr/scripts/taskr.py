@@ -5,7 +5,9 @@ from actionlib import *
 from actionlib_msgs.msg import *
 from planner.msg import *
 from geometry_msgs.msg import *
-from auv_msgs.msg import SetVelocityAction, SetVelocityFeedback, SetVelocityResult, SetVelocityGoal
+from auv_msgs.msg import (SetVelocityAction, SetVelocityFeedback,
+    SetVelocityResult, SetVelocityGoal, VisualServoAction, VisualServoGoal,
+    VisualServo)
 from actionlib import SimpleActionServer, SimpleActionClient
 
 class Taskr(object):
@@ -49,11 +51,22 @@ class Taskr(object):
             vel_client.send_goal(ctrl_goal)
             # Sleep for the amount of time that makes the for-loop run for 1 second
             rate.sleep()
-        
+
         self._result.success = True
         self._as.set_succeeded(self._result)
         print 'Success!'
+def test_servo():
+    servo_client = SimpleActionClient('controls_vservo', VisualServoAction)
+    goal = VisualServoGoal()
+    goal.cmd = VisualServo()
+    goal.cmd.target_frame_id = "buoy"
+    goal.cmd.roll = 0
+    goal.cmd.pitch = 0
+    goal.cmd.yaw = 0
+    servo_client.send_goal(goal)
+    print "Sent visual servo goal"
 if __name__ == '__main__':
     rospy.init_node('taskr')
     Taskr('square_action')
+    test_servo()
     rospy.spin()

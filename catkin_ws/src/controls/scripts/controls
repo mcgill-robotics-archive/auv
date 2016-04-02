@@ -125,23 +125,23 @@ def rosInit():
     rospy.init_node('controls')
 
     mission_sub = rospy.Subscriber('mission', Bool, mission_cb)
-    
+
     listener = tf.TransformListener()
-    
+
     vel_server = SimpleActionServer('controls_velocity',
         SetVelocityAction,
         auto_start=False)
     vel_server.register_goal_callback(set_velocity_callback)
     vel_server.register_preempt_callback(set_velocity_preempt)
     vel_server.start()
-    
+
     pos_server = SimpleActionServer('controls_position',
         SetPositionAction,
         auto_start=False)
     pos_server.register_goal_callback(set_position_callback)
     pos_server.register_preempt_callback(set_position_preempt)
     pos_server.start()
-   
+
     vservo_server = SimpleActionServer('controls_vservo',
         VisualServoAction,
         auto_start=False)
@@ -150,11 +150,11 @@ def rosInit():
     vservo_server.start()
 
     wrenchPublisher = rospy.Publisher('controls/wrench',
-        /Wrench,
+        Wrench,
         queue_size=100)
     # Maybe we can use rospy.wait_for_message instead of this?
     t = rospy.Time.now() + rospy.Duration.from_sec(1)
-    
+
     while rospy.Time.now() < t:
         try:
             get_transform("initial_horizon", "robot")
@@ -198,7 +198,7 @@ def loop(event):
                       + pos_proportional_error * pos_proportional_gains
                       + pos_derivative_error * pos_derivative_gains)
             angles_estimated[2] = yaw_err
-        elif vservo_server.is_active()
+        elif vservo_server.is_active():
             (x_err, y_err, z_err), quaternion = get_transform(target_frame_id, '/robot')
             pos_proportional_error_prev = pos_proportional_error
             pos_proportional_error = np.array([x_err, y_err])
