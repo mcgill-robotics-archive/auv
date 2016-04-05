@@ -25,6 +25,7 @@ class Taskr(object):
         print goal
         # Create velocity action client
         vel_client = SimpleActionClient('controls_velocity', SetVelocityAction)
+        servo_client.wait_for_server()
 
         time = int(goal.time.secs)
         velocity = goal.velocity
@@ -56,13 +57,18 @@ class Taskr(object):
         self._as.set_succeeded(self._result)
         print 'Success!'
 def test_servo():
+    # Create visual servo client
     servo_client = SimpleActionClient('controls_vservo', VisualServoAction)
+    # Wait for visual servo server to finish starting up
+    servo_client.wait_for_server()
+    # Create goal
     goal = VisualServoGoal()
     goal.cmd = VisualServo()
     goal.cmd.target_frame_id = "buoy"
     goal.cmd.roll = 0
     goal.cmd.pitch = 0
     goal.cmd.yaw = 0
+    # Send goal to server
     servo_client.send_goal(goal)
     print "Sent visual servo goal"
 if __name__ == '__main__':
