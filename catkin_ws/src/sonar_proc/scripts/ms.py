@@ -1,41 +1,51 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
-"""DBSCAN Clustering Test.
-Finds core samples of high density and expands clusters from them. Some of
-this is from the plot_dbscan.py example from SciKit Learn:
-http://scikit-learn.org/stable/auto_examples/cluster/plot_dbscan.html#example-cluster-plot-dbscan-py
+
+"""MeanShift Clustering Test.
+
+Inspiration from plot_mean_shift.py example from SciKit Learn:
+
+http://scikit-learn.org/stable/auto_examples/cluster/plot_mean_shift.html#example-cluster-plot-mean-shift-py
+
 Publishes:
-    /cluster_markers: Marker message with different coloured markers
-                      corresponding to each cluster (only 4 clusters are
-                      supported right now, this is hard coded.)
-Subcribes:
-    /full_scan: PointCloud message containing complete sonar scan.
+    /cluster_markers:
+
+Subscribes:
+    /full_scan: PointCloud message containing complete sonar scan
+
 """
 
 import rospy
 import numpy as np
-from sklearn.cluster import DBSCAN
+from sklearn.cluster import MeanShift, estimate_bandwidth
 from geometry_msgs.msg import Point32
 from sensor_msgs.msg import PointCloud
 from visualization_msgs.msg import Marker
 from sklearn.preprocessing import StandardScaler
 
-__author__ = "Jana Pavlasek"
+__author__ = "Dihia Idrici, Jana Pavlasek"
 
 X = None
 X_initial = None
 
 
 def populate(data):
-    """Callback that turns PointCloud data into feature array for
-    clustering."""
+    """ The algorithm starts by making a copy of the original data set
+    and freezing the original points. The copied points
+    are shifted against the original frozen points."""
+
+    # Define array named pts which we fill with the data points
+    # from a given sonar scan
     pts = []
-    # Add intensities and points to array.
+
+    # zip allows us to iterate over two lists in parallel
+
     for point, val in zip(data.points, data.channels[0].values):
-        intensity = val  # Range [0, 255].
+        intensity = val  # Range [0, 255]
+        # Fill points array with x, y and intensity value
+        # we ommit z as it is always zero (2D representation)
         pts.append([point.x, point.y, intensity])
 
-    # Transform data into usable NumPy arrays.
+    # Transform data into usuable Numpy arrays.
     global X, X_initial
     X_initial = np.array(pts)
     X = StandardScaler().fit_transform(X_initial)
@@ -44,50 +54,64 @@ def populate(data):
 
 
 def cluster():
-    """Clusters the data then publishes markers for RVIZ visualization."""
-    # Compute DBSCAN. Default: eps=0.3, min_samples=10
-    db = DBSCAN(eps=0.3, min_samples=10).fit(X)
-    core_samples_mask = np.zeros_like(db.labels_, dtype=bool)
-    core_samples_mask[db.core_sample_indices_] = True
-    labels = db.labels_
 
-    # Number of clusters in labels, ignoring noise if present.
-    n_clusters_ = len(set(labels)) - (1 if -1 in labels else 0)
+    """Compute clustering with MeanShift"""
 
-    print('Estimated number of clusters: %d' % n_clusters_)
+    # Bandwidth has to be estimated
+    bandwidth = estimate_bandwidth(X, quantile=0.2, n_samples=1000)
+    ms = MeanShift(bandwidth=bandwidth, bin_seeding=True)
+    ms.fit(X)
+    labels = ms.labels_
+    cluster_centers = ms.cluster_centers_
+    labels_unique = np.unique(labels)
+    n_clusters_ = len(labels_unique)
 
-    for label, i in zip(labels, range(0, len(labels))):
+    print cluster_centers
+    print("The number of estimated clusters : %d" % n_clusters_)
+
+    mrk = []
+
+    for label, i in zip(labels, range(0, len(labels_unique))):
         m = Marker()
         # Set default values.
         construct_marker(m)
-
         # Marker ID.
         m.id = i
 
-        # Position is that of the point at the same index.
+        # my_members = labels == label
+        # cluster_center = cluster_centers[label]
+
+        # Position of the marker is that of the point at the same index.
         m.pose.position.x = 0
         m.pose.position.y = 0
         m.pose.position.z = 0
 
         # Points list holds a single point.
         p = Point32()
-        p.x = X_initial[i][0]
-        p.y = X_initial[i][1]
+        # p.x = X[i][0]  # instead of X_initial
+        # p.y = X[i][1]
+        p.x = 10
+        p.y = 20
         p.z = 0
         m.points = [p]
 
         label_colour(m, label)
+        # mrk.insert(i, m)
 
-        pub.publish(m)
+        # We wait for the marker to have a subscriber and then publish it
+    pub.publish(m)
+    print mrk
 
 
 def construct_marker(m):
+
     """Contructs Marker message with defaults.
+
     Args:
         m = Marker message.
     """
     # Header
-    m.header.frame_id = "robot"  # This might be broken.
+    m.header.frame_id = "robot"
     m.header.stamp = rospy.Time.now()
     # Namespace.
     m.ns = "sonar"
@@ -97,9 +121,9 @@ def construct_marker(m):
     m.type = Marker.POINTS
     # Alpha must be set or marker will be invisible.
     m.color.a = 1.0
-    # Scale.
-    m.scale.x = 0.05
-    m.scale.y = 0.05
+    # Scale of the Marker.
+    m.scale.x = 1
+    m.scale.y = 1
     m.scale.z = 0
     # Lifetime of point.
     m.lifetime.secs = 5
@@ -139,8 +163,8 @@ def label_colour(m, label):
 
 
 if __name__ == '__main__':
-    rospy.init_node("test_cluster")
+    rospy.init_node("Mean_Shift")
     sub = rospy.Subscriber("/filtered_scan", PointCloud,
                            populate, queue_size=1)
-    pub = rospy.Publisher("/cluster_markers", Marker, queue_size=1)
+    pub = rospy.Publisher("/cluster_markers", Marker, queue_size=100)
     rospy.spin()
