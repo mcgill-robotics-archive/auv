@@ -11,6 +11,9 @@ Publishes:
 
 Subscribes:
     /full_scan: PointCloud message containing complete sonar scan
+    /filtered_scan: PointCloud message containing filtered sonar scan
+
+Currently in the process of increasing the scan filtering level!
 
 """
 
