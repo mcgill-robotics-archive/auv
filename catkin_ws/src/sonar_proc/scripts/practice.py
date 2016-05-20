@@ -9,8 +9,7 @@ analysis.
 
 import math
 import rospy
-from sensor_msgs.msg import PointCloud
-from sensor_msgs.msg import ChannelFloat32
+from sensor_msgs.msg import PointCloud, ChannelFloat32
 from tritech_micron.msg import TritechMicronConfig
 
 
@@ -37,17 +36,18 @@ class Scan(object):
         self.time = rospy.get_rostime()
         self.full = False
 
-    def empty(self):
-        """Returns whether the scan is empty."""
-        return len(self.clouds) == 0
+    """def empty(self):
+        # Returns whether the scan is empty.
+        return len(self.clouds) == 0 """
 
-    def add(self, cloud_slice):
+    def add(self, cloud_slice):  # cloud_slice = data from stitch
         """Adds a slice to the scan.
 
         Args:
-            scan_slice: Slice of the scan.
+            scan_slice: Slice of the scan
         """
         theta = round(self.theta(cloud_slice.points[10]), 4)
+        # gives 4 decimal of theta
 
         # Update full variable if the end is reached.
         if not self.empty() and (theta == round(self.right_limit, 4) or
@@ -55,9 +55,11 @@ class Scan(object):
             self.full = True
 
         self.clouds.append(cloud_slice)
-        print theta
 
-    def to_full_scan(self, frame):
+        print self.clouds
+        # print theta  # all of those points are at the same angle
+
+    def to_full_scan(self, frame):  # frame = data from stitch
         """Publishes the sonar data as a point cloud.
 
         Args:
@@ -100,7 +102,6 @@ class Scan(object):
             theta = 2*math.pi + theta
 
         return theta
-
 
 def make_config(data):
     """Updates scan cofigurations when configuration is published."""
@@ -147,9 +148,11 @@ def stitch(data):
 if __name__ == '__main__':
     # Initialize publishers and subscribers.
     rospy.init_node("scan_stitcher")
+    # Data from the subscription are used by make_config
     config_sub = rospy.Subscriber("/tritech_micron/config",
                                   TritechMicronConfig,
                                   make_config, queue_size=1)
+    # Data from the subscription are used by stitch
     slice_sub = rospy.Subscriber("/tritech_micron/scan", PointCloud,
                                  stitch, queue_size=1)
     scan_pub = rospy.Publisher("full_scan", PointCloud, queue_size=1)
