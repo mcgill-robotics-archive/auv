@@ -126,8 +126,7 @@ def cluster():
         m.header.stamp = rospy.Time.now()
         m.lifetime.secs = 5
 
-
-    # We wait for the marker to have a subscriber and then publish it
+    # We wait for the markerArray to have a subscriber and then publish it
     pub.publish(markerArray)
 
 
