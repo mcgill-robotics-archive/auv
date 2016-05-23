@@ -23,6 +23,7 @@ import numpy as np
 from sklearn.cluster import MeanShift, estimate_bandwidth
 from geometry_msgs.msg import Point32
 from sensor_msgs.msg import PointCloud
+from visualization_msgs.msg import MarkerArray
 from visualization_msgs.msg import Marker
 from sklearn.preprocessing import StandardScaler
 
@@ -71,21 +72,40 @@ def cluster():
     nb_clusters_ = len(labels_unique)  # Number of clusters. Could remove the line
 
     print("The number of estimated clusters : %d" % nb_clusters_)
-
     print cluster_centers
 
+    markerArray = MarkerArray()
+
     for i in range(0, nb_clusters_):
+
         m = Marker()
-        # Set default values.
-        construct_marker(m)
+
+        # Set the frame id and timestanp
+        m.header.frame_id = "robot"
+        # m.header.stamp = rospy.Time.now()
+        # Marker namespace.
+        m.ns = "sonar"
         # Marker ID.
-        m.id = i
+        # m.id = i
+        # Marker type
+        m.type = Marker.POINTS
+        # Action.
+        m.action = Marker.ADD
 
         # Set pose of the marker
         # No need for orientation as we use points!
         m.pose.position.x = 0
         m.pose.position.y = 0
         m.pose.position.z = 0
+
+        # Alpha must be set or marker will be invisible.
+        m.color.a = 1.0
+        # Scale of the Marker.
+        m.scale.x = 1.0  # 1m
+        m.scale.y = 1.0  # 1m
+        m.scale.z = 0.0
+        # Lifetime of point.
+        # m.lifetime.secs = 5
 
         # Points list holds a single point which corresponds
         # to the cluster location.
@@ -94,41 +114,21 @@ def cluster():
         p.y = cluster_centers[i][1]
         p.z = 0
 
-        m.points = [p]
-        print m
-
-    # print m.points
-
+        m.points = [p]  # redefine the value of the parameter points of the marker
         label_colour(m, i)
 
+        markerArray.markers.append(m)
+
+    # Renumber the marker ID's, time stamp and lifetime of the points
+    for m in markerArray.markers:
+
+        m.id += nb_clusters_
+        m.header.stamp = rospy.Time.now()
+        m.lifetime.secs = 5
+
+
     # We wait for the marker to have a subscriber and then publish it
-        pub.publish(m)
-
-
-def construct_marker(m):
-
-    """Contructs Marker message with defaults.
-
-    Args:
-        m = Marker message.
-    """
-    # Set the frame id and timestanp
-    m.header.frame_id = "robot"
-    m.header.stamp = rospy.Time.now()
-    # Marker namespace.
-    m.ns = "sonar"
-    # Marker type
-    m.type = Marker.POINTS
-    # Action.
-    m.action = Marker.ADD
-    # Alpha must be set or marker will be invisible.
-    m.color.a = 1.0
-    # Scale of the Marker.
-    m.scale.x = 1.0  # 1m
-    m.scale.y = 1.0  # 1m
-    m.scale.z = 0.0
-    # Lifetime of point.
-    m.lifetime.secs = 5
+    pub.publish(markerArray)
 
 
 def label_colour(m, label):
@@ -168,6 +168,6 @@ if __name__ == '__main__':
     rospy.init_node("Mean_Shift")
     sub = rospy.Subscriber("filtered_scan", PointCloud,
                            populate, queue_size=1)
-    pub = rospy.Publisher("/cluster_markers", Marker, queue_size=100)
+    pub = rospy.Publisher("visualization_marker_array", MarkerArray,
+                          queue_size=100)
     rospy.spin()
-

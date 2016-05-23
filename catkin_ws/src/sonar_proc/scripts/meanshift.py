@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+# -*- coding: utf-8 -*-
 
 """MeanShift Clustering Test.
 
@@ -88,7 +89,6 @@ def cluster():
         m.pose.position.x = 0
         m.pose.position.y = 0
         m.pose.position.z = 0
-        # No need for orientation as we use points!
 
         # Points list holds a single point.
         p = Point32()
@@ -98,6 +98,7 @@ def cluster():
         m.points = [p]
 
         label_colour(m, label)
+        print m
 
         # We wait for the marker to have a subscriber and then publish it
         pub.publish(m)
