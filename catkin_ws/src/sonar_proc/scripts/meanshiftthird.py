@@ -72,10 +72,9 @@ def cluster():
     nb_clusters_ = len(labels_unique)  # Number of clusters. Could remove the line
 
     print("The number of estimated clusters : %d" % nb_clusters_)
-    print cluster_centers
+    # print cluster_centers
 
     markerArray = MarkerArray()
-
     for i in range(0, nb_clusters_):
 
         m = Marker()
@@ -123,11 +122,12 @@ def cluster():
     for m in markerArray.markers:
 
         m.id += nb_clusters_
+        # The individual marker still don't have the same time.
         m.header.stamp = rospy.Time.now()
-        m.lifetime.secs = 5
+        m.lifetime.secs = 1
 
-    # We wait for the markerArray to have a subscriber and then publish it
-    pub.publish(markerArray)
+        # We wait for the markerArray to have a subscriber and then publish it
+        pub.publish(markerArray)
 
 
 def label_colour(m, label):
@@ -168,5 +168,5 @@ if __name__ == '__main__':
     sub = rospy.Subscriber("filtered_scan", PointCloud,
                            populate, queue_size=1)
     pub = rospy.Publisher("visualization_marker_array", MarkerArray,
-                          queue_size=100)
+                          queue_size=1)
     rospy.spin()
