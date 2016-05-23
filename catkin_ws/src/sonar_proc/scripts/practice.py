@@ -153,8 +153,8 @@ if __name__ == '__main__':
                                   TritechMicronConfig,
                                   make_config, queue_size=1)
     # Data from the subscription are used by stitch
-    slice_sub = rospy.Subscriber("/tritech_micron/scan", PointCloud,
+    slice_sub = rospy.Subscriber("filtered_slice_scan", PointCloud,
                                  stitch, queue_size=1)
-    scan_pub = rospy.Publisher("full_scan", PointCloud, queue_size=1)
+    scan_pub = rospy.Publisher("full_filtered_scan", PointCloud, queue_size=1)
 
     rospy.spin()

@@ -61,6 +61,9 @@ def cluster():
         # Set default values.
         construct_marker(m)
 
+        cluster_center = cluster_centers[label]
+        print cluster_center
+
         # Marker ID.
         m.id = i
 

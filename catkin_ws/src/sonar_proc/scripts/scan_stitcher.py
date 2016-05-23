@@ -55,7 +55,6 @@ class Scan(object):
             self.full = True
 
         self.clouds.append(cloud_slice)
-        print theta
 
     def to_full_scan(self, frame):
         """Publishes the sonar data as a point cloud.

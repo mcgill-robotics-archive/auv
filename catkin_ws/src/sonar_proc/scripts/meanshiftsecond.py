@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+# -*- coding: utf-8 -*-
 
 """MeanShift Clustering Test.
 
@@ -65,42 +66,37 @@ def cluster():
     ms = MeanShift(bandwidth=bandwidth, bin_seeding=True)
     ms.fit(X)
     labels = ms.labels_
-    cluster_centers = ms.cluster_centers_
-    labels_unique = np.unique(labels)  # array starting at 0 for 1 cluster
+    cluster_centers = ms.cluster_centers_  # Clusters coordinate
+    labels_unique = np.unique(labels)  # Simplifies labels notation
     nb_clusters_ = len(labels_unique)  # Number of clusters. Could remove the line
 
-    print labels_unique
-    print cluster_centers
     print("The number of estimated clusters : %d" % nb_clusters_)
 
-    for label, i in zip(labels, range(0, nb_clusters_)):
+    for i in range(0, nb_clusters_):
         m = Marker()
         # Set default values.
         construct_marker(m)
         # Marker ID.
         m.id = i
 
-        # my_members = labels == label
-        # cluster_center = cluster_centers[label]
-
         # Set pose of the marker
         # No need for orientation as we use points!
         m.pose.position.x = 0
         m.pose.position.y = 0
         m.pose.position.z = 0
-        # No need for orientation as we use points!
 
-        # Points list holds a single point.
+        # Points list holds a single point which corresponds
+        # to the cluster location.
         p = Point32()
-        p.x = X[i][0]  # instead of X_initial
-        p.y = X[i][1]
+        p.x = cluster_centers[i][0]
+        p.y = cluster_centers[i][1]
         p.z = 0
         m.points = [p]
 
-        label_colour(m, label)
+        label_colour(m, i)
 
-        # We wait for the marker to have a subscriber and then publish it
-        pub.publish(m)
+    # We wait for the marker to have a subscriber and then publish it
+    pub.publish(m)
 
 
 def construct_marker(m):
@@ -168,3 +164,4 @@ if __name__ == '__main__':
                            populate, queue_size=1)
     pub = rospy.Publisher("/cluster_markers", Marker, queue_size=100)
     rospy.spin()
+
