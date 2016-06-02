@@ -23,36 +23,46 @@ import numpy as np
 from sklearn.cluster import MeanShift, estimate_bandwidth
 from geometry_msgs.msg import Point32
 from sensor_msgs.msg import PointCloud
+from visualization_msgs.msg import MarkerArray
 from visualization_msgs.msg import Marker
-from sklearn.preprocessing import StandardScaler
 
 __author__ = "Dihia Idrici, Jana Pavlasek"
 
 X = None
-X_initial = None
 
+""" meanshiftfourth.py studies the behaviour of the meanshift clustering
+    algorithm given only the x and y position of the filtered data.
+
+
+    Once the PointCloud data from the sonar is filtered, keeping only the
+    relevent point there should be no use of the intensity parameter
+    to determine clusters.
+
+    After testing, however, we note that more filtering is required,
+    as clusters with only few data are taken into account as well. Even though
+    they seem to represent nothing.
+"""
 
 def populate(data):
     """ The algorithm starts by making a copy of the original fitered data
     set from the topic "full_filtered_scan"
     and freezing the original points. The copied points
-    are shifted against the original frozen points."""
+    are shifted against the original frozen points.
+    """
 
     # Define array named pts which we fill with the data points
     # from a given sonar scan
     pts = []
 
     # zip allows us to iterate over two lists in parallel
-    for point, val in zip(data.points, data.channels[0].values):
-        intensity = val  # Range [0, 255]
-        # Fill points array with x, y and intensity value
+    for point in data.points:
+        # Fill points array with x, y
         # we ommit z as it is always zero (2D representation)
-        pts.append([point.x, point.y, intensity])
+        pts.append([point.x, point.y])
 
     # Transform data into usuable Numpy arrays.
-    global X, X_initial
-    X_initial = np.array(pts)
-    X = StandardScaler().fit_transform(X_initial)
+    global X
+    X = np.array(pts)  # Matrix with three column
 
     cluster()
 
@@ -62,27 +72,34 @@ def cluster():
     """Clustering with MeanShift"""
 
     # Bandwidth has to be estimated
-    bandwidth = estimate_bandwidth(X, quantile=0.2, n_samples=1000)
+    bandwidth = estimate_bandwidth(X, quantile=0.2)
     ms = MeanShift(bandwidth=bandwidth, bin_seeding=True)
     ms.fit(X)
+    print X
     labels = ms.labels_
-    cluster_centers = ms.cluster_centers_
-    labels_unique = np.unique(labels)  # array starting at 0 for 1 cluster
+    cluster_centers = ms.cluster_centers_  # Clusters coordinate
+    labels_unique = np.unique(labels)  # Simplifies labels notation
     nb_clusters_ = len(labels_unique)  # Number of clusters. Could remove the line
 
-    print labels_unique
-    print cluster_centers
     print("The number of estimated clusters : %d" % nb_clusters_)
+    # print cluster_centers
 
-    for label, i in zip(labels, range(0, nb_clusters_)):
+    markerArray = MarkerArray()
+    for i in range(0, nb_clusters_):
+
         m = Marker()
-        # Set default values.
-        construct_marker(m)
-        # Marker ID.
-        m.id = i
 
-        # my_members = labels == label
-        # cluster_center = cluster_centers[label]
+        # Set the frame id and timestanp
+        m.header.frame_id = "robot"
+        m.header.stamp = rospy.get_rostime()  # rospy.Time.now()
+        # Marker namespace.
+        m.ns = "sonar"
+        # Marker ID.
+        m.id = i  # All of the cluster from one scan have the same id
+        # Marker type
+        m.type = Marker.POINTS
+        # Action.
+        m.action = Marker.ADD
 
         # Set pose of the marker
         # No need for orientation as we use points!
@@ -90,46 +107,35 @@ def cluster():
         m.pose.position.y = 0
         m.pose.position.z = 0
 
-        # Points list holds a single point.
+        # Alpha must be set or marker will be invisible.
+        m.color.a = 1.0
+        # Scale of the Marker.
+        m.scale.x = 1.0  # 1m
+        m.scale.y = 1.0  # 1m
+        m.scale.z = 0.0
+        # Lifetime of point.
+        m.lifetime.secs = 0
+
+        # Points list holds a single point which corresponds
+        # to the cluster location.
         p = Point32()
-        p.x = X[i][0]  # instead of X_initial
-        p.y = X[i][1]
+        p.x = cluster_centers[i][0]
+        p.y = cluster_centers[i][1]
         p.z = 0
-        m.points = [p]
 
-        label_colour(m, label)
+        m.points = [p]  # redefine the value of the parameter points of the marker
+        label_colour(m, i)
 
-        # We wait for the marker to have a subscriber and then publish it
-        pub.publish(m)
+        markerArray.markers.append(m)
 
-
-def construct_marker(m):
-
-    """Contructs Marker message with defaults.
-
-    Args:
-        m = Marker message.
-    """
-    # Set the frame id and timestanp
-    m.header.frame_id = "robot"
-    m.header.stamp = rospy.Time.now()
-    # Marker namespace.
-    m.ns = "sonar"
-    # Marker type
-    m.type = Marker.POINTS
-    # Action.
-    m.action = Marker.ADD
-    # Alpha must be set or marker will be invisible.
-    m.color.a = 1.0
-    # Scale of the Marker.
-    m.scale.x = 1.0  # 1m
-    m.scale.y = 1.0  # 1m
-    m.scale.z = 0.0
-    # Lifetime of point.
-    m.lifetime.secs = 5
+    # We wait for the markerArray to have a subscriber and then publish it
+    pub.publish(markerArray)
 
 
 def label_colour(m, label):
+    """ Provides a unique color for each cluster
+
+    """
     if label == 0:
         # Red.
         m.color.r = 1.0
@@ -155,6 +161,11 @@ def label_colour(m, label):
         m.color.r = 0
         m.color.g = 1.0
         m.color.b = 1.0
+    if label == 5:
+        # Cyan.
+        m.color.r = 0
+        m.color.g = 0.5
+        m.color.b = 1.0
     if label == -1:
         # White. Outliers.
         m.color.r = 1.0
@@ -166,5 +177,8 @@ if __name__ == '__main__':
     rospy.init_node("Mean_Shift")
     sub = rospy.Subscriber("filtered_scan", PointCloud,
                            populate, queue_size=1)
-    pub = rospy.Publisher("/cluster_markers", Marker, queue_size=100)
+    pub = rospy.Publisher("visualization_marker_array", MarkerArray,
+                          queue_size=10)
     rospy.spin()
+
+

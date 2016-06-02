@@ -25,12 +25,10 @@ from geometry_msgs.msg import Point32
 from sensor_msgs.msg import PointCloud
 from visualization_msgs.msg import MarkerArray
 from visualization_msgs.msg import Marker
-from sklearn.preprocessing import StandardScaler
 
 __author__ = "Dihia Idrici, Jana Pavlasek"
 
 X = None
-X_initial = None
 
 
 def populate(data):
@@ -51,9 +49,9 @@ def populate(data):
         pts.append([point.x, point.y, intensity])
 
     # Transform data into usuable Numpy arrays.
-    global X, X_initial
-    X_initial = np.array(pts)
-    X = StandardScaler().fit_transform(X_initial)
+    global X
+    X = np.array(pts)
+    print X
 
     cluster()
 
@@ -66,6 +64,7 @@ def cluster():
     bandwidth = estimate_bandwidth(X, quantile=0.2, n_samples=1000)
     ms = MeanShift(bandwidth=bandwidth, bin_seeding=True)
     ms.fit(X)
+    print X
     labels = ms.labels_
     cluster_centers = ms.cluster_centers_  # Clusters coordinate
     labels_unique = np.unique(labels)  # Simplifies labels notation
@@ -81,11 +80,11 @@ def cluster():
 
         # Set the frame id and timestanp
         m.header.frame_id = "robot"
-        # m.header.stamp = rospy.Time.now()
+        m.header.stamp = rospy.get_rostime()  # rospy.Time.now()
         # Marker namespace.
         m.ns = "sonar"
         # Marker ID.
-        # m.id = i
+        m.id = i  # All of the cluster from one scan have the same id
         # Marker type
         m.type = Marker.POINTS
         # Action.
@@ -104,7 +103,7 @@ def cluster():
         m.scale.y = 1.0  # 1m
         m.scale.z = 0.0
         # Lifetime of point.
-        # m.lifetime.secs = 5
+        m.lifetime.secs = 0
 
         # Points list holds a single point which corresponds
         # to the cluster location.
@@ -118,19 +117,14 @@ def cluster():
 
         markerArray.markers.append(m)
 
-    # Renumber the marker ID's, time stamp and lifetime of the points
-    for m in markerArray.markers:
-
-        m.id += nb_clusters_
-        # The individual marker still don't have the same time.
-        m.header.stamp = rospy.Time.now()
-        m.lifetime.secs = 1
-
-        # We wait for the markerArray to have a subscriber and then publish it
-        pub.publish(markerArray)
+    # We wait for the markerArray to have a subscriber and then publish it
+    pub.publish(markerArray)
 
 
 def label_colour(m, label):
+    """ Provides a unique color for each cluster
+
+    """
     if label == 0:
         # Red.
         m.color.r = 1.0
@@ -156,6 +150,11 @@ def label_colour(m, label):
         m.color.r = 0
         m.color.g = 1.0
         m.color.b = 1.0
+    if label == 5:
+        # Cyan.
+        m.color.r = 0
+        m.color.g = 0.5
+        m.color.b = 1.0
     if label == -1:
         # White. Outliers.
         m.color.r = 1.0
@@ -168,5 +167,5 @@ if __name__ == '__main__':
     sub = rospy.Subscriber("filtered_scan", PointCloud,
                            populate, queue_size=1)
     pub = rospy.Publisher("visualization_marker_array", MarkerArray,
-                          queue_size=1)
+                          queue_size=10)
     rospy.spin()

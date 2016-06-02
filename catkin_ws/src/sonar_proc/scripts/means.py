@@ -24,16 +24,25 @@ def populate(data):
 
     # zip allows us to iterate over two lists in parallel
 
+    """
     for point, val in zip(data.points, data.channels[0].values):
         intensity = val  # Range [0, 255]
         # Fill points array with x, y and intensity value
         # we ommit z as it is always zero (2D representation)
         pts.append([point.x, point.y, intensity])
+    """
+
+
+    for point in data.points: # Range [0, 255]
+        # Fill points array with x, y and intensity value
+        # we ommit z as it is always zero (2D representation)
+        pts.append([point.x, point.y])
 
     # Transform data into usuable Numpy arrays.
-    global X, X_initial
-    X_initial = np.array(pts)
-    X = StandardScaler().fit_transform(X_initial)
+    global X
+    # X_initial = np.array(pts)
+    # X = StandardScaler().fit_transform(X_initial)
+    X = np.array(pts)
 
     cluster()
 
@@ -42,7 +51,7 @@ def cluster():
 
     # Compute clustering with MeaShift
     # Bandwidth detection
-    bandwidth = estimate_bandwidth(X, quantile=0.2, n_samples=1000)
+    bandwidth = estimate_bandwidth(X, quantile=0.3, n_samples=None)
     ms = MeanShift(bandwidth=bandwidth, bin_seeding=True)
     ms.fit(X)
     labels = ms.labels_
@@ -50,7 +59,8 @@ def cluster():
     labels_unique = np.unique(labels)
     n_clusters_ = len(labels_unique)
 
-    print cluster_centers
+    # print X
+    # print cluster_centers
     print("number of estimated clusters : %d" % n_clusters_)
 
     # Plot result
