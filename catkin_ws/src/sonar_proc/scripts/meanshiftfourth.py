@@ -8,10 +8,9 @@ Inspiration from plot_mean_shift.py example from SciKit Learn:
 http://scikit-learn.org/stable/auto_examples/cluster/plot_mean_shift.html#example-cluster-plot-mean-shift-py
 
 Publishes:
-    /cluster_markers:
+    visualization_marker_array:
 
 Subscribes:
-    /full_scan: PointCloud message containing complete sonar scan
     /filtered_scan: PointCloud message containing filtered sonar scan
 
 Currently in the process of increasing the scan filtering level!
