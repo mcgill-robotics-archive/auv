@@ -50,7 +50,7 @@ def populate(data):
 
     # Transform data into usuable Numpy arrays.
     global X
-    X = np.array(pts)
+    X = np.array(pts)  # Matrix with three column
     print X
 
     cluster()

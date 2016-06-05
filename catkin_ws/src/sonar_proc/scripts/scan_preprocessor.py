@@ -42,6 +42,7 @@ def preprocess(scan):
         index += 1
 
     cloud.channels = [channel]
+    print cloud.points
     scan_pub.publish(cloud)
 
 
