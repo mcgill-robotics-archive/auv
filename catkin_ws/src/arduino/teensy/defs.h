@@ -47,7 +47,7 @@
 
 
 //TIME INTERVAL(unit microsecond)
-#define SOLENOID_TIMEOUT                    200
+#define SOLENOID_TIMEOUT                    50
 #define MOTOR_TIMEOUT                       500   //amount of no signal required to start to reset motors
 #define TEMPERATURE_INTERVAL                1000  //amount of delay between each temperatures read
 #define POWER_MONITOR_INTERVAL              100   //amount of delay between each power monitor read
