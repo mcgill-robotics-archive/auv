@@ -14,7 +14,7 @@ from sensor_msgs.msg import ChannelFloat32
 __author__ = "Jana Pavlasek"
 
 # Preprocessing constants.
-MIN_INTENSITY = 50
+MIN_INTENSITY = 120
 MIN_RADIUS = 1
 
 
@@ -42,7 +42,6 @@ def preprocess(scan):
         index += 1
 
     cloud.channels = [channel]
-    print cloud.points
     scan_pub.publish(cloud)
 
 

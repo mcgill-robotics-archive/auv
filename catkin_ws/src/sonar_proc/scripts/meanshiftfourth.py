@@ -19,6 +19,7 @@ Currently in the process of increasing the scan filtering level!
 
 import rospy
 import numpy as np
+from std_msgs.msg import Int32, Float32
 from sklearn.cluster import MeanShift, estimate_bandwidth
 from geometry_msgs.msg import Point32
 from sensor_msgs.msg import PointCloud
@@ -26,6 +27,7 @@ from visualization_msgs.msg import MarkerArray
 from visualization_msgs.msg import Marker
 
 __author__ = "Dihia Idrici, Jana Pavlasek"
+
 
 X = None
 
@@ -42,8 +44,16 @@ X = None
     they seem to represent nothing.
 """
 
+
+def sample_point(sample):
+
+    global n_sample
+    n_sample = int(sample.data)
+    print ("n_sample is %d") % n_sample
+
+
 def populate(data):
-    """ The algorithm starts by making a copy of the original fitered data
+    """The algorithm starts by making a copy of the original fitered data
     set from the topic "full_filtered_scan"
     and freezing the original points. The copied points
     are shifted against the original frozen points.
@@ -61,7 +71,7 @@ def populate(data):
 
     # Transform data into usuable Numpy arrays.
     global X
-    X = np.array(pts)  # Matrix with three column
+    X = np.array(pts)  # Matrix with two column
 
     cluster()
 
@@ -70,11 +80,13 @@ def cluster():
 
     """Clustering with MeanShift"""
 
+    print ("n_sample second is %d") %n_sample
+    # i = n_sample
+    # print ("i is %d") % i
     # Bandwidth has to be estimated
-    bandwidth = estimate_bandwidth(X, quantile=0.2)
+    bandwidth = estimate_bandwidth(X, quantile=0.2, n_samples=n_sample)
     ms = MeanShift(bandwidth=bandwidth, bin_seeding=True)
     ms.fit(X)
-    print X
     labels = ms.labels_
     cluster_centers = ms.cluster_centers_  # Clusters coordinate
     labels_unique = np.unique(labels)  # Simplifies labels notation
@@ -109,8 +121,8 @@ def cluster():
         # Alpha must be set or marker will be invisible.
         m.color.a = 1.0
         # Scale of the Marker.
-        m.scale.x = 1.0  # 1m
-        m.scale.y = 1.0  # 1m
+        m.scale.x = 0.5  # 1m
+        m.scale.y = 0.5  # 1m
         m.scale.z = 0.0
         # Lifetime of point.
         m.lifetime.secs = 0
@@ -132,9 +144,9 @@ def cluster():
 
 
 def label_colour(m, label):
-    """ Provides a unique color for each cluster
+    """Provides a unique color for each cluster"""
 
-    """
+
     if label == 0:
         # Red.
         m.color.r = 1.0
@@ -176,8 +188,7 @@ if __name__ == '__main__':
     rospy.init_node("Mean_Shift")
     sub = rospy.Subscriber("filtered_scan", PointCloud,
                            populate, queue_size=1)
+    sample_sub = rospy.Subscriber("n_sample", Int32, sample_point, queue_size=1)
     pub = rospy.Publisher("visualization_marker_array", MarkerArray,
                           queue_size=10)
     rospy.spin()
-
-
