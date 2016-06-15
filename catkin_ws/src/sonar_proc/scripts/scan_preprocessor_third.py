@@ -119,16 +119,15 @@ def preprocess(scan):
             # print radiusesfromi
             # print len(cloud.points)
 
-    print ("the value of i is %d") % i
+    # print ("the value of i is %d") % i
 
     cloud.channels = [channel]
-    print len(channel.values)
-    print len(cloud.points)
+    # print len(channel.values)
+    # print len(cloud.points)
     # print channel.values
 
     scan_pub.publish(cloud)
-    sample_pub.publish(i)
-
+    # sample_pub.publish(i)
 
 if __name__ == '__main__':
     # Initialize publishers and subscribers.
@@ -139,6 +138,6 @@ if __name__ == '__main__':
 
     # So that we know exactly the number of sample to
     # consider in bandwidth calculation
-    sample_pub = rospy.Publisher("n_sample", Int32, queue_size=1)
+    # sample_pub = rospy.Publisher("n_sample", Int32, queue_size=1)
 
     rospy.spin()
