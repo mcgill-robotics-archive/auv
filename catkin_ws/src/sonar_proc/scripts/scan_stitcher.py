@@ -2,7 +2,6 @@
 # -*- coding: utf-8 -*-
 
 """Sonar Scan Stitcher.
-
 This listens to PointCloud slices and stitches them into a full scan for
 analysis.
 """
@@ -43,7 +42,6 @@ class Scan(object):
 
     def add(self, cloud_slice):
         """Adds a slice to the scan.
-
         Args:
             scan_slice: Slice of the scan.
         """
@@ -58,10 +56,8 @@ class Scan(object):
 
     def to_full_scan(self, frame):
         """Publishes the sonar data as a point cloud.
-
         Args:
             frame: Name of sensor frame.
-
         Returns:
             sensor_msgs.msg.PointCloud.
         """
@@ -88,7 +84,6 @@ class Scan(object):
     def theta(self, point):
         """Calculates the angle of a point, in the range 0 to 2pi, where 0 is
         the positive y axis.
-
         Args:
             point: Point32 message.
         """
@@ -122,6 +117,7 @@ def stitch(data):
     """Callback for stitch. If scan is not full, add a slice, otherwise
     publish the full scan and reinitialize."""
     # If a scan has not been initialized, make one.
+    
     if not scan:
         if scan_config:
             global scan
@@ -137,6 +133,7 @@ def stitch(data):
         frame = rospy.get_param("~frame", "odom")
         scan_pub.publish(scan.to_full_scan(frame))
 
+
         # Reinitialize a new scan.
         global scan
         scan = Scan(**scan_config)
@@ -146,8 +143,7 @@ def stitch(data):
 if __name__ == '__main__':
     # Initialize publishers and subscribers.
     rospy.init_node("scan_stitcher")
-    config_sub = rospy.Subscriber("/tritech_micron/config",
-                                  TritechMicronConfig,
+    config_sub = rospy.Subscriber("/tritech_micron/config", TritechMicronConfig,
                                   make_config, queue_size=1)
     slice_sub = rospy.Subscriber("/tritech_micron/scan", PointCloud,
                                  stitch, queue_size=1)

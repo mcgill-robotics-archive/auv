@@ -14,7 +14,7 @@ from sensor_msgs.msg import ChannelFloat32
 __author__ = "Jana Pavlasek"
 
 # Preprocessing constants.
-MIN_INTENSITY = 120
+MIN_INTENSITY = 110
 MIN_RADIUS = 1
 
 
