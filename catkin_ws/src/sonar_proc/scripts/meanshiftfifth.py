@@ -11,26 +11,7 @@ from sensor_msgs.msg import PointCloud
 from visualization_msgs.msg import MarkerArray
 from visualization_msgs.msg import Marker
 
-"""
-class Clustering(object):
 
-    # def __init__(self, n_sample=sample_sub, data=sub):
-    def __init__(self):
-    	# self.n_sample = n_sample
-        # self.samplesize = None
-    	# self.data = sub
-        self.pts = []
-	self.X = None
-    
-    def populate(self, data):
-	#for point in self.data.points
-	for point in data.points:
-	    self.pts.append([point.x, point.y])
-
-	self.X = np.array(self.pts)
-	# print self.X
-	return self.X
-"""
 
 def cluster(data):
     """Clustering with MeanShift"""
