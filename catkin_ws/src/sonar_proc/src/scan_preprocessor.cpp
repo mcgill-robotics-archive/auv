@@ -11,7 +11,7 @@ ScanPreprocessor::ScanPreprocessor(ros::NodeHandle& nh) :
     updater_ = nh_.createTimer(ros::Duration(0.2), &ScanPreprocessor::updateCallback, this);
 }
 
-void ScanPreprocessor::fullScanCallback(const sensor_msgs::PointCloud::ConstPrt& msg)
+void ScanPreprocessor::fullScanCallback(const sensor_msgs::PointCloud::ConstPtr& msg)
 {
     cloud_ = *msg;
 }

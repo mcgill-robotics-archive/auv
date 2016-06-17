@@ -2,18 +2,32 @@ cmake_minimum_required(VERSION 2.8.3)
 project(sonar_proc)
 
 find_package(catkin REQUIRED COMPONENTS
-             roscpp
+            roscpp
             rospy
             std_msgs
             pcl_ros
             sensor_msgs)
 
-generate_messages(
-  DEPENDENCIES
-  std_msgs
-  sensor_msgs
-)
+## Boost requires its own find_package
+# find_package(Boost REQUIRED COMPONENTS)
+# include_directories(${Boost_INCLUDE_DIRS})
+# link_directories(${Boost_LIBRARY_DIRS})
+# add_definitions(${Boost_DEFINITIONS})
 
+# find_package(PCL 1.3 REQUIRED)
+# include_directories(${PCL_INCLUDE_DIRS})
+# link_directories(${PCL_LIBRARY_DIRS})
+# add_definitions(${PCL_DEFINITIONS})
+
+# generate_messages(
+#   DEPENDENCIES
+#   std_msgs
+#   sensor_msgs
+# )
+
+####################
+## Catkin config ##
+###################
 catkin_package(
   INCLUDE_DIRS include
   CATKIN_DEPENDS
@@ -24,15 +38,41 @@ catkin_package(
     sensor_msgs
 )
 
+###########
+## Build ##
+###########
 include_directories(
-    include
-    ${catkin_INCLUDE_DIRS}
+  include
+  ${catkin_INCLUDE_DIRS}
 )
 
 ## Declare a C++ executable
-add_executable(sonar_proc src/main.cpp
-               src/scan_preprocessor.cpp)
+add_executable(sonar_node
+  src/main.cpp
+  src/scan_preprocessor.cpp
+)
 
-target_link_libraries(sonar_proc ${Boost_LIBRARIES} ${catkin_LIBRARIES})
+add_dependencies(sonar_node ${catkin_EXPORTED_TARGETS} ${${PROJECT_NAME}_EXPORTED_TARGETS})
 
-add_dependencies(sonar_proc sonar_proc_generate_messages_cpp)
+target_link_libraries(sonar_node ${catkin_LIBRARIES})
+
+#############
+## Install ##
+#############
+install(TARGETS sonar_node
+  ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+  LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+  RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+)
+
+install(DIRECTORY
+  launch
+  DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
+)
+
+##########
+## Test ##
+##########
+if (CATKIN_ENABLE_TESTING)
+  ## Tests!
+endif()

@@ -1,7 +1,5 @@
 /*
  * Scan Preprocessor node.
- * \author: Jana Pavlasek
- * lol guys i don't know cpp
  */
 
 #include <ros/ros.h>
@@ -22,6 +20,6 @@ private:
 
     sensor_msgs::PointCloud cloud_;
 
-    void fullScanCallback(const sensor_msgs::PointCloud::ConstPrt& msg);
+    void fullScanCallback(const sensor_msgs::PointCloud::ConstPtr& msg);
     void updateCallback(const ros::TimerEvent& e);
 };
