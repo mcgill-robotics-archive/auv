@@ -3,7 +3,7 @@
  */
 
 #include <ros/ros.h>
-#include <sensor_msgs/PointCloud2.h>
+#include <sensor_msgs/PointCloud.h>
 
 class ScanPreprocessor
 {
@@ -18,8 +18,6 @@ private:
 
   ros::Timer updater_;
 
-  sensor_msgs::PointCloud2 cloud_;
-
-  void fullScanCallback(const sensor_msgs::PointCloud2::ConstPtr& msg);
+  void fullScanCallback(const sensor_msgs::PointCloud::ConstPtr& msg);
   void updateCallback(const ros::TimerEvent& e);
 };
