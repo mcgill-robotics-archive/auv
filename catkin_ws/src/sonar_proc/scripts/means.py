@@ -24,14 +24,6 @@ def populate(data):
 
     # zip allows us to iterate over two lists in parallel
 
-    """
-    for point, val in zip(data.points, data.channels[0].values):
-        intensity = val  # Range [0, 255]
-        # Fill points array with x, y and intensity value
-        # we ommit z as it is always zero (2D representation)
-        pts.append([point.x, point.y, intensity])
-    """
-
 
     for point in data.points: # Range [0, 255]
         # Fill points array with x, y and intensity value
