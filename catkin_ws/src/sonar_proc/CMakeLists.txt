@@ -2,45 +2,31 @@ cmake_minimum_required(VERSION 2.8.3)
 project(sonar_proc)
 
 find_package(catkin REQUIRED COMPONENTS
-            roscpp
-            rospy
-            std_msgs
-            pcl_ros
-            sensor_msgs)
+  roscpp
+  rospy
+  std_msgs
+  sensor_msgs
+  pcl_ros
+  pcl_conversions
+)
 
-## Boost requires its own find_package
-# find_package(Boost REQUIRED COMPONENTS)
-# include_directories(${Boost_INCLUDE_DIRS})
-# link_directories(${Boost_LIBRARY_DIRS})
-# add_definitions(${Boost_DEFINITIONS})
-
-# find_package(PCL 1.3 REQUIRED)
-# include_directories(${PCL_INCLUDE_DIRS})
-# link_directories(${PCL_LIBRARY_DIRS})
-# add_definitions(${PCL_DEFINITIONS})
-
-# generate_messages(
-#   DEPENDENCIES
-#   std_msgs
-#   sensor_msgs
-# )
-
-####################
+###################
 ## Catkin config ##
 ###################
+
 catkin_package(
   INCLUDE_DIRS include
   CATKIN_DEPENDS
     roscpp
     rospy
     std_msgs
-    pcl_ros
     sensor_msgs
 )
 
 ###########
 ## Build ##
 ###########
+
 include_directories(
   include
   ${catkin_INCLUDE_DIRS}
@@ -59,6 +45,7 @@ target_link_libraries(sonar_node ${catkin_LIBRARIES})
 #############
 ## Install ##
 #############
+
 install(TARGETS sonar_node
   ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
   LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
@@ -73,6 +60,7 @@ install(DIRECTORY
 ##########
 ## Test ##
 ##########
+
 if (CATKIN_ENABLE_TESTING)
   ## Tests!
 endif()
