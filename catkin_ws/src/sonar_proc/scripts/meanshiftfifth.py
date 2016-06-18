@@ -2,14 +2,14 @@
 # -*- coding: utf-8 -*-
 
 
-""" ""MeanShift Clustering Test.
+"""MeanShift Clustering Test.
 
-Inspiration from plot_mean_shift.py example from SciKit Learn:
+    Inspiration from plot_mean_shift.py example from SciKit Learn:
 
 http://scikit-learn.org/stable/auto_examples/cluster/plot_mean_shift.html#example-cluster-plot-mean-shift-py
 
 
- 	meanshiftfifth.py studies the behaviour of the meanshift clustering
+    meanshiftfifth.py studies the behaviour of the meanshift clustering
     algorithm feeding in only the x and y position of the filtered data 
     as parameters
 
