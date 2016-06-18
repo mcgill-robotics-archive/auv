@@ -10,6 +10,10 @@ http://scikit-learn.org/stable/auto_examples/cluster/plot_mean_shift.html#exampl
 Meanshiftthird.py considers the x and y position, as well as the intensity 
 each point from the filtered_scan as parameters to consider in meanshift
 
+Comment: Bad to consider the intensity as a parameter as we end up 
+         with clusters between individual point cloud (result from the filtered
+         full_scan)
+
 Publishes:
     /cluster_markers:
 
@@ -31,6 +35,7 @@ from visualization_msgs.msg import Marker
 __author__ = "Dihia Idrici, Jana Pavlasek"
 
 X = None
+
 
 
 def populate(data):
