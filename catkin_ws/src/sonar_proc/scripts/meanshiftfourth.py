@@ -30,6 +30,7 @@ __author__ = "Dihia Idrici, Jana Pavlasek"
 
 
 X = None
+markerArray = MarkerArray()
 
 """ meanshiftfourth.py studies the behaviour of the meanshift clustering
     algorithm given only the x and y position of the filtered data.
@@ -44,13 +45,13 @@ X = None
     they seem to represent nothing.
 """
 
-
+"""
 def sample_point(sample):
 
     global n_sample
     n_sample = int(sample.data)
     print ("n_sample is %d") % n_sample
-
+"""
 
 def populate(data):
     """The algorithm starts by making a copy of the original fitered data
@@ -73,6 +74,8 @@ def populate(data):
     global X
     X = np.array(pts)  # Matrix with two column
 
+    # RESET markerArray
+
     cluster()
 
 
@@ -80,11 +83,11 @@ def cluster():
 
     """Clustering with MeanShift"""
 
-    print ("n_sample second is %d") %n_sample
+    # print ("n_sample second is %d") %n_sample
     # i = n_sample
     # print ("i is %d") % i
     # Bandwidth has to be estimated
-    bandwidth = estimate_bandwidth(X, quantile=0.2, n_samples=n_sample)
+    bandwidth = estimate_bandwidth(X, quantile=0.2)
     ms = MeanShift(bandwidth=bandwidth, bin_seeding=True)
     ms.fit(X)
     labels = ms.labels_
@@ -95,7 +98,6 @@ def cluster():
     print("The number of estimated clusters : %d" % nb_clusters_)
     # print cluster_centers
 
-    markerArray = MarkerArray()
     for i in range(0, nb_clusters_):
 
         m = Marker()
@@ -121,11 +123,11 @@ def cluster():
         # Alpha must be set or marker will be invisible.
         m.color.a = 1.0
         # Scale of the Marker.
-        m.scale.x = 0.5  # 1m
-        m.scale.y = 0.5  # 1m
-        m.scale.z = 0.0
+        m.scale.x = 0.25  
+        m.scale.y = 0.25 
+        m.scale.z = 0.25
         # Lifetime of point.
-        m.lifetime.secs = 0
+        m.lifetime.secs = 5
 
         # Points list holds a single point which corresponds
         # to the cluster location.
@@ -145,8 +147,6 @@ def cluster():
 
 def label_colour(m, label):
     """Provides a unique color for each cluster"""
-
-
     if label == 0:
         # Red.
         m.color.r = 1.0
@@ -177,6 +177,11 @@ def label_colour(m, label):
         m.color.r = 0
         m.color.g = 0.5
         m.color.b = 1.0
+    if label == 6: 
+        # Cyan.
+        m.color.r = 0
+        m.color.g = 0.3
+        m.color.b = 0.7
     if label == -1:
         # White. Outliers.
         m.color.r = 1.0
@@ -188,7 +193,7 @@ if __name__ == '__main__':
     rospy.init_node("Mean_Shift")
     sub = rospy.Subscriber("filtered_scan", PointCloud,
                            populate, queue_size=1)
-    sample_sub = rospy.Subscriber("n_sample", Int32, sample_point, queue_size=1)
+    # sample_sub = rospy.Subscriber("n_sample", Int32, sample_point, queue_size=1)
     pub = rospy.Publisher("visualization_marker_array", MarkerArray,
                           queue_size=10)
     rospy.spin()

@@ -61,7 +61,7 @@ def cluster():
     """Clustering with MeanShift"""
 
     # Bandwidth has to be estimated
-    bandwidth = estimate_bandwidth(X, quantile=0.2, n_samples=1000)
+    bandwidth = estimate_bandwidth(X, quantile=0.2)
     ms = MeanShift(bandwidth=bandwidth, bin_seeding=True)
     ms.fit(X)
     print X

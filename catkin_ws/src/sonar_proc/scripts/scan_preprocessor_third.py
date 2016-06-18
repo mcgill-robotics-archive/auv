@@ -119,7 +119,7 @@ def preprocess(scan):
             # print radiusesfromi
             # print len(cloud.points)
 
-    # print ("the value of i is %d") % i
+    print ("the value of i is %d") % i
 
     cloud.channels = [channel]
     # print len(channel.values)
@@ -131,7 +131,7 @@ def preprocess(scan):
 
 if __name__ == '__main__':
     # Initialize publishers and subscribers.
-    rospy.init_node("scan_preprocessor")
+    rospy.init_node("scan_preprocessor_third")
     slice_sub = rospy.Subscriber("full_scan", PointCloud,
                                  preprocess, queue_size=1)
     scan_pub = rospy.Publisher("filtered_scan", PointCloud, queue_size=1)
