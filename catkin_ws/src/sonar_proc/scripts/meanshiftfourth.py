@@ -40,17 +40,7 @@ markerArray = MarkerArray()
     relevent point there should be no use of the intensity parameter
     to determine clusters.
 
-    After testing, however, we note that more filtering is required,
-    as clusters with only few data are taken into account as well. Even though
-    they seem to represent nothing.
-"""
-
-"""
-def sample_point(sample):
-
-    global n_sample
-    n_sample = int(sample.data)
-    print ("n_sample is %d") % n_sample
+    ISSUE: It does not reset the marker array. 
 """
 
 def populate(data):
@@ -64,7 +54,6 @@ def populate(data):
     # from a given sonar scan
     pts = []
 
-    # zip allows us to iterate over two lists in parallel
     for point in data.points:
         # Fill points array with x, y
         # we ommit z as it is always zero (2D representation)
@@ -74,7 +63,6 @@ def populate(data):
     global X
     X = np.array(pts)  # Matrix with two column
 
-    # RESET markerArray
 
     cluster()
 
@@ -83,9 +71,6 @@ def cluster():
 
     """Clustering with MeanShift"""
 
-    # print ("n_sample second is %d") %n_sample
-    # i = n_sample
-    # print ("i is %d") % i
     # Bandwidth has to be estimated
     bandwidth = estimate_bandwidth(X, quantile=0.2)
     ms = MeanShift(bandwidth=bandwidth, bin_seeding=True)

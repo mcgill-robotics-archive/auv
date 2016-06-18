@@ -35,7 +35,7 @@ class Clustering(object):
 	for point in data.points:
 	    self.pts.append([point.x, point.y])
 
-        "Transforms data into usuable Numpy Array"
+        # Transforms data into usuable Numpy Array
 	self.X = np.array(self.pts)
         return self.X
 

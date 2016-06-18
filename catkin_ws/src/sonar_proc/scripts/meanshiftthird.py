@@ -7,11 +7,13 @@ Inspiration from plot_mean_shift.py example from SciKit Learn:
 
 http://scikit-learn.org/stable/auto_examples/cluster/plot_mean_shift.html#example-cluster-plot-mean-shift-py
 
+Meanshiftthird.py considers the x and y position, as well as the intensity 
+each point from the filtered_scan as parameters to consider in meanshift
+
 Publishes:
     /cluster_markers:
 
 Subscribes:
-    /full_scan: PointCloud message containing complete sonar scan
     /filtered_scan: PointCloud message containing filtered sonar scan
 
 Currently in the process of increasing the scan filtering level!
