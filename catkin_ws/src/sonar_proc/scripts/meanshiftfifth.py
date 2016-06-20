@@ -59,6 +59,7 @@ def cluster(data):
     """
     nb_clusters_ = len(cluster_centers) 
     print("The number of estimated clusters : %d" % nb_clusters_)
+    print cluster_centers
 
     markerA = MSC.CreateMarkerArray(cluster_centers, nb_clusters_)
     pub.publish(markerA)
