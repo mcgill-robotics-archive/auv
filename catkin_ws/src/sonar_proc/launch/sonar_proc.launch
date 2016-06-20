@@ -1,0 +1,4 @@
+<launch>
+  <node name="scan_stitcher" pkg="sonar_proc" type="scan_stitcher.py" output="screen"></node>
+  <node name="pcl_scan_preprocessor" pkg="sonar_proc" type="pcl_scan_preprocessor" output="screen"></node>
+</launch>
