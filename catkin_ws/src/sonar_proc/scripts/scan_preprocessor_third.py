@@ -53,11 +53,6 @@ def preprocess(scan):
             cloud.points.append(scan.points[index])
         index += 1
     print ("the final index value is %d" % index)
-    # print ("the number of point is:")
-    # print len(cloud.points)
-    # print len(channel.values)
-    # print channel.values
-    # print cloud.points
 
     """
     Filter a second time the new pointcloud considering the density of point.
@@ -89,45 +84,26 @@ def preprocess(scan):
             if R > MIN_RECENTERED_RADIUS and R < MAX_RECENTERED_RADIUS:
                 radiusesfromi.append(R)
             j += 1
-        # print ("The length of radius")
-        # print len(radiusesfromi)
-        # print radiusesfromi
 
         # After the loop is completed for a given point i
         if len(radiusesfromi) < MIN_NUMBER_POINT:
-            # print channel.values[i]
-            # print channel.values
-            # print ("i remains the same and is equal %d") % i
-            # print ("1 - the value of j is %d") % j
+        
             del cloud.points[i]
             del channel.values[i]
             radiusesfromi = []  # Reset the array
             j = 0  # reset j
-            # print ("1 - the value of j is %d") % j
-            # print ("The new radius array")
-            # print radiusesfromi
-            # print len(cloud.points)
-            # No i +=1 because then data will have shifted left by one position
+            
         else:
-            i += 1  # Consider the next point i
-            # print ("1 - the value of j is %d") % j
+            i += 1  # Consider the next point i 
             j = 0  # reset j
-            # print ("1 - the value of j is %d") % j
-            # print ("1 - i increases by 1 and equals %d") % i
+            
             radiusesfromi = []  # Reset the array
-            # print ("The new radius array")
-            # print radiusesfromi
-            # print len(cloud.points)
 
     print ("the value of i is %d") % i
 
     cloud.channels = [channel]
-    # print len(channel.values)
-    # print len(cloud.points)
-    # print channel.values
-
     scan_pub.publish(cloud)
-    # sample_pub.publish(i)
+    
 
 if __name__ == '__main__':
     # Initialize publishers and subscribers.
@@ -135,9 +111,5 @@ if __name__ == '__main__':
     slice_sub = rospy.Subscriber("full_scan", PointCloud,
                                  preprocess, queue_size=1)
     scan_pub = rospy.Publisher("filtered_scan", PointCloud, queue_size=1)
-
-    # So that we know exactly the number of sample to
-    # consider in bandwidth calculation
-    # sample_pub = rospy.Publisher("n_sample", Int32, queue_size=1)
 
     rospy.spin()
