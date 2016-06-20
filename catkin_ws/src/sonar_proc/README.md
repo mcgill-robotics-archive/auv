@@ -23,7 +23,7 @@ Available utilities include:
 1. roscore
 2. rosbag play <path to your rosbag> --loop 
 3. rosrun sonar_proc scan_stitcher.py
-4. rosrun sonar_proc scan_preprocessor_third.py
+4. rosrun sonar_proc scan_preprocessor_fourth.py
 5. rosrun sonar_proc meanshiftfifth.py
 6. rosrun rviz rviz
 
