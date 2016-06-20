@@ -33,20 +33,19 @@ include_directories(
 )
 
 ## Declare a C++ executable
-add_executable(sonar_node
-  src/main.cpp
+add_executable(pcl_scan_preprocessor
   src/scan_preprocessor.cpp
 )
 
-add_dependencies(sonar_node ${catkin_EXPORTED_TARGETS} ${${PROJECT_NAME}_EXPORTED_TARGETS})
+add_dependencies(pcl_scan_preprocessor ${catkin_EXPORTED_TARGETS} ${${PROJECT_NAME}_EXPORTED_TARGETS})
 
-target_link_libraries(sonar_node ${catkin_LIBRARIES})
+target_link_libraries(pcl_scan_preprocessor ${catkin_LIBRARIES})
 
 #############
 ## Install ##
 #############
 
-install(TARGETS sonar_node
+install(TARGETS pcl_scan_preprocessor
   ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
   LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
   RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
