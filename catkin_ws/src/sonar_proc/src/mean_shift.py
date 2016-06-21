@@ -7,6 +7,10 @@
 
 http://scikit-learn.org/stable/auto_examples/cluster/plot_mean_shift.html#example-cluster-plot-mean-shift-py
 
+    Meanshift code on github:
+
+https://github.com/scikit-learn/scikit-learn/blob/master/sklearn/cluster/mean_shift_.py
+
     meanshiftfifth.py studies the behaviour of the meanshift clustering
     algorithm feeding in only the x and y position of the filtered data 
     as parameters
@@ -43,27 +47,35 @@ def cluster(data):
 
     MSC = Clustering()  # Create object MSC
     X = MSC.populate(data)  # Placing the points coordinate of the point cloud in a readable form/ numpy array
-
     # Bandwidth has to be estimated
     bandwidth = estimate_bandwidth(X, quantile=0.2)
+    # cluster_all: If false, orphans are given cluster label -1/ we will ignore
+    # them
     ms = MeanShift(bandwidth=bandwidth, bin_seeding=True, cluster_all=False)
     ms.fit(X)
     labels = ms.labels_
     cluster_centers = ms.cluster_centers_  # Clusters coordinate
     labels_unique = np.unique(labels)  # Simplifies labels notation
-    # nb_clusters_ = len(labels_unique)  # Number of clusters. Could remove the line
-
-    """I removed nb_clusters = np.unique(labels) because I noticed that sometimes 
-    the len(labels_unique) was greater by +1 that of the real number of cluster_centers
-    """
-
+    # nb_clusters_ = len(labels_unique)  # Number of clusters.
     nb_clusters_ = len(cluster_centers) 
     print("The number of estimated clusters : %d" % nb_clusters_)
     print cluster_centers
 
     markerA = MSC.CreateMarkerArray(cluster_centers, nb_clusters_)
-    pub.publish(markerA)
 
+
+    """Send clusters information to determine meaningful cluster"""
+    clusters_information = []
+    a = labels.tolist()
+    i=0
+    for i in range(0, len(cluster_centers)):
+        clusters_information.append([cluster_centers[i][0], cluster_centers[i][1], i, a.count(i)])
+        i += 1
+
+    print clusters_information
+
+    pub.publish(markerA)
+    pub_clusters_data.publish(clusters_information)
 
 
 if __name__ == '__main__':
@@ -72,6 +84,7 @@ if __name__ == '__main__':
     # sample_sub = rospy.Subscriber("n_sample", Int32, cluster, queue_size=1)
     pub = rospy.Publisher("visualization_marker_array", MarkerArray,
                           queue_size=10)
+    pub_clusters_data = rospy.Publisher("cluster_data", Int32, queue_size=1)
 
     rospy.spin()
 
