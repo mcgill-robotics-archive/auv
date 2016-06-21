@@ -29,7 +29,7 @@ def preprocess(scan):
     """Preprocess scan."""
     cloud = PointCloud()
 
-    cloud.header.frame_id = "robot"
+    cloud.header.frame_id = scan.header.frame_id
     cloud.header.stamp = rospy.get_rostime()
     cloud.points = []
 
