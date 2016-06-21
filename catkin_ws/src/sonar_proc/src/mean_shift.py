@@ -27,7 +27,7 @@ http://scikit-learn.org/stable/auto_examples/cluster/plot_mean_shift.html#exampl
 
 import rospy
 import numpy as np
-from Clustering import Clustering
+from clustering import Clustering
 from std_msgs.msg import Int32, Float32
 from sklearn.cluster import MeanShift, estimate_bandwidth
 from geometry_msgs.msg import Point32
