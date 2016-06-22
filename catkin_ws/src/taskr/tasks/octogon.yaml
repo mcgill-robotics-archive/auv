@@ -1,0 +1,4 @@
+# OCTOGON TASK
+# Search for octogon using hydrophones.
+actions:
+  - search: "hydrophones"  # Might want a "accoustic servo" ability.

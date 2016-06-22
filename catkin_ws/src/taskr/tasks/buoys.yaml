@@ -1,0 +1,10 @@
+# BUOYS TASK
+# Move to buoys. Move to specific colour and pull down buoy are options.
+actions:
+  - move:
+      position:
+        x: 0
+        y: 5
+        z: 1
+      yaw: 0.0
+      feedback: True
