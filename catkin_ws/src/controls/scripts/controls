@@ -4,7 +4,7 @@ import numpy as np
 import rospy
 from geometry_msgs.msg import Wrench
 from auv_msgs.msg import (
-    SetVelocityAction, SetVelocityFeedback, SetPositionAction,
+    SetVelocityAction, SetVelocityFeedback, SetVelocityResult, SetPositionAction,
     SetPositionFeedback, TDOAs, AcousticServoAction, AcousticServoFeedback)
 import tf
 from tf.transformations import euler_from_quaternion, euler_matrix
@@ -42,6 +42,10 @@ listener = None
 wrenchPublisher = None
 mission = False
 
+# For testing
+# angles_estimated = [0,0,0]
+#depth_estimated = 10
+
 
 def normalize_angle(angle, max_angle=pi):
     # Returns angle between -max_angle and max_angle
@@ -63,7 +67,8 @@ def set_velocity_callback():
     sway_speed = cmd.swaySpeed
     depth_desired = cmd.depth
     last_heading = cmd.yaw
-
+    print 'Received New Goal'
+    print cmd
 
 def set_position_callback():
     global angles_desired, pos_desired, depth_desired, target_frame_id
@@ -136,6 +141,7 @@ def hydro_cb(msg):
 def rosInit():
     global wrenchPublisher, listener, pos_server, vel_server
     global mission_sub, hydro_sub, hydro_server
+
     rospy.init_node('controls')
 
     mission_sub = rospy.Subscriber('mission', Bool, mission_cb)
@@ -180,6 +186,7 @@ def rosInit():
 def loop(event):
     global pos_proportional_error, pos_integral_error, proportional_error
     global integral_error, tdoas_prev, tdoas_integral
+    global angles_estimated, depth_estimated, surge_speed
 
     if not mission:
         return
@@ -197,6 +204,7 @@ def loop(event):
         angles_estimated = list(euler_from_quaternion(rot))
         (trans, rot) = get_transform('/floating_horizon', '/robot')
         depth_estimated = trans[2]
+        # angles_estimated[2] += 0.05
 
         if pos_server.is_active():
             (x_err, y_err, _), quaternion = \
@@ -209,6 +217,7 @@ def loop(event):
                                     - pos_proportional_error_prev)/dt
             fx, fy = (pos_integral_error * pos_integral_gains
                       + pos_proportional_error * pos_proportional_gains
+        
                       + pos_derivative_error * pos_derivative_gains)
             angles_estimated[2] = yaw_err
         elif hydro_server.is_active():
@@ -225,6 +234,22 @@ def loop(event):
         integral_error += proportional_error * dt
         derivative_error = (proportional_error - proportional_error_prev) / dt
 
+        print 'angles_estimated'
+        print angles_estimated
+        print 'angles_desired'
+        print angles_desired
+
+        print 'depth_estimated'
+        print depth_estimated
+        print 'depth_desired'
+        print depth_desired
+
+        print "surge speed"
+        print surge_speed
+
+        print "fx: "
+        print fx
+
         # Correct yaw angle error for wrap around. The other angles are
         # not corrected only small roll and pitch are supported.
         proportional_error[2] = normalize_angle(proportional_error[2])
@@ -236,6 +261,11 @@ def loop(event):
             feedback.yaw_error = proportional_error[2]
             feedback.depth_error = proportional_error[3]
             vel_server.publish_feedback(feedback)
+            if feedback.yaw_error < 0.1:
+                # Close enough, tell client we're done turning
+                result = SetVelocityResult()
+                result.success = True
+                vel_server.set_succeeded(result)
         elif pos_server.is_active():
             feedback = SetPositionFeedback()
             feedback.yaw_error = proportional_error[2]
@@ -260,7 +290,8 @@ def loop(event):
         # Need to transform the desired force into the body frame
         # for thrustmapper.
         matrix = euler_matrix(angles_estimated[0], angles_estimated[1], 0).T
-        force = np.dot(matrix, [fx, fy, output[3] + 8, 1])[:3]
+        # force = np.dot(matrix, [fx, fy, output[3] + 8, 1])[:3]
+        force = np.dot(matrix, [fx, fy, output[3], 1])[:3]
 
         wrenchMsg = Wrench()
         wrenchMsg.force.x = force[0]

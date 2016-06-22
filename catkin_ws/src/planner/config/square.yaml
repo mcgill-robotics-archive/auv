@@ -1,0 +1,5 @@
+initialize: [10,0]
+move1: {time:[5,0], velocity:[3,0,0,0,0,0], theta: 0.0, depth: 10.0}
+move2: {time:[5,0], velocity:[3,0,0,0,0,0], theta: 1.57, depth: 10.0}
+move3: {time:[5,0], velocity:[3,0,0,0,0,0], theta: 3.14, depth: 10.0}
+move4: {time:[5,0], velocity:[3,0,0,0,0,0], theta: 4.71, depth: 10.0}
