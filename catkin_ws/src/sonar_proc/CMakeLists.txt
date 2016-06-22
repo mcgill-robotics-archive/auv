@@ -48,6 +48,7 @@ target_link_libraries(pcl_scan_preprocessor ${catkin_LIBRARIES})
 add_message_files(
     FILES
     Cluster.msg
+    ClusterArray.msg
 )
 
 #############
