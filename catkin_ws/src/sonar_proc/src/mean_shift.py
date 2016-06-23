@@ -38,6 +38,7 @@ from geometry_msgs.msg import Point32
 from sensor_msgs.msg import PointCloud
 from visualization_msgs.msg import MarkerArray
 
+
 from clustering import Clustering
 
 __author__ = "Dihia Idrici"
@@ -58,14 +59,14 @@ def cluster(data):
     # collect cluster features
     cluster_centers = meanshift.cluster_centers_
     average_intensities = clustering.get_average_intensities(labels, number_of_clusters)
-    size = clustering.size
+    sizes = clustering.get_sizes(labels, number_of_clusters)
 
     # get markers for the cluster centers
     markers = clustering.make_markers(cluster_centers)
 
     print("number of clusters : %d" % number_of_clusters)
     print("average intensities : " + str(average_intensities))
-    print("size : %d" % size)
+    print("sizes : " + str(size))
     print("cluster centers : " + str(cluster_centers))
 
     marker_pub.publish(markers)

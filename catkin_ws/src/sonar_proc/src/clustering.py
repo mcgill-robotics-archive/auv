@@ -36,6 +36,9 @@ class Clustering(object):
     def _new_average(self, previous_average, count, update):
         return (previous_average*count + update) / (count + 1)
 
+    # TODO: combine get_average_intensities and get_sizes such that
+    # we only need to loop through the labels once
+
     # labels are meant to be a map, by index,
     # to the channel given in self.intensities
     def get_average_intensities(self, labels, number_of_clusters):
@@ -51,6 +54,13 @@ class Clustering(object):
                 intensity)
             ave[label][1] += 1
         return [x[0] for x in ave]
+
+    # get the number of points in each cluster
+    def get_sizes(self, labels, number_of_clusters):
+        sizes = [0 for x in range(number_of_clusters)]
+        for label in labels:
+            sizes[label] += 1
+        return sizes
 
     def make_markers(self, cluster_centers):
         marker_array = MarkerArray()
