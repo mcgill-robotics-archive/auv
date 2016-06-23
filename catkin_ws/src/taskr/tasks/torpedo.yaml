@@ -8,5 +8,5 @@ actions:
         z: 1
       yaw: 1.57
       feedback: True
-  - search: "torpedos"  # Visual servo to torpedo
+  - visual-servo: "torpedos"  # Visual servo to torpedo
   - shoot: "front"
