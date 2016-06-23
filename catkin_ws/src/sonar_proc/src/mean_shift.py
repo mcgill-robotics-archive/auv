@@ -12,17 +12,17 @@ http://scikit-learn.org/stable/auto_examples/cluster/plot_mean_shift.html#exampl
 https://github.com/scikit-learn/scikit-learn/blob/master/sklearn/cluster/mean_shift_.py
 
     meanshiftfifth.py studies the behaviour of the meanshift clustering
-    algorithm feeding in only the x and y position of the filtered data 
+    algorithm feeding in only the x and y position of the filtered data
     as parameters
 
-    The reasoning behind this decision is that once the PointCloud data 
-    from the sonar is filtered, keeping only the relevent points, there should 
+    The reasoning behind this decision is that once the PointCloud data
+    from the sonar is filtered, keeping only the relevent points, there should
     be no use of the intensity parameter to determine clusters.
 
-    Publishes: 
-    /visualization_marker_array: MarkerArray message containing a given number 
-                                 of clusters 
-                                 
+    Publishes:
+    /visualization_marker_array: MarkerArray message containing a given number
+                                 of clusters
+
     Subscribe:
     /filtered_scan: PointCloud message containing filtered sonar scan
 
@@ -30,61 +30,54 @@ https://github.com/scikit-learn/scikit-learn/blob/master/sklearn/cluster/mean_sh
 
 
 import rospy
-import numpy as np
-from clustering import Clustering
-from std_msgs.msg import Int32, Float32
+import numpy
 from sklearn.cluster import MeanShift, estimate_bandwidth
+
+from std_msgs.msg import Int32, Float32
 from geometry_msgs.msg import Point32
 from sensor_msgs.msg import PointCloud
 from visualization_msgs.msg import MarkerArray
 
-__author__ = "Dihia Idrici"
+from clustering import Clustering
 
-MSC = None
+__author__ = "Dihia Idrici"
 
 def cluster(data):
     """Clustering with MeanShift"""
 
-    MSC = Clustering()  # Create object MSC
-    X = MSC.populate(data)  # Placing the points coordinate of the point cloud in a readable form/ numpy array
-    # Bandwidth has to be estimated
-    bandwidth = estimate_bandwidth(X, quantile=0.2)
-    # cluster_all: If false, orphans are given cluster label -1/ we will ignore
-    # them
-    ms = MeanShift(bandwidth=bandwidth, bin_seeding=True, cluster_all=False)
-    ms.fit(X)
-    labels = ms.labels_
-    cluster_centers = ms.cluster_centers_  # Clusters coordinate
-    labels_unique = np.unique(labels)  # Simplifies labels notation
-    # nb_clusters_ = len(labels_unique)  # Number of clusters.
-    nb_clusters_ = len(cluster_centers) 
-    print("The number of estimated clusters : %d" % nb_clusters_)
-    print cluster_centers
+    clustering = Clustering(data)
 
-    markerA = MSC.CreateMarkerArray(cluster_centers, nb_clusters_)
+    # Creates a meanshift clusterer and fits the point cloud data
+    bandwidth = estimate_bandwidth(clustering.numpy_points, quantile=0.2)
+    meanshift = MeanShift(bandwidth, bin_seeding=True, cluster_all=False)
+    meanshift.fit(clustering.numpy_points)
 
+    labels = meanshift.labels_
+    number_of_clusters = len(meanshift.cluster_centers_)
 
-    """Send clusters information to determine meaningful cluster"""
-    clusters_information = []
-    a = labels.tolist()
-    i=0
-    for i in range(0, len(cluster_centers)):
-        clusters_information.append([cluster_centers[i][0], cluster_centers[i][1], i, a.count(i)])
-        i += 1
+    # collect cluster features
+    cluster_centers = meanshift.cluster_centers_
+    average_intensities = clustering.get_average_intensities(labels, number_of_clusters)
+    size = clustering.size
 
-    print clusters_information
+    # get markers for the cluster centers
+    markers = clustering.make_markers(cluster_centers)
 
-    pub.publish(markerA)
-    pub_clusters_data.publish(clusters_information)
+    print("number of clusters : %d" % number_of_clusters)
+    print("average intensities : " + str(average_intensities))
+    print("size : %d" % size)
+    print("cluster centers : " + str(cluster_centers))
+
+    marker_pub.publish(markers)
+    # pub_clusters_data.publish(clusters_information)
 
 
 if __name__ == '__main__':
-    rospy.init_node("Mean_Shift_Fifth")
+    rospy.init_node("mean_shift")
     sub = rospy.Subscriber("filtered_scan", PointCloud, cluster, queue_size=1)
-    # sample_sub = rospy.Subscriber("n_sample", Int32, cluster, queue_size=1)
-    pub = rospy.Publisher("visualization_marker_array", MarkerArray,
+    marker_pub = rospy.Publisher("visualization_marker_array", MarkerArray,
                           queue_size=10)
-    pub_clusters_data = rospy.Publisher("cluster_data", Int32, queue_size=1)
+    # pub_clusters_data = rospy.Publisher("cluster_data", Int32, queue_size=1)
 
     rospy.spin()
 
