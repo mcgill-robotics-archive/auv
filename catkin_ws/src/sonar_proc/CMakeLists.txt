@@ -12,6 +12,18 @@ find_package(catkin REQUIRED COMPONENTS
   message_generation
 )
 
+add_message_files(
+    FILES
+    Cluster.msg
+    ClusterArray.msg
+)
+
+generate_messages(
+    DEPENDENCIES
+    std_msgs
+    geometry_msgs
+)
+
 ###################
 ## Catkin config ##
 ###################
@@ -44,12 +56,6 @@ add_executable(pcl_scan_preprocessor
 add_dependencies(pcl_scan_preprocessor ${catkin_EXPORTED_TARGETS} ${${PROJECT_NAME}_EXPORTED_TARGETS})
 
 target_link_libraries(pcl_scan_preprocessor ${catkin_LIBRARIES})
-
-add_message_files(
-    FILES
-    Cluster.msg
-    ClusterArray.msg
-)
 
 #############
 ## Install ##
