@@ -8,5 +8,5 @@ actions:
         z: 1
       yaw: 0.0
       feedback: False
-  - search: "bins"
+  - visual-servo: "bins"
   - shoot: "bottom"
