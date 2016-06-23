@@ -1,0 +1,12 @@
+# BINS TASK
+# Drop marker in bins.
+actions:
+  - move:
+      position:
+        x: 0
+        y: 5
+        z: 1
+      yaw: 0.0
+      feedback: False
+  - visual_servo: "bins"
+  - shoot: "bottom"
