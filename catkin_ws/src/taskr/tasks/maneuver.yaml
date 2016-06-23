@@ -1,0 +1,11 @@
+# MANEUVER TASK
+# Manuever with feedback. Might want to do something fancy at the end for
+# style points!
+actions:
+  - move:
+      position:
+        x: 0
+        y: 5
+        z: 1
+      yaw: 0.0
+      feedback: True
