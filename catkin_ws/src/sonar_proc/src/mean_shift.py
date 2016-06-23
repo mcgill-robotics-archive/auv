@@ -33,12 +33,10 @@ import rospy
 import numpy
 from sklearn.cluster import MeanShift, estimate_bandwidth
 
-from std_msgs.msg import Int32, Float32
-from geometry_msgs.msg import Point32
 from sensor_msgs.msg import PointCloud
 from visualization_msgs.msg import MarkerArray
 
-
+from sonar_proc.msg import Cluster, ClusterArray
 from clustering import Clustering
 
 __author__ = "Dihia Idrici"
@@ -66,11 +64,23 @@ def cluster(data):
 
     print("number of clusters : %d" % number_of_clusters)
     print("average intensities : " + str(average_intensities))
-    print("sizes : " + str(size))
+    print("sizes : " + str(sizes))
     print("cluster centers : " + str(cluster_centers))
 
+    cluster_array = ClusterArray()
+    cluster_array.header.stamp = rospy.get_rostime()
+    cluster_array.header.frame_id = "robot"
+
+    clusters = zip(cluster_centers, average_intensities, sizes)
+    for center, average_intensity, size in clusters:
+        cluster = Cluster()
+        cluster.centroid.x, cluster.centroid.y = (center[0], center[1])
+        cluster.average_intensity = average_intensity
+        cluster.size = size
+        cluster_array.clusters.append(cluster)
+
     marker_pub.publish(markers)
-    # pub_clusters_data.publish(clusters_information)
+    pub_clusters_data.publish(cluster_array)
 
 
 if __name__ == '__main__':
@@ -78,7 +88,7 @@ if __name__ == '__main__':
     sub = rospy.Subscriber("filtered_scan", PointCloud, cluster, queue_size=1)
     marker_pub = rospy.Publisher("visualization_marker_array", MarkerArray,
                           queue_size=10)
-    # pub_clusters_data = rospy.Publisher("cluster_data", Int32, queue_size=1)
+    pub_clusters_data = rospy.Publisher("sonar_proc/cluster_data", ClusterArray, queue_size=1)
 
     rospy.spin()
 
