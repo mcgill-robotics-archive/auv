@@ -8,7 +8,13 @@
 
   <buildtool_depend>catkin</buildtool_depend>
   <build_depend>libpcl-all-dev</build_depend>
+  <build_depend>message_generation</build_depend>
+  <build_depend>geometry_msgs</build_depend>
+    
+  <exec_depend>geometry_msgs</exec_depend>
+  <exec_depend>message_generation</exec_depend>
 
+  <depend>message_runtime</depend>
   <depend>libpcl-all</depend>
   <depend>roscpp</depend>
   <depend>rospy</depend>

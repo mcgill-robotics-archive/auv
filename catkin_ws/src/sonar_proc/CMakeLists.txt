@@ -6,8 +6,10 @@ find_package(catkin REQUIRED COMPONENTS
   rospy
   std_msgs
   sensor_msgs
+  geometry_msgs
   pcl_ros
   pcl_conversions
+  message_generation
 )
 
 ###################
@@ -21,6 +23,8 @@ catkin_package(
     rospy
     std_msgs
     sensor_msgs
+    geometry_msgs
+    message_generation
 )
 
 ###########
@@ -40,6 +44,12 @@ add_executable(pcl_scan_preprocessor
 add_dependencies(pcl_scan_preprocessor ${catkin_EXPORTED_TARGETS} ${${PROJECT_NAME}_EXPORTED_TARGETS})
 
 target_link_libraries(pcl_scan_preprocessor ${catkin_LIBRARIES})
+
+add_message_files(
+    FILES
+    Cluster.msg
+    ClusterArray.msg
+)
 
 #############
 ## Install ##
