@@ -8,5 +8,5 @@ actions:
         z: 1
       yaw: 0.0
       feedback: False
-  - visual-servo: "bins"
+  - visual_servo: "bins"
   - shoot: "bottom"
