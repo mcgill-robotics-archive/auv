@@ -1,0 +1,4 @@
+# OCTAGON TASK
+# Search for octogon using hydrophones.
+actions:
+  - acoustic-servo: "hydrophones"
