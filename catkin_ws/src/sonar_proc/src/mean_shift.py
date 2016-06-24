@@ -68,7 +68,7 @@ def cluster(data):
 
 if __name__ == '__main__':
     rospy.init_node("Mean_Shift_Fifth")
-    sub = rospy.Subscriber("filtered_scan", PointCloud, cluster, queue_size=1)
+    sub = rospy.Subscriber("/pcl_scan_preprocessor/pcl_filtered", PointCloud, cluster, queue_size=1)
     # sample_sub = rospy.Subscriber("n_sample", Int32, cluster, queue_size=1)
     pub = rospy.Publisher("visualization_marker_array", MarkerArray,
                           queue_size=10)

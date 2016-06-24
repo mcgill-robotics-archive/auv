@@ -39,6 +39,13 @@ private:
    */
   sensor_msgs::PointCloud voxelGrid(const sensor_msgs::PointCloud& cloud);
 
+  sensor_msgs::PointCloud StatisticalOutlierRemoval(const sensor_msgs::PointCloud& cloud); 
+
+  sensor_msgs::PointCloud PassThrough(const sensor_msgs::PointCloud& cloud);
+
+  sensor_msgs::PointCloud RadiusOutlierRemoval(const sensor_msgs::PointCloud& cloud);
+
+
   /**
    * @brief Radius removal and intensity threshold filter.
    * Removes all points a given radius from the center of the cloud, which
@@ -51,4 +58,6 @@ private:
    */
 sensor_msgs::PointCloud radiusThresholdFilter(const sensor_msgs::PointCloud& cloud);
 
+
 };
+
