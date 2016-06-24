@@ -272,8 +272,8 @@ sensor_msgs::PointCloud ScanPreprocessor::EuclideanClusterExtraction(const senso
 
 int main(int argc, char **argv)
 {
-    ros::init(argc, argv, "pcl_scan_preprocessor");
-    ros::NodeHandle nh("pcl_scan_preprocessor");
+    ros::init(argc, argv, "scan_preprocessor");
+    ros::NodeHandle nh("filtered_scan");
     ScanPreprocessor process(nh);
 
     ros::spin();
