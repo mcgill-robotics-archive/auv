@@ -18,7 +18,7 @@
 ScanPreprocessor::ScanPreprocessor(ros::NodeHandle& nh)
 {
   // ROSPARAMS
-  ros::param::param<double>("~intensity_threshold", INTENSITY_THRESHOLD_, 40);
+  ros::param::param<double>("~intensity_threshold", INTENSITY_THRESHOLD_, 90);
   ros::param::param<double>("~radius_threshold", RADIUS_THRESHOLD_, 1.5);
 
   // ROS PUB/SUB
@@ -33,18 +33,17 @@ void ScanPreprocessor::fullScanCallback(const sensor_msgs::PointCloud::ConstPtr&
 
   // Filtering example from PCL website
 
+  //Assemble a local 3D grid over a given PointCloud, and downsamples + filters the data.
+  //cloud_filtered = voxelGrid(cloud_filtered);
+
   //Uses point neighborhood statistics to filter outlier data
   //cloud_filtered = StatisticalOutlierRemoval(cloud_filtered);
   
-  //Assembles a local 3D grid over a given PointCloud, and downsamples + filters the data. 
-  //cloud_filtered = voxelGrid(cloud_filtered);
-
   //Filter out points outside a specified range in one dimension.
   //cloud_filtered = PassThrough(cloud_filtered);
 
   //Removes outliers if the number of neighbors in a certain search radius is smaller than a given K
   cloud_filtered = RadiusOutlierRemoval(cloud_filtered);
-
 
   // Publish the data.
   filtered_scan_pub_.publish(cloud_filtered);
@@ -110,7 +109,7 @@ sensor_msgs::PointCloud ScanPreprocessor::voxelGrid(const sensor_msgs::PointClou
   // Filter.
   pcl::VoxelGrid<pcl::PCLPointCloud2> sor;
   sor.setInputCloud(cloudPtr);
-  sor.setLeafSize(0.1, 0.1, 0.1); //Set the voxel grid leaf size
+  sor.setLeafSize(0.3, 0.3, 0.3); //Set the voxel grid leaf size
   sor.filter(cloud_filtered);
 
   // Convert to ROS data type
@@ -144,7 +143,7 @@ sensor_msgs::PointCloud ScanPreprocessor::StatisticalOutlierRemoval(const sensor
   // Create the filtering object
   pcl::StatisticalOutlierRemoval<pcl::PCLPointCloud2> sor;
   sor.setInputCloud(cloudPtr);
-  sor.setMeanK(50); //Set the number of points (k) to use for mean distance estimation. 
+  sor.setMeanK(60); //Set the number of points (k) to use for mean distance estimation. 
   sor.setStddevMulThresh(1.0); //Set the standard deviation multiplier threshold.
   sor.filter(cloud_filtered);
 
