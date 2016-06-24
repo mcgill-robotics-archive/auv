@@ -58,6 +58,5 @@ private:
    */
 sensor_msgs::PointCloud radiusThresholdFilter(const sensor_msgs::PointCloud& cloud);
 
-
 };
 
