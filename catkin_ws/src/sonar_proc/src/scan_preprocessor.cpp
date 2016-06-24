@@ -18,7 +18,7 @@
 ScanPreprocessor::ScanPreprocessor(ros::NodeHandle& nh)
 {
   // ROSPARAMS
-  ros::param::param<double>("~intensity_threshold", INTENSITY_THRESHOLD_, 90);
+  ros::param::param<double>("~intensity_threshold", INTENSITY_THRESHOLD_, 40);
   ros::param::param<double>("~radius_threshold", RADIUS_THRESHOLD_, 1.5);
 
   // ROS PUB/SUB
@@ -178,7 +178,7 @@ sensor_msgs::PointCloud ScanPreprocessor::PassThrough(const sensor_msgs::PointCl
   // Create the filtering object
   pcl::PassThrough<pcl::PCLPointCloud2> sor;
   sor.setInputCloud(cloudPtr);
-  sor.setFilterLimits(0.0, 0.5); //(min, max) limits for the field for filtering data
+  sor.setFilterLimits(0.0, 5); //(min, max) limits for the field for filtering data
   sor.filter(cloud_filtered);
 
   // Convert to ROS data type
