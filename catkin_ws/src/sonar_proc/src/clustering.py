@@ -4,7 +4,7 @@
 import rospy
 import numpy
 
-from geometry_msgs.msg import Point32
+from geometry_msgs.msg import Point
 from visualization_msgs.msg import MarkerArray
 from visualization_msgs.msg import Marker
 from std_msgs.msg._ColorRGBA import ColorRGBA
@@ -95,9 +95,9 @@ class Clustering(object):
 
             # Points list holds a single point which corresponds
             # to the cluster location.
-            point = Point32()
-            point.x = cluster_centers[0]
-            point.y = cluster_centers[1]
+            point = Point()
+            point.x = cluster_center[0]
+            point.y = cluster_center[1]
 
             marker.points = [point]
             marker_array.markers.append(marker)

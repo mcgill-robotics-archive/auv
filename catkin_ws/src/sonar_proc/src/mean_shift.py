@@ -43,6 +43,9 @@ __author__ = "Dihia Idrici"
 
 def cluster(data):
     """Clustering with MeanShift"""
+    if not data.points:
+	print("clustering was handed an empty set")
+	return
 
     clustering = Clustering(data)
 
