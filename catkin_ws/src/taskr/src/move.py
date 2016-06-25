@@ -37,7 +37,7 @@ class Move(object):
         ctrl_goal.cmd.depth = self.goal.z
         ctrl_goal.cmd.yaw = self.yaw
 
-        time = self.getTime()
+        time = self.get_time()
 
         print time
 
