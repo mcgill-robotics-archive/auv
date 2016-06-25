@@ -1,0 +1,3 @@
+<launch>
+  <node name="taskr" pkg="taskr" type="taskr.py" output="screen"></node>
+</launch>

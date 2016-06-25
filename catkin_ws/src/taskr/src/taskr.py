@@ -202,6 +202,7 @@ if __name__ == '__main__':
     rospy.init_node("taskr")
 
     # Initialize tasks.
+    Initialize("initialize_task")
     Bins("bin_task")
     Buoys("bouy_task")
     Gate("gate_task")

@@ -79,7 +79,7 @@ class Move(object):
 
         print "Done move."
 
-    def getTime(self):
+    def get_time(self):
         """Get the time for which to travel at the given velocity to achieve
         desired distance."""
         dist = pow(pow(self.goal.x, 2) + pow(self.goal.y, 2), 0.5)
