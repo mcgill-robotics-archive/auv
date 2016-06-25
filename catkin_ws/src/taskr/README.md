@@ -71,7 +71,7 @@ actions:
 
 ## Testing
 
-There is a fake planner client and fake controls server in the (`test` directory)[test]
+There is a fake planner client and fake controls server in the [`test` directory](test)
 which are only to be used for debugging taskr without the other nodes present.
 To run, you will need three terminals:
 
