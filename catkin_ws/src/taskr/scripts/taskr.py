@@ -41,6 +41,14 @@ class Taskr(object):
             ctrl_goal.cmd.yaw = theta
             # Send to velocity server
             vel_client.send_goal(ctrl_goal)
+            # Check if we received preempt request from Planner
+            if self._as.is_preempt_requested():
+                print "Taskr preempted"
+                # Send preempt request to Controls
+                vel_client.cancel_goal()
+                # Handle preemption
+                self._as.set_preempted()
+                return
             vel_client.wait_for_result()
 
         # Surge
@@ -50,29 +58,39 @@ class Taskr(object):
             ctrl_goal.cmd.surgeSpeed = velocity.linear.x
             ctrl_goal.cmd.yaw = theta
             vel_client.send_goal(ctrl_goal)
+            # Check if we received preempt request from Planner
+            if self._as.is_preempt_requested():
+                print "Taskr preempted"
+                # Send preempt request to Controls
+                vel_client.cancel_goal()
+                # Handle preemption
+                self._as.set_preempted()
+                return
             # Sleep for the amount of time that makes the for-loop run for 1 second
             rate.sleep()
 
         self._result.success = True
         self._as.set_succeeded(self._result)
         print 'Success!'
-def test_servo():
-    # Create visual servo client
-    servo_client = SimpleActionClient('controls_vservo', VisualServoAction)
-    # Wait for visual servo server to finish starting up
-    servo_client.wait_for_server()
-    # Create goal
-    goal = VisualServoGoal()
-    goal.cmd = VisualServo()
-    goal.cmd.target_frame_id = "buoy"
-    goal.cmd.roll = 0
-    goal.cmd.pitch = 0
-    goal.cmd.yaw = 0
-    # Send goal to server
-    servo_client.send_goal(goal)
-    print "Sent visual servo goal"
-if __name__ == '__main__':
-    rospy.init_node('taskr')
-    Taskr('square_action')
-    test_servo()
-    rospy.spin()
+
+# def test_servo():
+#     # Create visual servo client
+#     servo_client = SimpleActionClient('controls_vservo', VisualServoAction)
+#     # Wait for visual servo server to finish starting up
+#     servo_client.wait_for_server()
+#     # Create goal
+#     goal = VisualServoGoal()
+#     goal.cmd = VisualServo()
+#     goal.cmd.target_frame_id = "buoy"
+#     goal.cmd.roll = 0
+#     goal.cmd.pitch = 0
+#     goal.cmd.yaw = 0
+#     # Send goal to server
+#     servo_client.send_goal(goal)
+#     print "Sent visual servo goal"
+
+# if __name__ == '__main__':
+#     rospy.init_node('taskr')
+#     Taskr('square_action')
+#     test_servo()
+#     rospy.spin()

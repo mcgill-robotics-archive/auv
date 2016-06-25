@@ -19,13 +19,13 @@ kp_depth: 20.0
 ki_depth: 2.0
 kd_depth: 85.0
 
-kp_pitch: 5.0
-ki_pitch: 0.1
-kd_pitch: 5.0
+kp_pitch: 1.0
+ki_pitch: 0.0
+kd_pitch: 0.0
 
-kp_roll: 5.0
-ki_roll: 0.1
-kd_roll: 5.0
+kp_roll: 1.0
+ki_roll: 0.0
+kd_roll: 0.0
 
 kp_yaw: 20.0
 ki_yaw: 0.0

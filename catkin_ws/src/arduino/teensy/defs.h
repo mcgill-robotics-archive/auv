@@ -28,12 +28,12 @@
 #define PWM_FREQUENCY                       23437 //One of the Ideal Frequency of teensy3
 
 //SOLENOID, one used pin for (Pin_33)
-#define SOLENOID_PIN_STARBOARD_DROPPER      12
-#define SOLENOID_PIN_PORT_DROPPER           24
-#define SOLENOID_PIN_STARBOARD_GRABBER      25
-#define SOLENOID_PIN_PORT_GRABBER           26
-#define SOLENOID_PIN_STARBOARD_TORPEDO      27
-#define SOLENOID_PIN_PORT_TORPEDO           28
+#define SOLENOID_PIN_STARBOARD_DROPPER      28 //*
+#define SOLENOID_PIN_PORT_DROPPER           12 //* 
+#define SOLENOID_PIN_STARBOARD_GRABBER      27 //*
+#define SOLENOID_PIN_PORT_GRABBER           25
+#define SOLENOID_PIN_STARBOARD_TORPEDO      24
+#define SOLENOID_PIN_PORT_TORPEDO           26 //* 
 #define SOLENOID_PIN_EXTRA                  33
 
 //ON BOARD LED PIN
@@ -47,7 +47,7 @@
 
 
 //TIME INTERVAL(unit microsecond)
-#define SOLENOID_TIMEOUT                    200
+#define SOLENOID_TIMEOUT                    50
 #define MOTOR_TIMEOUT                       500   //amount of no signal required to start to reset motors
 #define TEMPERATURE_INTERVAL                1000  //amount of delay between each temperatures read
 #define POWER_MONITOR_INTERVAL              100   //amount of delay between each power monitor read
