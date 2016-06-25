@@ -199,7 +199,7 @@ def loop(event):
                       + pos_derivative_error * pos_derivative_gains)
             angles_estimated[2] = yaw_err
         elif vservo_server.is_active():
-            (x_err, y_err, z_err), quaternion = get_transform(target_frame_id, '/robot')
+            (x_err, y_err, z_err), quaternion = get_transform('/robot', target_frame_id)
             pos_proportional_error_prev = pos_proportional_error
             pos_proportional_error = np.array([x_err, y_err])
             pos_integral_error += pos_proportional_error * dt
@@ -208,7 +208,7 @@ def loop(event):
             fx, fy = (pos_integral_error * pos_integral_gains
                       + pos_proportional_error * pos_proportional_gains
                       + pos_derivative_error * pos_derivative_gains)
-            depth_desired = z_err
+            depth_desired = depth_estimated + z_err
 
         proportional_error_prev = proportional_error.copy()
         proportional_error[0:3] = angles_desired - angles_estimated
