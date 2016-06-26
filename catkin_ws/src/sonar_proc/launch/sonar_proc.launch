@@ -1,4 +1,6 @@
 <launch>
   <node name="scan_stitcher" pkg="sonar_proc" type="scan_stitcher.py" output="screen"></node>
-  <node name="pcl_scan_preprocessor" pkg="sonar_proc" type="pcl_scan_preprocessor" output="screen"></node>
+  <node name="scan_preprocessor" pkg="sonar_proc" type="scan_preprocessor.py" output="screen"></node>
+  <node name="mean_shift" pkg="sonar_proc" type="mean_shift.py" output="screen"></node>
+  <node name="interpreter" pkg="sonar_proc" type="interpreter.py" output="screen"></node>
 </launch>
