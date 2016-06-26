@@ -30,20 +30,17 @@ private:
   ** FILTER TYPES **
   ******************/
 
-  /**
-   * @brief PCL Voxel Grid filter wrapper.
-   * Basically just translates message types accordingly and filters using a
-   * Voxel Grid downsampler (from the tutorials).
+  /**.
    * @param  cloud Unfiltered ROS PointCloud.
    * @return       Filtered ROS PointCloud.
    */
   sensor_msgs::PointCloud voxelGrid(const sensor_msgs::PointCloud& cloud);
 
-  sensor_msgs::PointCloud StatisticalOutlierRemoval(const sensor_msgs::PointCloud& cloud); 
+  sensor_msgs::PointCloud statisticalOutlierRemoval(const sensor_msgs::PointCloud& cloud); 
 
-  sensor_msgs::PointCloud PassThrough(const sensor_msgs::PointCloud& cloud);
+  sensor_msgs::PointCloud passThrough(const sensor_msgs::PointCloud& cloud);
 
-  sensor_msgs::PointCloud RadiusOutlierRemoval(const sensor_msgs::PointCloud& cloud);
+  sensor_msgs::PointCloud radiusOutlierRemoval(const sensor_msgs::PointCloud& cloud);
 
 
   /**
