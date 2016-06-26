@@ -19,6 +19,7 @@ find_package(catkin REQUIRED COMPONENTS
    FILES
    initialize.action
    move.action
+   Task.action
  )
 
 generate_messages(
