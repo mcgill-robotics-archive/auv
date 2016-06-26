@@ -23,7 +23,7 @@ ScanPreprocessor::ScanPreprocessor(ros::NodeHandle& nh)
 
   // ROS PUB/SUB
   full_scan_sub_ = nh.subscribe<sensor_msgs::PointCloud>("/full_scan", 10, &ScanPreprocessor::fullScanCallback, this);
-  filtered_scan_pub_ = nh.advertise<sensor_msgs::PointCloud>("pcl_filtered", 1);
+  filtered_scan_pub_ = nh.advertise<sensor_msgs::PointCloud>("filtered_scan", 1);
 }
 
 void ScanPreprocessor::fullScanCallback(const sensor_msgs::PointCloud::ConstPtr& msg)
@@ -37,13 +37,13 @@ void ScanPreprocessor::fullScanCallback(const sensor_msgs::PointCloud::ConstPtr&
   //cloud_filtered = voxelGrid(cloud_filtered);
 
   //Uses point neighborhood statistics to filter outlier data
-  //cloud_filtered = StatisticalOutlierRemoval(cloud_filtered);
+  //cloud_filtered = statisticalOutlierRemoval(cloud_filtered);
   
   //Filter out points outside a specified range in one dimension.
-  //cloud_filtered = PassThrough(cloud_filtered);
+  //cloud_filtered = passThrough(cloud_filtered);
 
   //Removes outliers if the number of neighbors in a certain search radius is smaller than a given K
-  cloud_filtered = RadiusOutlierRemoval(cloud_filtered);
+  cloud_filtered = radiusOutlierRemoval(cloud_filtered);
 
   // Publish the data.
   filtered_scan_pub_.publish(cloud_filtered);
@@ -125,7 +125,7 @@ sensor_msgs::PointCloud ScanPreprocessor::voxelGrid(const sensor_msgs::PointClou
 }
 
 
-sensor_msgs::PointCloud ScanPreprocessor::StatisticalOutlierRemoval(const sensor_msgs::PointCloud& cloud)
+sensor_msgs::PointCloud ScanPreprocessor::statisticalOutlierRemoval(const sensor_msgs::PointCloud& cloud)
 {
   
   // Convert to PointCloud2
@@ -160,7 +160,7 @@ sensor_msgs::PointCloud ScanPreprocessor::StatisticalOutlierRemoval(const sensor
 }
 
 
-sensor_msgs::PointCloud ScanPreprocessor::PassThrough(const sensor_msgs::PointCloud& cloud)
+sensor_msgs::PointCloud ScanPreprocessor::passThrough(const sensor_msgs::PointCloud& cloud)
 {
   // Convert to PointCloud2
   sensor_msgs::PointCloud2 input;
@@ -193,7 +193,7 @@ sensor_msgs::PointCloud ScanPreprocessor::PassThrough(const sensor_msgs::PointCl
 }
 
 
-sensor_msgs::PointCloud ScanPreprocessor::RadiusOutlierRemoval(const sensor_msgs::PointCloud& cloud)
+sensor_msgs::PointCloud ScanPreprocessor::radiusOutlierRemoval(const sensor_msgs::PointCloud& cloud)
 {
 
   // Convert to PointCloud2
@@ -230,45 +230,7 @@ sensor_msgs::PointCloud ScanPreprocessor::RadiusOutlierRemoval(const sensor_msgs
 
 }
 
-/**
-sensor_msgs::PointCloud ScanPreprocessor::EuclideanClusterExtraction(const sensor_msgs::PointCloud& cloud)
-{
 
-
-  // Convert to PointCloud2
-  sensor_msgs::PointCloud2 input;
-  sensor_msgs::convertPointCloudtoPointCloud2(cloud, input)
-
-  // Convert to PCLPointCloud2
-  pcl::PCLPointCloud2* cloud2 = new pcl::PCLPointCloud2;
-  pcl_conversion::toPCL(input, *cloud2);
-  pcl::PCLPointCloud2ConstPtr cloudPtr(cloud2);
-
-  // Create flter output storage
-  pcl::PCLPointCloud2 cloud_filtered;
-
-  // Actual Cluster Extraction
-  pcl::EuclideanClusterExtraction<pcl::PCLPointCloud2> sor; 
-  sor.setInputCloud (data); 
-  sor.setClusterTolerance (0.05); 
-  sor.setMinClusterSize(1);
-  sor.setMaxClusterSize(20);
-  sor.setSearchMethod(tree);
-  sor.setInputCloud(cloud_filtered);
-  sor.extract(cluster_indices);    
-
-  // Convert to ROS data type
-  sensor_msgs::PointCloud2 output_pcl;
-  pcl_conversion::fromPCL(cloud_filtered, output_pcl);
-
-  // Convert back to PointCloud for backwards compatibility.
-  sensor_msgs::PointCloud output;
-  sensor_msgs::convertPointCloud2ToPointCloud(output_pcl, output);
-
-
-  return output;
-}
-*/
 
 int main(int argc, char **argv)
 {
