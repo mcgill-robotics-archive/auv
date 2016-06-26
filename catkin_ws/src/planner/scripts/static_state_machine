@@ -138,7 +138,7 @@ def create_machine():
 
 
 
-        smach.Concurrence.add('Monitor', smach_ros.MonitorState("/sm_reset", Bool, monitor_cb_stop))
+        smach.Concurrence.add('Monitor', smach_ros.MonitorState("/mission", Bool, monitor_cb_stop))
 
 
     static_sm = smach.StateMachine(outcomes=['done'])
@@ -161,7 +161,7 @@ def create_machine():
                                                outcomes=['done','notdone']))
 
 
-        smach.Concurrence.add('Monitor', smach_ros.MonitorState("/sm_reset", Bool, monitor_cb_stop))
+        smach.Concurrence.add('Monitor', smach_ros.MonitorState("/mission", Bool, monitor_cb_stop))
 
     #container for idle. It's a single monitor state, but is in a container to allow delays (to avoid concurrency problems)
     idle_concurrence=smach.Concurrence(outcomes=['valid','invalid'],
@@ -169,7 +169,7 @@ def create_machine():
                                        outcome_cb=out_idle_cb)
 
     with idle_concurrence:
-        smach.Concurrence.add('Monitor', smach_ros.MonitorState("/sm_reset", Bool, monitor_cb_start))
+        smach.Concurrence.add('Monitor', smach_ros.MonitorState("/mission", Bool, monitor_cb_start))
 
 
     #actual state machine, linking the containers together
