@@ -23,7 +23,7 @@ ScanPreprocessor::ScanPreprocessor(ros::NodeHandle& nh)
 
   // ROS PUB/SUB
   full_scan_sub_ = nh.subscribe<sensor_msgs::PointCloud>("/full_scan", 10, &ScanPreprocessor::fullScanCallback, this);
-  filtered_scan_pub_ = nh.advertise<sensor_msgs::PointCloud>("filtered_scan", 1);
+  filtered_scan_pub_ = nh.advertise<sensor_msgs::PointCloud>("pcl_filtered", 1);
 }
 
 void ScanPreprocessor::fullScanCallback(const sensor_msgs::PointCloud::ConstPtr& msg)
