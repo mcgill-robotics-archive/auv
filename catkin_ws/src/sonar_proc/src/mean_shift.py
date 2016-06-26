@@ -88,7 +88,7 @@ def cluster(data):
 
 if __name__ == '__main__':
     rospy.init_node("mean_shift")
-    sub = rospy.Subscriber("filtered_scan", PointCloud, cluster, queue_size=1)
+    sub = rospy.Subscriber("/filtered_scan/pcl_filtered", PointCloud, cluster, queue_size=1)
     marker_pub = rospy.Publisher("visualization_marker_array", MarkerArray,
                           queue_size=10)
     pub_clusters_data = rospy.Publisher("sonar_proc/cluster_data", ClusterArray, queue_size=1)

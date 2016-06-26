@@ -119,6 +119,7 @@ if __name__ == '__main__':
     rospy.init_node("scan_preprocessor_third")
     slice_sub = rospy.Subscriber("full_scan", PointCloud,
                                  preprocess, queue_size=1)
-    scan_pub = rospy.Publisher("filtered_scan", PointCloud, queue_size=1)
+    scan_pub = rospy.Publisher("python_filtered_scan", PointCloud, queue_size=1)
 
     rospy.spin()
+
