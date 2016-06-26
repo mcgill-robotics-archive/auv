@@ -16,8 +16,7 @@ add_message_files(
   SetVelocity.msg
   MotorCommands.msg
   SolenoidCommands.msg
-  TDOAs.msg
-  AcousticServo.msg
+  VisualServo.msg
 
   #added by State Estimation
   RangeBearingElevation.msg
@@ -46,7 +45,7 @@ add_action_files(
   SetPosition.action
   SetCVTarget.action
   InitializeHorizon.action
-  AcousticServo.action
+  VisualServo.action
 )
 
 generate_messages(DEPENDENCIES
