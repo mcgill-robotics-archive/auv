@@ -6,7 +6,7 @@
 Takes in an array of clusters and publishes a Point
 which represents the centroid of the most 'significant' cluster
 
-We consider closeness to the x-axis, average intensity,
+We consider closeness to the y-axis, average intensity,
 and closeness to the mean of cluster sizes for determining
 the most 'significant' cluster
 
@@ -50,13 +50,13 @@ def distance(x, y):
     return abs(x - y)
 
 def callback(data):
-    xaxis_distances, sizes, intensities = [], [], []
+    yaxis_distances, sizes, intensities = [], [], []
     for cluster in data.clusters:
-        xaxis_distances.append(distance(cluster.centroid.x, 0))
+        yaxis_distances.append(distance(cluster.centroid.y, 0))
         sizes.append(cluster.size)
         intensities.append(cluster.average_intensity)
 
-    distance_scores = _normalize(xaxis_distances)
+    distance_scores = _normalize(yaxis_distances)
 
     # we want to compare clusters based on distance of cluster size to
     # average cluster size
