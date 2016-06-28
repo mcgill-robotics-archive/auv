@@ -67,7 +67,6 @@ class Task(object):
             data: Dictionary data from the YAML file.
         """
         for actions in data["actions"]:
-            print "ACTION"
             # There should only be one top level key so one iteration of this inner loop.
             for (key, value) in actions.iteritems():
                 print key, value
@@ -194,7 +193,6 @@ class Square(Task):
             self.data = yaml.load(f)
 
     def execute_cb(self, goal):
-        print "Goal!!", goal
         self.action_sequence(self.data)
 
 
