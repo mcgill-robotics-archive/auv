@@ -7,14 +7,15 @@ from auv_msgs.msg import SetVelocityAction, SetVelocityGoal
 class Move(object):
     """Move action."""
 
-    VELOCITY = rospy.get_param("taskr/velocity", default=50)  # Apparently "no units"
+    VELOCITY = rospy.get_param("taskr/velocity", default=1)
+    RATE = rospy.get_param("taskr/vel_cmd_rate", default=10)
+    VEL_COEFFICIENT = rospy.get_param("taskr/vel_coefficient", default=1)
 
     def __init__(self, point):
         """Constructor for the Move object."""
         self.distance = point["distance"]
         self.depth = point["depth"]
         self.yaw = point["yaw"]
-        self.rate = 10
 
         # Whether to get yaw feedback from sensors. Not yet implemented.
         self.feedback = point["feedback"] if "feedback" in point else False
@@ -30,7 +31,7 @@ class Move(object):
             server: Action server for publishing feedback.
             feedback_msg: Feedback message to populate.
         """
-        rate = rospy.Rate(self.rate)
+        rate = rospy.Rate(self.RATE)
 
         ctrl_goal = SetVelocityGoal()
         ctrl_goal.cmd.depth = self.depth
@@ -53,15 +54,15 @@ class Move(object):
 
             self.vel_client.wait_for_result()
 
-        ctrl_goal.cmd.surgeSpeed = self.VELOCITY
+        ctrl_goal.cmd.surgeSpeed = self.VELOCITY * self.VEL_COEFFICIENT
 
         start = rospy.Time.now()
 
         # Send surge commands.
         # Should run RATE * TIME times. For exmaple, if we send cmds at
         # 10 cmd/s (Hz), for 5 seconds, we need to loop 50 times.
-        for i in range(0, int(self.rate * time)):
-            print "Sending Surge", float(i) / self.rate, "s /", time, "s"
+        for i in range(0, int(self.RATE * time)):
+            print "Sending Surge", float(i) / self.RATE, "s /", time, "s"
             self.vel_client.send_goal(ctrl_goal)
             # Check if we received preempt request from Planner
             if server.is_preempt_requested():

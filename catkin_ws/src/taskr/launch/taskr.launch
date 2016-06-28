@@ -1,5 +1,7 @@
 <launch>
   <node name="taskr" pkg="taskr" type="taskr.py" output="screen">
       <param name="velocity" value="1" />
+      <param name="vel_cmd_rate" value="10" />
+      <param name="vel_coefficient" value="1" />
   </node>
 </launch>
