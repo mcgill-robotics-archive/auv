@@ -6,11 +6,11 @@ from planner.msg import TaskAction, TaskGoal
 
 def fake_planner_client():
     """Fake client that sends a single goal."""
-    client = SimpleActionClient("square_task", TaskAction)
+    client = SimpleActionClient("torpedo_task", TaskAction)
     client.wait_for_server()
 
     # Send testing task once.
-    goal = TaskGoal(task="square")
+    goal = TaskGoal(task="") # ASK Jana what's should be inside. Seems to work without? Is this intentional?
 
     client.send_goal(goal)
 
