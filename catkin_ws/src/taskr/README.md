@@ -75,9 +75,9 @@ There is a fake planner client and fake controls server in the [`test` directory
 which are only to be used for debugging taskr without the other nodes present.
 To run, you will need three terminals:
 
-1. rosrun taskr fake_controls_server.py
-2. roslaunch taskr taskr.launch
-3. rosrun taskr fake_planner_client.py
+1. `rosrun taskr fake_controls_server.py`
+2. `roslaunch taskr taskr.launch`
+3. `rosrun taskr fake_planner_client.py`
 
 You can edit the fake client to connect to any server you which to test.
 
