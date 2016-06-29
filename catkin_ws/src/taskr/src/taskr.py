@@ -35,7 +35,7 @@ class Task(object):
         )
         self._as.start()
 
-    def createAction(self, action, value):
+    def create_action(self, action, value):
         """Creates the appropriate action object using the name of the action
         from the YAML key.
 
@@ -70,7 +70,7 @@ class Task(object):
             # There should only be one top level key so one iteration of this inner loop.
             for (key, value) in actions.iteritems():
                 print key, value
-                action = self.createAction(key, value)
+                action = self.create_action(key, value)
                 action.start(self._as, self._feedback)
                 # Check whether the action has been preempted by the client.
                 if self._as.is_preempt_requested():
