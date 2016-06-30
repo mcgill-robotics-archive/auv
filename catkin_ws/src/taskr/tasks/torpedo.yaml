@@ -7,4 +7,4 @@ actions:
       yaw: 1.57
       feedback: True
   - visual_servo: "torpedos"  # Visual servo to torpedo
-  - shoot: "front"
+  - shoot: "starboard_torpedo"

@@ -13,9 +13,12 @@ class Shoot(object):
 
     def start(self, server, feedback_msg):
         pub = rospy.Publisher('/electrical_interface/solenoids', SolenoidCommands, queue_size=10)
-        port_torpedo_command = SolenoidCommands()
-        port_torpedo_command.port_torpedo = True
-        rospy.loginfo(port_torpedo_command)
-        pub.publish(port_torpedo_command)
+        torpedo_command = SolenoidCommands()
 
+        # Set the attribute of torpedo_command specified in the yaml
+        # file (port_torpedo or starboard_torpedo) to True
+        setattr(torpedo_command, self.torpedoName, True)
+
+        rospy.loginfo(torpedo_command)
+        pub.publish(torpedo_command)
         
