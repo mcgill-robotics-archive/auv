@@ -9,6 +9,13 @@ thrusters = ['port_surge', 'starboard_surge', 'bow_sway', 'stern_sway',
              'starboard_stern_heave'] 
 
 
+#depth_sensor_topic = 'depth'
+#def drytest_depth_sensor():
+   # rospy.init_node('drytest_depth_sensor')
+   # pub_depth = rospy.Publisher('depth')
+
+
+
 def create_command(thr):
     """ Create the command based on the thruster input.
         Args:
@@ -47,19 +54,33 @@ def drytest_motors():
             
             # If it's the last thruster then exit the drytest
             if thr == thrusters[-1]: return None
-        
+
+   # try: 
+   #     drytest_depth_sensor()
+   # except rospy.RosInterruptException:
+   #     pass
+
+
 
 def start_drytest():
     """ Validate with user whether to begin drytest, and run procedures.
     """  
-    print('Use ctrl+c to halt motors at any time.')
-    proceed = str(raw_input('Begin Drytest? Y/n ')).upper()
-    
-    if proceed != 'Y' and proceed != '':
-        print('Exiting')
+    Print('Drytest of the robot is about to begin')
+    print('Use ctrl+c to halt the Drytest at any time')
+    command = srt(raw_input('Begin Drytest? Y/N ')).upper()
+
+    if command != 'Y' and command != '':
+        print('Exiting. Maybe Later')
         return None
+
+  #  print('Use ctrl+c to halt motors at any time.')
+  # proceed = str(raw_input('Begin Drytest? Y/n ')).upper()
     
-    # Call procedure(s) for drytest
+  #  if proceed != 'Y' and proceed != '':
+  #      print('Exiting')
+  #      return None
+   
+     # Call procedure(s) for drytest
     try:
         drytest_motors()
     except rospy.ROSInterruptException:
