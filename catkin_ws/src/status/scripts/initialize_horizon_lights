@@ -31,9 +31,9 @@ def process_feedback(ref):
 
     for i in range(25):
         if completion_level > i:
-            colors.append(BLACK)
+            colors.insert(0,BLACK)
         else:
-            colors.append(GREEN)
+            colors.insert(0,GREEN)
     send_colors(colors)
 
 # Parse different result 
