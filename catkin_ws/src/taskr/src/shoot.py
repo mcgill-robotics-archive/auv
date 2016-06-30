@@ -1,6 +1,5 @@
 #!/usr/bin/env python
 import rospy
-#import actionlib
 from auv_msgs.msg import SolenoidCommands
 
 
@@ -12,6 +11,9 @@ class Shoot(object):
        
 
     def start(self, server, feedback_msg):
+        feedback_msg.is_done = False
+        server.publish_feedback(feedback_msg)
+
         pub = rospy.Publisher('/electrical_interface/solenoids', SolenoidCommands, queue_size=10)
         torpedo_command = SolenoidCommands()
 
@@ -20,5 +22,13 @@ class Shoot(object):
         setattr(torpedo_command, self.torpedoName, True)
 
         rospy.loginfo(torpedo_command)
-        pub.publish(torpedo_command)
         
+        if server.is_preempt_requested():
+            rospy.loginfo("Shoot preempted")
+            server.set_preempted()
+            return
+        pub.publish(torpedo_command)
+
+        feedback_msg.is_done = True
+        server.publish_feedback(feedback_msg)
+
