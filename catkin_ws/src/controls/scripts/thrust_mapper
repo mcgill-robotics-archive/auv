@@ -17,18 +17,20 @@ from numpy.linalg import pinv
 #T7 = heave starboard stern    \heaves positive thrust towards bottom
 #T8 = heave port stern        \heaves positive thrust towards bottom
 
-l_1z = 0.208 #or 8.176 inches
-l_2z = 0.208 #or 8.176 inches
-l_3z = 0.463 #or 18.216 inches
-l_4z = 0.305 #or 12.003 inches
-l_5x = 0.211 #or 8.297 inches
-l_6x = 0.211 #or 8.297 inches
-l_7x = 0.211 #or 8.297 inches
-l_8x = 0.211 #or 8.297 inches
-l_5y = 0.334 #or 13.169 inches
-l_6y = 0.334 #or 13.169 inches
-l_7y = 0.161 #or 6.331 inches
-l_8y = 0.161 #or 6.331 inches
+l_1z = 0.207 # Brad: 8.138  # or 8.176 inches 
+l_2z = 0.207 # Brad: 8.138  # or 8.176 inches
+l_3z = 0.488 # Brad: 19.06  # or 18.216 inches
+l_4z = 0.459 # Brad: 18.017 #or 12.003 inches
+
+l_5x = 0.207 # Brad: 8.138 # or 8.297 inches
+l_6x = 0.215 # Brad: 8.456 # or 8.297 inches
+l_7x = 0.215 # Brad: 8.456 # or 8.297 inches
+l_8x = 0.207 # Brad: 8.138 # or 8.297 inches
+
+l_5y = 0.372 # Brad: 14.631 # or 13.169 inches
+l_6y = 0.372 # Brad: 14.631 # or 13.169 inches
+l_7y = 0.327 # Brad: 12.867 # or 6.331 inches
+l_8y = 0.327 # Brad: 12.867 # or 6.331 inches
 
 # Thruster T2 is wired in the opposite direction so the sign is reversed for 
 # the second column of matrix T1234_to_Fx_Fy_Mz

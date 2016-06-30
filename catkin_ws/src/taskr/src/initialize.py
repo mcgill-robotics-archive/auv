@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 
-class Shoot(object):
+class Initializer(object):
     def __init__(self, torpedo):
         pass
 

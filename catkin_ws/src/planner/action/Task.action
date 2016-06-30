@@ -1,0 +1,9 @@
+# TMP MSG UNTIL NEW PLANNER
+# Goal
+string task
+---
+# Result
+bool success
+---
+# Feedback
+bool is_done
