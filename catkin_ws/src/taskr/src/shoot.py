@@ -5,7 +5,7 @@ from auv_msgs.msg import SolenoidCommands
 #Shoot a torpedo from either port or starboard side
 class Shoot(object):
     def __init__(self, torpedo):
-       rospy.loginfo("Shoot %s!" %torpedo)
+       rospy.loginfo("Shoot {0}!" .format(torpedo))
        self.torpedoName = torpedo
        
 
@@ -18,10 +18,10 @@ class Shoot(object):
 
         # Set the attribute of torpedo_command specified in the yaml
         # file (port_torpedo or starboard_torpedo) to True
+        # Use rostopic echo /electrical_interface/solenoids to debug the pub
         setattr(torpedo_command, self.torpedoName, True)
-        # Log the content of the torpedo command.
-        rospy.loginfo("Publish SolenoidCommand:\n%s " %str(torpedo_command))
-        
+
+        # Put preempted for good measure.
         if server.is_preempt_requested():
             rospy.loginfo("Shoot preempted")
             server.set_preempted()
