@@ -8,12 +8,13 @@ from planner.msg import TaskAction, TaskGoal
 TASKS = ["bin", "buoy", "initialize", "gate", "maneuver", "octagon", "square",
          "torpedo"]
 
+
 class InvalidTaskException(Exception):
     """Custom error task for command line argument check."""
     pass
 
 
-def fake_planner_client(task_name="square"):
+def fake_planner_client(task_name="torpedo"):
     """Fake client that sends a single goal.
 
     Keyword arguments:
