@@ -4,7 +4,8 @@
 #include <tf/transform_listener.h>
 #include <geometry_msgs/Point.h>
 
-//TODO: Change msg type to match CV published topic
+
+// TODO: parametrize buoy frames and topics --> Target broadcaster instead?
 void servoCallback(const geometry_msgs::Point::ConstPtr& msg) {
     static tf::TransformBroadcaster br;
     tf::Transform transform;
@@ -19,7 +20,7 @@ int main (int argc, char** argv) {
     ros::NodeHandle node;
     
     //TODO: Change CVdummytopic to real CV published topic
-    ros::Subscriber CVsub = node.subscribe("/buoy/red", 1000, servoCallback);
+    ros::Subscriber CVsub = node.subscribe("red_buoy", 1000, servoCallback);
 
     ros::spin();
 
