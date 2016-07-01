@@ -14,7 +14,7 @@ class InvalidTaskException(Exception):
     pass
 
 
-def fake_planner_client(task_name="torpedo"):
+def fake_planner_client(task_name="square"):
     """Fake client that sends a single goal.
 
     Keyword arguments:
