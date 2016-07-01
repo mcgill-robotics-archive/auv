@@ -10,7 +10,7 @@ from visualization_msgs.msg import Marker
 from std_msgs.msg._ColorRGBA import ColorRGBA
 
 
-__author__ = "Dihia Idrici, Jana Pavlasek"
+__author__ = "Justin Bell, Dihia Idrici, Jana Pavlasek"
 
 """
     mean_shift.py uses this class, to generate a new MarkerArray
@@ -91,7 +91,7 @@ class Clustering(object):
             marker.scale.y = 0.20
             marker.scale.z = 0.20
 
-            marker.lifetime.secs = 6
+            marker.lifetime.secs = 4
 
             # Points list holds a single point which corresponds
             # to the cluster location.

@@ -18,8 +18,17 @@
 ScanPreprocessor::ScanPreprocessor(ros::NodeHandle& nh)
 {
   // ROSPARAMS
-  ros::param::param<double>("~intensity_threshold", INTENSITY_THRESHOLD_, 90.0);
+  ros::param::param<double>("~intensity_threshold", INTENSITY_THRESHOLD_, 80.0);
   ros::param::param<double>("~radius_threshold", RADIUS_THRESHOLD_, 1.5);
+
+  // ROSPARAMS for voxelGrid
+  ros::param::param<double>("~x_leaf_size", X_LEAF_SIZE, 0.3);
+  ros::param::param<double>("~y_leaf_size", Y_LEAF_SIZE, 0.3);
+  ros::param::param<double>("~z_leaf_size", Z_LEAF_SIZE, 0.3);
+
+  // ROSPARAMS for radiusOutlierRemoval
+  ros::param::param<double>("~radius_search", RADIUS_SEARCH, 0.5);
+  ros::param::param<double>("~min_neighbors_in_radius", MIN_NEIGHBORS_IN_RADIUS, 40.0);
 
   // ROS PUB/SUB
   full_scan_sub_ = nh.subscribe<sensor_msgs::PointCloud>("/full_scan", 10, &ScanPreprocessor::fullScanCallback, this);
@@ -34,7 +43,7 @@ void ScanPreprocessor::fullScanCallback(const sensor_msgs::PointCloud::ConstPtr&
   // Filtering example from PCL website
 
   //Assemble a local 3D grid over a given PointCloud, and downsamples + filters the data.
-  //cloud_filtered = voxelGrid(cloud_filtered);
+  cloud_filtered = voxelGrid(cloud_filtered);
 
   //Uses point neighborhood statistics to filter outlier data
   //cloud_filtered = statisticalOutlierRemoval(cloud_filtered);
@@ -89,11 +98,9 @@ sensor_msgs::PointCloud ScanPreprocessor::radiusThresholdFilter(const sensor_msg
 // PointCloudLibrary filtering algorithm use PCLPointCloud2
 // We convert PointCloud -> PointCloud2 -> PCLPointCloud2 (all from sensor_msgs)
 // FOLOWING: Filtering algorithm
-//
-//
 sensor_msgs::PointCloud ScanPreprocessor::voxelGrid(const sensor_msgs::PointCloud& cloud)
 {
-  
+
   // Convert to PointCloud2.
   sensor_msgs::PointCloud2 input;
   sensor_msgs::convertPointCloudToPointCloud2(cloud, input);
@@ -109,7 +116,7 @@ sensor_msgs::PointCloud ScanPreprocessor::voxelGrid(const sensor_msgs::PointClou
   // Filter.
   pcl::VoxelGrid<pcl::PCLPointCloud2> sor;
   sor.setInputCloud(cloudPtr);
-  sor.setLeafSize(0.3, 0.3, 0.3); //Set the voxel grid leaf size
+  sor.setLeafSize(X_LEAF_SIZE, Y_LEAF_SIZE, Z_LEAF_SIZE); //Set the voxel grid leaf size
   sor.filter(cloud_filtered);
 
   // Convert to ROS data type
@@ -211,8 +218,8 @@ sensor_msgs::PointCloud ScanPreprocessor::radiusOutlierRemoval(const sensor_msgs
   // Create the filtering object  
   pcl::RadiusOutlierRemoval<pcl::PCLPointCloud2> sor;
   sor.setInputCloud(cloudPtr);
-  sor.setRadiusSearch(0.5); //Sphere radius that is to be used for determining the k-nearest neighbors for filtering
-  sor.setMinNeighborsInRadius (40.0); //Set the minimum number of neighbors that a point needs to have in the given search radius in order to be considered an inlier
+  sor.setRadiusSearch(RADIUS_SEARCH); //Sphere radius that is to be used for determining the k-nearest neighbors for filtering
+  sor.setMinNeighborsInRadius(MIN_NEIGHBORS_IN_RADIUS); //Set the minimum number of neighbors that a point needs to have in the given search radius in order to be considered an inlier
   // apply filter
   sor.filter(cloud_filtered);
 
@@ -229,7 +236,6 @@ sensor_msgs::PointCloud ScanPreprocessor::radiusOutlierRemoval(const sensor_msgs
   return output;
 
 }
-
 
 
 int main(int argc, char **argv)
