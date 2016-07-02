@@ -69,8 +69,8 @@ sensor_msgs::PointCloud ScanPreprocessor::radiusThresholdFilter(const sensor_msg
   channel->name = "intensity";
 
   // Create vector holders for points and values to go into the filtered cloud.
-  std::vector<float> values;  // contains the data array where all the values of type float are stored
-  std::vector<geometry_msgs::Point32> points; // contains the data array where all the points of type geometry_msgs::point32 are stored
+  std::vector<float> values;  
+  std::vector<geometry_msgs::Point32> points;
 
   // Iterate through all points in the cloud.
   for (int i = 0; i < cloud.points.size(); ++i)
@@ -116,7 +116,7 @@ sensor_msgs::PointCloud ScanPreprocessor::voxelGrid(const sensor_msgs::PointClou
   // Filter.
   pcl::VoxelGrid<pcl::PCLPointCloud2> sor;
   sor.setInputCloud(cloudPtr);
-  sor.setLeafSize(X_LEAF_SIZE, Y_LEAF_SIZE, Z_LEAF_SIZE); //Set the voxel grid leaf size
+  sor.setLeafSize(X_LEAF_SIZE, Y_LEAF_SIZE, Z_LEAF_SIZE); 
   sor.filter(cloud_filtered);
 
   // Convert to ROS data type
@@ -150,8 +150,8 @@ sensor_msgs::PointCloud ScanPreprocessor::statisticalOutlierRemoval(const sensor
   // Create the filtering object
   pcl::StatisticalOutlierRemoval<pcl::PCLPointCloud2> sor;
   sor.setInputCloud(cloudPtr);
-  sor.setMeanK(60.0); //Set the number of points (k) to use for mean distance estimation. 
-  sor.setStddevMulThresh(1.0); //Set the standard deviation multiplier threshold.
+  sor.setMeanK(60.0); 
+  sor.setStddevMulThresh(1.0); //Set the standard deviation multiplier threshold
   sor.filter(cloud_filtered);
 
   // Convert to ROS data type
@@ -184,7 +184,7 @@ sensor_msgs::PointCloud ScanPreprocessor::passThrough(const sensor_msgs::PointCl
   // Create the filtering object
   pcl::PassThrough<pcl::PCLPointCloud2> sor;
   sor.setInputCloud(cloudPtr);
-  sor.setFilterLimits(0.0, 5.0); //(min, max) limits for the field for filtering data
+  sor.setFilterLimits(0.0, 5.0); //limits for the field for filtering data
   sor.filter(cloud_filtered);
 
   // Convert to ROS data type
@@ -218,8 +218,8 @@ sensor_msgs::PointCloud ScanPreprocessor::radiusOutlierRemoval(const sensor_msgs
   // Create the filtering object  
   pcl::RadiusOutlierRemoval<pcl::PCLPointCloud2> sor;
   sor.setInputCloud(cloudPtr);
-  sor.setRadiusSearch(RADIUS_SEARCH); //Sphere radius that is to be used for determining the k-nearest neighbors for filtering
-  sor.setMinNeighborsInRadius(MIN_NEIGHBORS_IN_RADIUS); //Set the minimum number of neighbors that a point needs to have in the given search radius in order to be considered an inlier
+  sor.setRadiusSearch(RADIUS_SEARCH);
+  sor.setMinNeighborsInRadius(MIN_NEIGHBORS_IN_RADIUS);
   // apply filter
   sor.filter(cloud_filtered);
 
