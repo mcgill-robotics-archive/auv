@@ -13,7 +13,7 @@ class Shoot(object):
         feedback_msg.is_done = False
         server.publish_feedback(feedback_msg)
 
-        pub = rospy.Publisher('/electrical_interface/solenoids', SolenoidCommands, queue_size=1)
+        pub = rospy.Publisher('/electrical_interface/solenoid', SolenoidCommands, queue_size=1)
         torpedo_command = SolenoidCommands()
 
         # Set the attribute of torpedo_command specified in the yaml
