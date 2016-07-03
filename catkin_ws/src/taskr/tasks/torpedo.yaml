@@ -2,10 +2,8 @@
 # Move to torpedos and then shoot.
 actions:
   - move:
-      position:
-        x: 0
-        y: 1
-        z: 1
+      distance: 10
+      depth: 2
       yaw: 1.57
       feedback: True
   - visual_servo: "torpedos"  # Visual servo to torpedo
