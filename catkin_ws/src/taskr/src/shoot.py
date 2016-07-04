@@ -25,6 +25,11 @@ class Shoot(object):
             rospy.loginfo("Shoot preempted")
             server.set_preempted()
             return
+
+        while pub.get_num_connections() == 0:
+            rospy.loginfo("Waiting for subscribers in Shoot")
+            continue
+
         pub.publish(torpedo_command)
 
         feedback_msg.is_done = True
