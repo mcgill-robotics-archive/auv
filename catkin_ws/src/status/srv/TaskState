@@ -1,3 +1,3 @@
-string str
+string task_status
 ---
-string str
+string task_success

@@ -37,7 +37,7 @@ WHITE = RGB(255, 255, 255)
 
 def task_blinky_design(req):
     colors = []   # Reset the array
-    task = req.status.status
+    task = req.task_status
 
     # Gate
     if(task == 'gate'):
@@ -46,44 +46,51 @@ def task_blinky_design(req):
         send_color(MAGENTA)
         sleep(0.5)
         send_color(RED)
+        return TaskStateResponse(task)
 
     # Buoys
     elif(task == 'red_buoy'):
         send_color(RED)
+        return TaskStateResponse(task)
 
     elif(task == 'green_buoy'):
         send_color(GREEN)
+        return TaskStateResponse(task)
 
     elif(task == 'yellow_buoy'):
         send_color(YELLOW)
+        return TaskStateResponse(task)
 
     # Maneuver
     elif(task == 'maneuver'):
         send_color(LIGHTBLUE)
         sleep(0.5)
         send_color(BLUE)
+        return TaskStateResponse(task)
 
     # Bins
     elif(task == 'bins'):
         send_color()
+        return TaskStateResponse(task)
 
     # Torpedo
     elif(task == 'torpedo'):
         send_color()
+        return TaskStateResponse(task)
 
     # Octogon
     elif(task == 'octogon'):
         send_color()
+        return TaskStateResponse(task)
 
     # Square
     elif(task == 'square'):
         send_color()
+        return TaskStateResponse(task)
 
     else:
         rospy.logwarn("Unknown result status code : {0}!".format(result))
         send_color(BLACK)
-
-    return TaskStateResponse(req)
 
 
 def send_color(color):
