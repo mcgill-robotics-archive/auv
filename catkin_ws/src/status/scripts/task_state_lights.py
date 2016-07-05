@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 import rospy
+import roslib
 
 from auv_msgs.msg import TaskLightActionGoal, TaskLightActionResult, TaskLightActionFeedback
 from status.srv import TaskState
