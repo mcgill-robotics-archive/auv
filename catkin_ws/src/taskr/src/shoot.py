@@ -35,7 +35,7 @@ class Shoot(object):
         self.pub.publish(solenoid_command)
 
         # Sleep for allowing teensy and pneumatics to react
-        rospy.sleep(0.2)
+        rospy.sleep(1.0)
 
         feedback_msg.is_done = True
         server.publish_feedback(feedback_msg)
