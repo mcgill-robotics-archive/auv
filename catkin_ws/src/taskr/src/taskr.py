@@ -202,7 +202,7 @@ if __name__ == '__main__':
     # Initialize tasks.
     Initialize("initialize_task")
     Bins("bin_task")
-    Buoys("buoy_task")
+    Buoys("buoys_task")
     Gate("gate_task")
     Maneuver("maneuver_task")
     Octagon("octagon_task")
