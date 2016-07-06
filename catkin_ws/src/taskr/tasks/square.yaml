@@ -1,16 +1,31 @@
+# TEST TASK
 # Represents any series of actions for testing purposes.
 actions:
   - move:
       position:
         x: 0
-        y: 0
-        z: 0
-      yaw: 0
+        y: 5
+        z: 1
+      yaw: 1.57
       feedback: False
   - move:
       position:
-        x: 100
+        x: 5
+        y: 5
+        z: 1
+      yaw: 3.14
+      feedback: False
+  - move:
+      position:
+        x: 5
         y: 0
         z: 1
-      yaw: 0
+      yaw: 4.71
+      feedback: False
+  - move:
+      position:
+        x: 0
+        y: 0
+        z: 1
+      yaw: 0.0
       feedback: False
