@@ -1,0 +1,14 @@
+<launch>
+  <node name="scan_stitcher" pkg="sonar_proc" type="scan_stitcher.py" output="screen"></node>
+  <node name="scan_preprocessor" pkg="sonar_proc" type="pcl_scan_preprocessor" output="screen">
+    <param name="intensity_threshold" value="90.0" />
+    <param name="radius_threshold" value="1.5" />
+    <param name="x_leaf_size" value="0.1" />
+    <param name="y_leaf_size" value="0.1" />
+    <param name="z_leaf_size" value="0.1" />
+    <param name="radius_search" value="0.5" />
+    <param name="min_neighbors_in_radius" value="50.0" />
+  </node>
+  <node name="mean_shift" pkg="sonar_proc" type="mean_shift.py" output="screen"></node>
+  <node name="interpreter" pkg="sonar_proc" type="interpreter.py" output="screen"></node>
+</launch>
