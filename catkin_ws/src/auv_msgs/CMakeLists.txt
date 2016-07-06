@@ -16,7 +16,7 @@ add_message_files(
   SetVelocity.msg
   MotorCommands.msg
   SolenoidCommands.msg
-  VisualServo.msg
+  VisualServoCommand.msg
 
   #added by State Estimation
   RangeBearingElevation.msg

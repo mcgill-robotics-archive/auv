@@ -1,4 +1,8 @@
 #!/usr/bin/env python
+from actionlib import SimpleActionClient
+
+from auv_msgs.msg import VisualServoAction, VisualServoGoal
+
 from geometry_msgs.msg import Point
 
 import rospy
@@ -19,9 +23,9 @@ class VisualServo(object):
         rospy.loginfo("Initializing VisualServo action with target {}"
                       .format(target))
         self.target = target
-        self.pub = rospy.Publisher(target, Point, queue_size=10)
-        self.sub = rospy.Subscriber(
-            '/tld_tracked_object', BoundingBox, self.tracked_obj_callback)
+        self.controls_client = SimpleActionClient("controls_vservo",
+                                                  VisualServoAction)
+        self.controls_client.wait_for_server()
 
         # aimed x and y define the pixel on the image to which we aim the
         # center of the bounding box
@@ -30,12 +34,33 @@ class VisualServo(object):
         self.target_width = BUOY_DIAMETER
         self.target_height = BUOY_DIAMETER
 
+        self.pub = rospy.Publisher(target, Point, queue_size=10)
+        self.sub = rospy.Subscriber(
+            '/tld_tracked_object', BoundingBox, self.tracked_obj_callback)
+
     def start(self, server, feedback_msg):
         rospy.loginfo("Starting VisualServo action")
+
+        ctrl_goal = VisualServoGoal()
+        ctrl_goal.cmd.target_frame_id = self.target
+
+        rospy.logdebug("Visual Servo Goal: {}".format(ctrl_goal))
 
         # while loop with rate to check if no box for some time
         while True:
             rospy.logdebug("Visual Servoing")
+            self.controls_client.send_goal(ctrl_goal)
+
+            # Check if we received preempt request from Taskr.
+            if server.is_preempt_requested():
+                rospy.loginfo("Visual Servo Preempted")
+                # Send preempt request to Controls
+                self.controls_client.cancel_goal()
+                self._as.set_preempted()
+                return
+
+            # self.controls_client.wait_for_result()
+
             rospy.sleep(0.05)
             continue
 

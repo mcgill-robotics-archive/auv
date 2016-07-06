@@ -260,6 +260,7 @@ def loop(event):
             feedback.x_error = pos_proportional_error[0]
             feedback.y_error = pos_proportional_error[1]
             feedback.depth_error = proportional_error[3]
+            vservo_server.publish_feedback(feedback)
 
         output = (integral_error * integral_gains
                   + proportional_error * proportional_gains

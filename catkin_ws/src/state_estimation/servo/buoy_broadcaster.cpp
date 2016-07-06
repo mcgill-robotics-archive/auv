@@ -10,7 +10,8 @@ void servoCallback(const geometry_msgs::Point::ConstPtr& msg) {
     static tf::TransformBroadcaster br;
     tf::Transform transform;
     transform.setOrigin( tf::Vector3(msg->x, msg->y, msg->z) );
-    br.sendTransform(tf::StampedTransform(transform, ros::Time::now(), "robot", "buoy"));
+    transform.setRotation( tf::createQuaternionFromRPY(0, 0, 0) );
+    br.sendTransform(tf::StampedTransform(transform, ros::Time::now(), "robot", "red_buoy"));
 
 }
 
