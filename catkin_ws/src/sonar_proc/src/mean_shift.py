@@ -30,7 +30,6 @@ https://github.com/scikit-learn/scikit-learn/blob/master/sklearn/cluster/mean_sh
 
 
 import rospy
-import numpy
 from sklearn.cluster import MeanShift, estimate_bandwidth
 
 from sensor_msgs.msg import PointCloud
@@ -41,11 +40,12 @@ from clustering import Clustering
 
 __author__ = "Dihia Idrici"
 
+
 def cluster(data):
     """Clustering with MeanShift"""
     if not data.points:
-	print("clustering was handed an empty set")
-	return
+        rospy.loginfo("Clustering was handed an empty set")
+        return
 
     clustering = Clustering(data)
 
@@ -65,10 +65,10 @@ def cluster(data):
     # get markers for the cluster centers
     markers = clustering.make_markers(cluster_centers)
 
-    print("number of clusters : %d" % number_of_clusters)
-    print("average intensities : " + str(average_intensities))
-    print("sizes : " + str(sizes))
-    print("cluster centers : " + str(cluster_centers))
+    rospy.loginfo("number of clusters : {}".format(number_of_clusters))
+    rospy.loginfo("average intensities : {}".format(average_intensities))
+    rospy.loginfo("sizes : {}".format(sizes))
+    rospy.loginfo("cluster centers : {}"(cluster_centers))
 
     cluster_array = ClusterArray()
     cluster_array.header.stamp = rospy.get_rostime()
@@ -90,8 +90,7 @@ if __name__ == '__main__':
     rospy.init_node("mean_shift")
     sub = rospy.Subscriber("/filtered_scan/pcl_filtered", PointCloud, cluster, queue_size=1)
     marker_pub = rospy.Publisher("visualization_marker_array", MarkerArray,
-                          queue_size=10)
+                                 queue_size=10)
     pub_clusters_data = rospy.Publisher("sonar_proc/cluster_data", ClusterArray, queue_size=1)
 
     rospy.spin()
-

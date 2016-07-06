@@ -34,7 +34,7 @@ class Clustering(object):
         return points
 
     def _new_average(self, previous_average, count, update):
-        return (previous_average*count + update) / (count + 1)
+        return (previous_average * count + update) / (count + 1)
 
     # TODO: combine get_average_intensities and get_sizes such that
     # we only need to loop through the labels once
@@ -105,10 +105,10 @@ class Clustering(object):
         return marker_array
 
 colours = {
-    "red" : ColorRGBA(1,0,0,1),
-    "green": ColorRGBA(0,1,0,1),
-    "blue": ColorRGBA(0,0,1,1),
-    "yellow": ColorRGBA(1,1,0,1),
-    "cyan": ColorRGBA(0,1,1,1),
-    "white": ColorRGBA(1,1,1,1)
+    "red": ColorRGBA(1, 0, 0, 1),
+    "green": ColorRGBA(0, 1, 0, 1),
+    "blue": ColorRGBA(0, 0, 1, 1),
+    "yellow": ColorRGBA(1, 1, 0, 1),
+    "cyan": ColorRGBA(0, 1, 1, 1),
+    "white": ColorRGBA(1, 1, 1, 1)
 }

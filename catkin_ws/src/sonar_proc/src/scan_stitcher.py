@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 """Sonar Scan Stitcher.
+
 This listens to PointCloud slices and stitches them into a full scan for
 analysis.
 """
@@ -15,49 +16,85 @@ from tritech_micron.msg import TritechMicronConfig
 
 __author__ = "Jana Pavlasek, Anass Al-Wohoush, Max Krogius"
 
-scan = None
-scan_config = {}
 
+class ScanStitcher(object):
 
-class Scan(object):
+    """ScanStitcher object."""
 
-    """Scan."""
-
-    def __init__(self, range=None, steps=None, num_bins=None, left_limit=None,
-                 right_limit=None, clockwise=None):
+    def __init__(self):
         """Constructs Scan object."""
-        self.range = range
-        self.steps = steps
-        self.num_bins = num_bins
-        self.left_limit = left_limit
-        self.right_limit = right_limit
-        self.clockwise = clockwise
+        rospy.init_node("scan_stitcher")
+
+        self.config_sub = rospy.Subscriber("/tritech_micron/config", TritechMicronConfig,
+                                           self.make_config, queue_size=1)
+        self.slice_sub = rospy.Subscriber("/tritech_micron/scan", PointCloud,
+                                          self.stitch, queue_size=1)
+        self.scan_pub = rospy.Publisher("full_scan", PointCloud, queue_size=1)
+
         self.clouds = []
-        self.time = rospy.get_rostime()
         self.full = False
+        self.scan_config = {}
+
+    def make_config(self, data):
+        """Updates scan cofigurations when configuration is published."""
+        if (not self.scan_config or
+                self.scan_config["left_limit"] != data.left_limit or
+                self.scan_config["right_limit"] != data.right_limit or
+                self.scan_config["range"] != data.range or
+                self.scan_config["num_bins"] != data.nbins or
+                self.scan_config["steps"] != data.step or
+                self.scan_config["clockwise"] != data.scanright):
+            self.scan_config["left_limit"] = data.left_limit
+            self.scan_config["right_limit"] = data.right_limit
+            self.scan_config["range"] = data.range
+            self.scan_config["num_bins"] = data.nbins
+            self.scan_config["steps"] = data.step
+            self.scan_config["clockwise"] = data.scanright
+
+    def stitch(self, data):
+        """Callback for stitch. If scan is not full, add a slice, otherwise
+        publish the full scan."""
+        # If there is no config data, nothing can be done.
+        if not self.scan_config:
+            rospy.loginfo("No sonar config is present, cannot stitch")
+            return
+
+        # Check if scan is full.
+        if not self.full:
+            self.add(data)
+        else:
+            # Publish current scan.
+            self.scan_pub.publish(self.to_full_scan(data.header.frame_id))
+
+            # Clear the scan data scan.
+            self.clouds = []
+            self.full = False
 
     def empty(self):
-        """Returns whether the scan is empty."""
+        """Returns True the scan is empty and False otherwise."""
         return len(self.clouds) == 0
 
     def add(self, cloud_slice):
         """Adds a slice to the scan.
+
         Args:
             scan_slice: Slice of the scan.
         """
         theta = round(self.theta(cloud_slice.points[10]), 4)
 
         # Update full variable if the end is reached.
-        if not self.empty() and (theta == round(self.right_limit, 4) or
-                                 theta == round(self.left_limit, 4)):
+        if not self.empty() and (theta == round(self.scan_config["right_limit"], 4) or
+                                 theta == round(self.scan_config["left_limit"], 4)):
             self.full = True
 
         self.clouds.append(cloud_slice)
 
     def to_full_scan(self, frame):
-        """Publishes the sonar data as a point cloud.
+        """Returns the sonar data as a point cloud.
+
         Args:
-            frame: Name of sensor frame.
+            frame: Name of sonar frame.
+
         Returns:
             sensor_msgs.msg.PointCloud.
         """
@@ -66,16 +103,16 @@ class Scan(object):
         cloud.header.frame_id = frame
         cloud.header.stamp = rospy.get_rostime()
         cloud.points = [
-            point for cloud in self.clouds
-            for point in cloud.points
+            pt for cld in self.clouds
+            for pt in cld.points
         ]
 
         channel = ChannelFloat32()
         channel.name = "intensity"
         channel.values = [
-            intensity for cloud in self.clouds
-            for channel in cloud.channels
-            for intensity in channel.values
+            intensity for cld in self.clouds
+            for ch in cld.channels
+            for intensity in ch.values
         ]
 
         cloud.channels = [channel]
@@ -84,6 +121,7 @@ class Scan(object):
     def theta(self, point):
         """Calculates the angle of a point, in the range 0 to 2pi, where 0 is
         the positive y axis.
+
         Args:
             point: Point32 message.
         """
@@ -91,62 +129,11 @@ class Scan(object):
 
         # Wrap values around to be between 0 and 2pi.
         if theta < 0:
-            theta = 2*math.pi + theta
+            theta = 2 * math.pi + theta
 
         return theta
 
 
-def make_config(data):
-    """Updates scan cofigurations when configuration is published."""
-    if (not scan_config or
-            scan_config["left_limit"] != data.left_limit or
-            scan_config["right_limit"] != data.right_limit or
-            scan_config["range"] != data.range or
-            scan_config["num_bins"] != data.nbins or
-            scan_config["steps"] != data.step or
-            scan_config["clockwise"] != data.scanright):
-        scan_config["left_limit"] = data.left_limit
-        scan_config["right_limit"] = data.right_limit
-        scan_config["range"] = data.range
-        scan_config["num_bins"] = data.nbins
-        scan_config["steps"] = data.step
-        scan_config["clockwise"] = data.scanright
-
-
-def stitch(data):
-    """Callback for stitch. If scan is not full, add a slice, otherwise
-    publish the full scan and reinitialize."""
-    # If a scan has not been initialized, make one.
-    
-    if not scan:
-        if scan_config:
-            global scan
-            scan = Scan(**scan_config)
-        else:
-            return  # No config, do nothing for now.
-
-    # Check if scan is full.
-    if not scan.full:
-        scan.add(data)
-    else:
-        # Publish current scan.
-        frame = rospy.get_param("~frame", "odom")
-        scan_pub.publish(scan.to_full_scan(frame))
-
-
-        # Reinitialize a new scan.
-        global scan
-        scan = Scan(**scan_config)
-        scan.add(data)
-
-
 if __name__ == '__main__':
-    # Initialize publishers and subscribers.
-    rospy.init_node("scan_stitcher")
-    config_sub = rospy.Subscriber("/tritech_micron/config", TritechMicronConfig,
-                                  make_config, queue_size=1)
-    slice_sub = rospy.Subscriber("/tritech_micron/scan", PointCloud,
-                                 stitch, queue_size=1)
-    scan_pub = rospy.Publisher("full_scan", PointCloud, queue_size=1)
-
+    ScanStitcher()
     rospy.spin()

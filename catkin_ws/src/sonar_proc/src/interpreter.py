@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-""" Interpreter
+"""Interpreter
 
 Takes in an array of clusters and publishes a Point
 which represents the centroid of the most 'significant' cluster
@@ -26,14 +26,16 @@ from geometry_msgs.msg import Point
 from sonar_proc.msg import ClusterArray
 
 # parameter weightings
-DISTANCE=0.5
-SIZE=0.25
-INTENSITY=0.25
+DISTANCE = 0.5
+SIZE = 0.25
+INTENSITY = 0.25
+
 
 def _normalize_helper(max_value, min_value):
     def helper(x):
         return (x - min_value) / (max_value - min_value)
     return helper
+
 
 def _normalize(values):
     max_value = max(values)
@@ -41,13 +43,15 @@ def _normalize(values):
 
     # prevent a division by zero
     if max_value == min_value:
-        return [1.0]*len(values)
+        return [1.0] * len(values)
 
     helper = _normalize_helper(max_value, min_value)
     return map(lambda x: helper(x), values)
 
+
 def distance(x, y):
     return abs(x - y)
+
 
 def callback(data):
     yaxis_distances, sizes, intensities = [], [], []
@@ -68,7 +72,7 @@ def callback(data):
     # apply the weighting
     scores = zip(distance_scores, size_scores, intensity_scores)
     for score in scores:
-        score = [score[0]*DISTANCE + score[1]*SIZE + score[2]*INTENSITY]
+        score = [score[0] * DISTANCE + score[1] * SIZE + score[2] * INTENSITY]
 
     # we want the index of the largest score
     i = reduce(lambda x, y: x if x[1] > y[1] else y, enumerate(score))[0]
@@ -77,6 +81,7 @@ def callback(data):
     point = Point(significant_cluster.centroid.x, significant_cluster.centroid.y, 0)
 
     pub_goal.publish(point)
+
 
 if __name__ == '__main__':
     rospy.init_node("interpreter")
