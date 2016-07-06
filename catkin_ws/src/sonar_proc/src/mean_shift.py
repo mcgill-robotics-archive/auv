@@ -38,7 +38,7 @@ from visualization_msgs.msg import MarkerArray
 from sonar_proc.msg import Cluster, ClusterArray
 from clustering import Clustering
 
-__author__ = "Dihia Idrici"
+__author__ = "Justin Bell, Dihia Idrici"
 
 
 def cluster(data):

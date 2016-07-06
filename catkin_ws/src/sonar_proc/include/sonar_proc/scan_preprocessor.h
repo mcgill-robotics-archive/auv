@@ -17,6 +17,11 @@ private:
 
   double INTENSITY_THRESHOLD_;
   double RADIUS_THRESHOLD_;
+  double X_LEAF_SIZE;
+  double Y_LEAF_SIZE;
+  double Z_LEAF_SIZE;
+  double RADIUS_SEARCH;
+  double MIN_NEIGHBORS_IN_RADIUS;
 
   /**
    * @brief Callback for the /full_scan topic.
