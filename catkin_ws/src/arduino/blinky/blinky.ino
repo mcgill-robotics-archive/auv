@@ -19,7 +19,7 @@ long lastTime;
 
 void setup()
 {
-  Serial.begin(1000000);
+  Serial.begin(115200);
   LEDS.addLeds<WS2812B, LED_OUT_PIN, GRB>(leds, LED_COUNT);
   LEDS.setBrightness(LED_BRIGHTNESS);
   LEDS.show();
@@ -131,6 +131,6 @@ void loop()
   colorLoop();
 
   LEDS.show();
-  //delay(1);
+  delay(1);
 }
 

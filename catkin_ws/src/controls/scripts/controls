@@ -182,7 +182,8 @@ def loop(event):
 
         # TODO: Use one get_transform
         (trans, rot) = get_transform("/initial_horizon", "/robot")
-        angles_estimated = list(euler_from_quaternion(rot))
+        # Use static frame, RPY
+        angles_estimated = list(euler_from_quaternion(rot, axes='sxyz'))
         (trans, rot) = get_transform('/floating_horizon', '/robot')
         depth_estimated = trans[2]
         # For Testing: angles_estimated[2] += 0.05
@@ -232,6 +233,9 @@ def loop(event):
         print "fx: "
         print fx
 
+        print "fy: "
+        print fy
+
         # Correct yaw angle error for wrap around. The other angles are
         # not corrected only small roll and pitch are supported.
         proportional_error[2] = normalize_angle(proportional_error[2])
@@ -266,13 +270,20 @@ def loop(event):
                   + proportional_error * proportional_gains
                   + derivative_error * derivative_gains)
 
+        print "output: "
+        print output
+
         rospy.loginfo("Integral Error {}".format(integral_error))
 
         # Need to transform the desired force into the body frame
         # for thrustmapper.
         matrix = euler_matrix(angles_estimated[0], angles_estimated[1], 0).T
-        # force = np.dot(matrix, [fx, fy, output[3] + 8, 1])[:3]
         force = np.dot(matrix, [fx, fy, output[3], 1])[:3]
+        # Use the line below to ignore the effects of angle errors
+        # on translation (to avoid unexpected sway):
+        # force = [fx, fy, output[3]]
+
+        print force
 
         wrenchMsg = Wrench()
         wrenchMsg.force.x = force[0]
