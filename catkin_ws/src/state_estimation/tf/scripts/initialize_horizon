@@ -62,6 +62,9 @@ class InitializeHorizonActionServer(object):
 
     """Horizon initialization action server."""
 
+    YAW_TOL = rospy.get_param("initialize_horizon/yaw_drift_tolerance",
+                              default=0.0087)
+
     def __init__(self):
         """Constructs InitializeHorizonActionServer."""
         self.lay_of_the_land = []
@@ -167,6 +170,76 @@ class InitializeHorizonActionServer(object):
         # Success.
         return True
 
+    def check_yaw_drift(self, time):
+        """Checks for yaw drift after initialization.
+
+        Args:
+            time: Time for which to wait before checking for drift.
+
+        Returns:
+            True if the yaw drift is greater than the tolerance, False
+            otherwise.
+        """
+        rate = rospy.Rate(5)
+        self.feedback.time_left = time
+        end_time = rospy.get_rostime() + time
+
+        while self.feedback.time_left.to_sec() > 0:
+            # Publish time left.
+            self._server.publish_feedback(self.feedback)
+            rospy.logdebug("Checking drift: %f s left...",
+                           self.feedback.time_left.to_sec())
+
+            # Stop if initialization was preempted.
+            if self._server.is_preempt_requested() or rospy.is_shutdown():
+                rospy.logerr("Initialization preempted")
+                self._server.set_preempted()
+                return
+
+            rate.sleep()
+
+            # Compute time left.
+            self.feedback.time_left = end_time - rospy.get_rostime()
+
+        # Get current ROS time.
+        now = rospy.Time.now()
+
+        try:
+            # Wait until next transform.
+            self.listener.waitForTransform(
+                # From
+                "/robot",
+                # To
+                "/initial_horizon",
+                # Now
+                now,
+                # Timeout
+                rospy.Duration(0.1))
+
+            # Try to get latest transform.
+            trans, rot = self.listener.lookupTransform(
+                # From
+                "/robot",
+                # To
+                "/initial_horizon",
+                # Now
+                now)
+        except tf.Exception as e:
+            # Give up.
+            rospy.logerr(e)
+            return
+
+        # Calculate the yaw tolerance.
+        tol = YAW_TOL * time.to_sec()
+        rpy = RPY.from_quaternion(rot)
+
+        # If the yaw drift is too high, return True and print error msg.
+        if rpy.yaw > tol:
+            rospy.logerr("Yaw drift of {} in {} s.".format(rpy.yaw, time.to_sec()))
+            return True
+
+        return False
+
     def initialize_horizon(self, goal):
         """Initializes horizon.
 
@@ -197,6 +270,12 @@ class InitializeHorizonActionServer(object):
         # Only initialize horizon's yaw.
         global horizon
         horizon = RPY(0, 0, median.yaw)
+
+        # If there is yaw drift, an empty result is returned.
+        if self.check_yaw_drift(goal.drift_check):
+            rospy.logerr("Initialization failed. Yaw drift detected.")
+            self._server.set_succeeded()
+            return
 
         # Construct result.
         result = auv_msgs.msg.InitializeHorizonResult()
