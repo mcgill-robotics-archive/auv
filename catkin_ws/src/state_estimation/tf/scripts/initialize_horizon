@@ -180,15 +180,16 @@ class InitializeHorizonActionServer(object):
             True if the yaw drift is greater than the tolerance, False
             otherwise.
         """
+        rospy.logwarn("Checking for yaw drift for {} s".format(time.to_sec()))
+
         rate = rospy.Rate(5)
+
         self.feedback.time_left = time
         end_time = rospy.get_rostime() + time
 
         while self.feedback.time_left.to_sec() > 0:
             # Publish time left.
             self._server.publish_feedback(self.feedback)
-            rospy.logdebug("Checking drift: %f s left...",
-                           self.feedback.time_left.to_sec())
 
             # Stop if initialization was preempted.
             if self._server.is_preempt_requested() or rospy.is_shutdown():
@@ -230,7 +231,7 @@ class InitializeHorizonActionServer(object):
             return
 
         # Calculate the yaw tolerance.
-        tol = YAW_TOL * time.to_sec()
+        tol = self.YAW_TOL * time.to_sec()
         rpy = RPY.from_quaternion(rot)
 
         # If the yaw drift is too high, return True and print error msg.
@@ -274,7 +275,7 @@ class InitializeHorizonActionServer(object):
         # If there is yaw drift, an empty result is returned.
         if self.check_yaw_drift(goal.drift_check):
             rospy.logerr("Initialization failed. Yaw drift detected.")
-            self._server.set_succeeded()
+            self._server.set_aborted()
             return
 
         # Construct result.

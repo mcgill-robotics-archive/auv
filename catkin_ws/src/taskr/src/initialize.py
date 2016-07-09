@@ -1,8 +1,9 @@
 #!/usr/bin/env python
 import rospy
 from actionlib import SimpleActionClient
-from auv_msgs.msg import InitializeHorizonAction, InitializeHorizonGoal
+from actionlib_msgs.msg import GoalStatus
 from blinky.srv import UpdatePlannerLights
+from auv_msgs.msg import InitializeHorizonAction, InitializeHorizonGoal
 
 
 class Initializer(object):
@@ -12,6 +13,7 @@ class Initializer(object):
                             if "drift_check" in times else rospy.Duration(2))
 
         self.initialize_client = SimpleActionClient("initialize_horizon", InitializeHorizonAction)
+        self.initialize_client.wait_for_server()
 
     def start(self, server, feedback_msg):
         initialize_goal = InitializeHorizonGoal()
@@ -25,7 +27,7 @@ class Initializer(object):
 
         self.initialize_client.wait_for_result()
 
-        if not self.initialize_client.get_result():
+        if self.initialize_client.get_state() == GoalStatus.ABORTED:
             # Failed to initialize. Print panic lights.
             try:
                 blinky_proxy = rospy.ServiceProxy("update_planner_lights",
