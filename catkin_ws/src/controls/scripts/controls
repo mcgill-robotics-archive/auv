@@ -168,7 +168,7 @@ def rosInit():
 def loop(event):
     global pos_proportional_error, pos_integral_error, proportional_error
     global integral_error
-    global angles_estimated, depth_estimated, surge_speed
+    global angles_estimated, depth_estimated, depth_desired, surge_speed
 
     if not mission:
         return
