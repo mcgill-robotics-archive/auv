@@ -79,6 +79,10 @@ class Task(object):
                     self._result.success = False
                     return
 
+        # If an action aborted the server, return.
+        if not self._as.is_active():
+            return
+
         self._result.success = True
         self._as.set_succeeded(self._result)
 

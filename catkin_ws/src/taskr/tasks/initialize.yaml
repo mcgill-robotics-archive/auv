@@ -1,3 +1,5 @@
 # INITIALIZE.
 actions:
-  - initialize: 10
+  - initialize:
+      countdown: 10
+      drift_check: 3
