@@ -17,7 +17,7 @@ kd_yHydro: 0.0
 
 kp_depth: 20.0
 ki_depth: 2.0
-kd_depth: 85.0
+kd_depth: 35.0
 
 kp_pitch: 1.0
 ki_pitch: 0.0
