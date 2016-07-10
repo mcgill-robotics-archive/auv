@@ -77,7 +77,7 @@ class Move(object):
 
             rate.sleep()
 
-        rospy.loginfo("Done move in time", (rospy.Time.now() - start).to_sec())
+        rospy.loginfo("Done move in time %s", (rospy.Time.now() - start).to_sec())
 
     def get_time(self, distance):
         """Get the time for which to travel at the given velocity to achieve
