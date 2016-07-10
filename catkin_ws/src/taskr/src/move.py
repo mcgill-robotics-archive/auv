@@ -9,7 +9,7 @@ class Move(object):
 
     VELOCITY = rospy.get_param("taskr/velocity", default=1)
     RATE = rospy.get_param("taskr/vel_cmd_rate", default=10)
-    VEL_COEFFICIENT = rospy.get_param("taskr/vel_coefficient", default=1)
+    VEL_COEFFICIENT = rospy.get_param("taskr/vel_coefficient", default=10)
 
     def __init__(self, point):
         """Constructor for the Move object."""
