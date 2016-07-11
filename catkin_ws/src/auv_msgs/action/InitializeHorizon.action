@@ -1,5 +1,6 @@
 # Goal definition.
 duration countdown
+duration drift_check
 ---
 # Result definition.
 geometry_msgs/PoseStamped offset
