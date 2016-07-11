@@ -1,24 +1,11 @@
 # TEST TASK
 # Represents any series of actions for testing purposes.
 actions:
+  - initialize:
+      countdown: 5
+      drift_check: 3
   - move:
-      distance: 3
-      depth: 2
-      yaw: 1.57
+      distance: 6
+      depth: 1
+      yaw: 0 
       feedback: False
-  - move:
-      distance: 3
-      depth: 2
-      yaw: 3.14
-      feedback: False
-  - move:
-      distance: 3
-      depth: 2
-      yaw: 4.71
-      feedback: False
-  - move:
-      distance: 3
-      depth: 2
-      yaw: 0.0
-      feedback: False
-
