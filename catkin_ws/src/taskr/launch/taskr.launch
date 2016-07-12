@@ -1,7 +1,10 @@
 <launch>
+  <arg name="use_feedback" value="false" />
+
   <node name="taskr" pkg="taskr" type="taskr.py" output="screen">
       <param name="velocity" value="1" />
       <param name="vel_cmd_rate" value="10" />
       <param name="vel_coefficient" value="1" />
+      <param name="use_feedback" value="$(arg use_feedback)" />
   </node>
 </launch>
