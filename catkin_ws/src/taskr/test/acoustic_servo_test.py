@@ -30,7 +30,7 @@ class AcousticTest(object):
         print("Input any value from {0} to {1}, and `ctrl-d` to exit"
               .format(rn[0], rn[-1]))
 
-        angle = raw_input(topic + "> ")
+        angle = int(raw_input(topic + "> "))
 
         if angle in rn:
             self.pubs[topic].publish(Float32(angle))
