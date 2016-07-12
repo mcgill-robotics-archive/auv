@@ -1,8 +1,0 @@
-#goal
-time countdown
----
-#result
-geometry_msgs/Pose offset
----
-#feedback
-time time_left
