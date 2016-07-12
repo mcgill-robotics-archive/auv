@@ -24,9 +24,12 @@ class Move(object):
         # Whether to get yaw feedback from sensors.
         self.feedback = (point["feedback"] if "feedback" in point else False) and self.USE_FEEDBACK
 
+        # If feedback is to be used, subscribe to sonar.
         if self.feedback:
+            rospy.info("Move with feedback requested")
             self.sonar_sub = rospy.Subscriber("/sonar_proc/goal", Point, self.sonar_callback)
             self.sonar_correction = 0
+
         # Create velocity action client for controls server.
         self.vel_client = SimpleActionClient("controls_velocity", SetVelocityAction)
         self.vel_client.wait_for_server()
@@ -70,11 +73,15 @@ class Move(object):
         for i in range(0, int(self.RATE * time)):
             print "Sending Surge", float(i) / self.RATE, "s /", time, "s"
 
+            # Only if feedback is being used, correct yaw.
             if self.feedback and self.sonar_correction != 0:
-                print "Correcting sonar by", self.sonar_correction
-                ctrl_goal.cmd.yaw += self.sonar_correction
+                rospy.loginfo("Correcting sonar by {}".format(self.sonar_correction))
+                # Correct the yaw and then reset.
+                ctrl_goal.cmd.yaw -= self.sonar_correction
+                self.sonar_correction = 0
 
             self.vel_client.send_goal(ctrl_goal)
+
             # Check if we received preempt request from Planner
             if server.is_preempt_requested():
                 rospy.logerr("Taskr preempted")
@@ -88,7 +95,7 @@ class Move(object):
 
             rate.sleep()
 
-        rospy.loginfo("Done move in time {}".format(rospy.Time.now() - start).to_sec())
+        rospy.loginfo("Done move in time {}".format((rospy.Time.now() - start).to_sec()))
 
     def get_time(self, distance):
         """Get the time for which to travel at the given velocity to achieve
