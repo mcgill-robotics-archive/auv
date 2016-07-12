@@ -10,17 +10,17 @@ find_package(catkin REQUIRED COMPONENTS
   actionlib_msgs
 )
 
+catkin_python_setup()
+
 ###################
 ## Action config ##
 ###################
 
- add_action_files(
-   DIRECTORY action
-   FILES
-   initialize.action
-   move.action
-   Task.action
- )
+add_action_files(
+  DIRECTORY action
+  FILES
+  Task.action
+)
 
 generate_messages(
   DEPENDENCIES
@@ -33,6 +33,6 @@ generate_messages(
 ## Catkin config ##
 ###################
 
-catkin_package(CATKIN_DEPENDS
-  actionlib_msgs
+catkin_package(
+  CATKIN_DEPENDS actionlib_msgs
 )

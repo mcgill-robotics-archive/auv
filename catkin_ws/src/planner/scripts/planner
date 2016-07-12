@@ -1,0 +1,123 @@
+#!/usr/bin/env python
+
+import yaml
+import rospy
+import smach
+import smach_ros
+from threading import Thread
+from std_msgs.msg import Bool
+from smach_ros import SimpleActionState
+from planner.msg import TaskGoal, TaskAction
+
+# TODO: Make these params.
+TASKS_PATH = rospy.get_param("planner/tasks")
+MISSION_TOPIC = rospy.get_param("planner/mission_topic")
+
+# Note: I am assuming that when the mission switch is pressed (start mission),
+# a std_msgs/Bool message is published on the /mission topic with data True.
+# When the mission switch is pulled (kill), I assume that a False value is
+# sent. This should be updated with the correct data.
+
+# TODO: Do not kill the state machine on kill -> go to the "MISSION" state.
+
+
+def mission_start_cb(ud, msg):
+    """Callback for the mission switch. If the data is True, then we return
+    False, which translates to an "invalid" state and continues to the next
+    state. Otherwise, returning True seems to do nothing... """
+    if msg.data:
+        return False
+    else:
+        return True
+
+
+def mission_kill_cb(ud, msg):
+    """Send a False value to kill."""
+    if msg.data:
+        return True
+    else:
+        return False
+
+
+def concurrent_child_term_cb(outcome_map):
+    """This is called when one of the states terminates."""
+    # Kill switch was activated. Terminate.
+    if outcome_map["KILL"] == "invalid":
+        return True
+
+    # Tasks finished execution. Terminate.
+    # TODO: Bad because this aborts, not succeeds.
+    if outcome_map["TASKS"] == "succeeded":
+        return True
+
+    # For all other cases, continue.
+    # TODO: This seems wrong.
+    return False
+
+
+if __name__ == "__main__":
+    rospy.init_node("planner")
+
+    # Get the task sequence from the yaml.
+    with open(TASKS_PATH, "r") as f:
+        data = yaml.load(f)
+
+    # The task state machine has a simple sequence of action state tasks,
+    # defined based on data from the yaml.
+    task_sq = smach.Sequence(outcomes=["succeeded", "aborted", "preempted"],
+                             connector_outcome="succeeded")
+
+    with task_sq:
+        # Iterate through the yaml, adding an action state to the task
+        # container for each entry.
+        for task in data["tasks"]:
+            goal = TaskGoal()
+            goal.task = task["name"]
+            smach.Sequence.add(task["state"],
+                               SimpleActionState(task["server"],
+                                                 TaskAction,
+                                                 goal=goal))
+
+    # The concurrent state machine runs a mission kill switch monitor in
+    # parallel with the task sequence. If the mission is killed, the whole
+    # machine terminates.
+    csm = smach.Concurrence(outcomes=["succeeded", "aborted", "preempted"],
+                            default_outcome="aborted",
+                            child_termination_cb=concurrent_child_term_cb)
+
+    with csm:
+        # Add the kill switch monitor.
+        smach.Concurrence.add("KILL",
+                              smach_ros.MonitorState(MISSION_TOPIC, Bool, mission_kill_cb))
+        # Add the task sequence machine.
+        smach.Concurrence.add("TASKS", task_sq)
+
+    # The task machine is the main parent state machine container that is
+    # executed from planner. It waits for the mission to be started before
+    # launching the concurrent state machine.
+    task_machine = smach.StateMachine(outcomes=["invalid", "aborted", "valid", "succeeded", "preempted"])
+
+    with task_machine:
+        # Add a state that waits for the mission switch.
+        smach.StateMachine.add_auto("MISSION",
+                                    smach_ros.MonitorState(MISSION_TOPIC, Bool, mission_start_cb),
+                                    connector_outcomes=["invalid"])
+
+        # Add the concurrent state machine.
+        smach.StateMachine.add_auto("CONCURRENT", csm, connector_outcomes=["succeeded"])
+
+    sis = smach_ros.IntrospectionServer("planner_test", task_machine, "/SM_ROOT")
+    sis.start()
+
+    # In order to get smach to respond to ctrl+c we run it in a different
+    # thread and request a preempt on ctrl+c.
+    smach_thread = Thread(target=lambda: task_machine.execute())
+    smach_thread.start()
+
+    # It is necessary to use the on_shutdown method to request the preempt
+    # rather than waiting until after rospy spin to do so. Otherwise, the
+    # state machine will not respond to ctrl+c.
+    rospy.on_shutdown(task_machine.request_preempt)
+    rospy.spin()
+    smach_thread.join()
+    sis.stop()
