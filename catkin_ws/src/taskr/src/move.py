@@ -26,7 +26,7 @@ class Move(object):
 
         # If feedback is to be used, subscribe to sonar.
         if self.feedback:
-            rospy.info("Move with feedback requested")
+            rospy.loginfo("Move with feedback requested")
             self.sonar_sub = rospy.Subscriber("/sonar_proc/goal", Point, self.sonar_callback)
             self.sonar_correction = 0
 
@@ -100,7 +100,6 @@ class Move(object):
     def get_time(self, distance):
         """Get the time for which to travel at the given velocity to achieve
         desired distance."""
-        print distance, "/", self.VELOCITY
         return distance / self.VELOCITY
 
     def sonar_callback(self, goal):
@@ -113,4 +112,4 @@ class Move(object):
         # threshold.
         if error < self.ERROR_THRESHOLD:
             rospy.loginfo("Correction seems valid, shifting by {}".format(error))
-            self.sonar_correction += error
+            self.sonar_correction = error

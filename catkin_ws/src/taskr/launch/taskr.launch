@@ -1,5 +1,5 @@
 <launch>
-  <arg name="use_feedback" value="false"
+  <arg name="use_feedback" default="false"
     doc="The global off switch for feedback. Set to false to never use feedback." />
 
   <node name="taskr" pkg="taskr" type="taskr.py" output="screen">
