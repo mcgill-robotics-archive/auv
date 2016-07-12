@@ -47,17 +47,16 @@ class Move(object):
         time = self.get_time(self.distance)
 
         # Send yaw goal without velocity first.
-        if self.yaw != 0:
-            print "Sending yaw"
-            # Send to velocity server
-            self.vel_client.send_goal(ctrl_goal)
-            # Check if we received preempt request from Taskr.
-            if server.is_preempt_requested():
-                print "Move preempted"
-                # Send preempt request to Controls
-                self.vel_client.cancel_goal()
-                self._as.set_preempted()
-                return
+        rospy.loginfo("Sending initial yaw only")
+        # Send to velocity server
+        self.vel_client.send_goal(ctrl_goal)
+        # Check if we received preempt request from Taskr.
+        if server.is_preempt_requested():
+            rospy.logerr("Move preempted")
+            # Send preempt request to Controls
+            self.vel_client.cancel_goal()
+            server.set_preempted()
+            return
 
             self.vel_client.wait_for_result()
 
@@ -78,10 +77,10 @@ class Move(object):
             self.vel_client.send_goal(ctrl_goal)
             # Check if we received preempt request from Planner
             if server.is_preempt_requested():
-                print "Taskr preempted"
+                rospy.logerr("Taskr preempted")
                 # Send preempt request to Controls
                 self.vel_client.cancel_goal()
-                self._as.set_preempted()
+                server.set_preempted()
                 return
 
             feedback_msg.is_done = False  # Not super useful feedback.
@@ -89,7 +88,7 @@ class Move(object):
 
             rate.sleep()
 
-        rospy.loginfo("Done move in time", (rospy.Time.now() - start).to_sec())
+        rospy.loginfo("Done move in time {}".format(rospy.Time.now() - start).to_sec())
 
     def get_time(self, distance):
         """Get the time for which to travel at the given velocity to achieve
