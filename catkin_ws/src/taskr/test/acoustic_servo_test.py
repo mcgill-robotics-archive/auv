@@ -3,10 +3,13 @@
 
 """Manual testing interface for acoustic_servo action."""
 
+import os
 import rospy
 from std_msgs.msg import Float32
 
 __author__ = "Malcolm Watt"
+__location__ = os.path.realpath(os.path.join(os.getcwd(),
+                                os.path.dirname(__file__)))
 
 
 class AcousticTest(object):
@@ -36,7 +39,7 @@ class AcousticTest(object):
 
 if __name__ == "__main__":
     # Display help text using the contents of acoustic_servo_test.txt
-    help_text = open('./acoustic_servo_test.txt')
+    help_text = open(os.path.join(__location__, 'acoustic_servo_test.txt'))
     for line in help_text:
         print(line)
 
