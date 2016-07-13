@@ -1,25 +1,17 @@
 tasks:
-  - name: square
-    state: square
+  - name: SQUARE
     server: square_task
-  # - name: initialize  # name sent as goal
-  #   state: INITIALIZE  # name of the state
-  #   server: initialize_task  # name of the action server
-  # - name: gate
-  #   state: GATE
-  #   server: gate_task
-  - name: buoy
-    state: BUOY
+  - name:  INITIALIZE  # name of the state
+    server: initialize_task  # name of the action server
+  - name: GATE
+    server: gate_task
+  - name: BUOY
     server: buoy_task
-  # - name: maneuver
-  #   state: MANEUVER
-  #   server: maneuver_task
-  # - name: bin
-  #   state: BIN
-  #   server: bin_task
-  # - name: torpedo
-  #   state: TORPEDO
-  #   server: torpedo_task
-  # - name: octagon
-  #   state: OCTAGON
-  #   server: octagon_task
+  - name: MANEUVER
+    server: maneuver_task
+  - name: BIN
+    server: bin_task
+  - name: TORPEDO
+    server: torpedo_task
+  - name: OCTAGON
+    server: octagon_task
