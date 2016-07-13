@@ -1,12 +1,4 @@
 # TORPEDO TASK
 # Move to torpedos and then shoot.
 actions:
-  - move:
-      distance: 2
-      depth: 2
-      yaw: 1.57
-      feedback: True
-  - visual_servo: "starboard_torpedo"  # Visual servo to torpedo
-  - shoot: "starboard_torpedo"
-  - visual_servo: "port_torpedo"
   - shoot: "port_torpedo"
