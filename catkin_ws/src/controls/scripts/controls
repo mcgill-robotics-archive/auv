@@ -38,10 +38,6 @@ listener = None
 wrenchPublisher = None
 mission = False
 
-# For testing
-# angles_estimated = [0,0,0]
-#depth_estimated = 10
-
 
 def normalize_angle(angle, max_angle=pi):
     # Returns angle between -max_angle and max_angle
@@ -80,14 +76,15 @@ def set_position_callback():
     depth_desired = cmd.depth
 
 def visual_servo_callback():
-    global angles_desired, target_frame_id
+    global angles_desired, angles_estimated, target_frame_id
     set_velocity_preempt()
     set_position_preempt()
     cmd = vservo_server.accept_new_goal().cmd
     target_frame_id = cmd.target_frame_id
     angles_desired[0] = cmd.roll
     angles_desired[1] = cmd.pitch
-    angles_desired[2] = cmd.yaw
+    # keep current yaw when getting a vservo goal:
+    angles_desired[2] = angles_estimated[2]
 
 def set_velocity_preempt():
     if vel_server.is_active():
