@@ -9,9 +9,12 @@ from visual_servo import VisualServo
 from acoustic_servo import AcousticServo
 from rospkg import RosPack
 from actionlib import SimpleActionServer
+from auv_msgs.msg import TaskStatus
 from planner.msg import TaskFeedback, TaskResult, TaskAction
 
 TASK_PATH = RosPack().get_path("taskr") + "/tasks/"
+current_task = TaskStatus()
+current_task.task = TaskStatus.IDLE
 
 
 class Task(object):
@@ -98,6 +101,7 @@ class Initialize(Task):
             self.data = yaml.load(f)
 
     def execute_cb(self, goal):
+        current_task.task = TaskStatus.INITIALIZE
         self.action_sequence(self.data)
 
 
@@ -112,11 +116,12 @@ class Bins(Task):
             self.data = yaml.load(f)
 
     def execute_cb(self, goal):
+        current_task.task = TaskStatus.BINS
         self.action_sequence(self.data)
 
 
 class Buoys(Task):
-    YAML = "buoys.yaml"
+    YAML = "buoy.yaml"
 
     def __init__(self, name):
         super(Buoys, self).__init__(name, self.execute_cb)
@@ -126,6 +131,7 @@ class Buoys(Task):
             self.data = yaml.load(f)
 
     def execute_cb(self, goal):
+        current_task.task = TaskStatus.BUOYS
         self.action_sequence(self.data)
 
 
@@ -140,6 +146,7 @@ class Gate(Task):
             self.data = yaml.load(f)
 
     def execute_cb(self, goal):
+        current_task.task = TaskStatus.GATE
         self.action_sequence(self.data)
 
 
@@ -154,6 +161,7 @@ class Maneuver(Task):
             self.data = yaml.load(f)
 
     def execute_cb(self, goal):
+        current_task.task = TaskStatus.MANEUVER
         self.action_sequence(self.data)
 
 
@@ -168,6 +176,7 @@ class Octagon(Task):
             self.data = yaml.load(f)
 
     def execute_cb(self, goal):
+        current_task.task = TaskStatus.OCTAGON
         self.action_sequence(self.data)
 
 
@@ -182,6 +191,7 @@ class Torpedo(Task):
             self.data = yaml.load(f)
 
     def execute_cb(self, goal):
+        current_task.task = TaskStatus.TORPEDO
         self.action_sequence(self.data)
 
 
@@ -197,11 +207,20 @@ class Square(Task):
             self.data = yaml.load(f)
 
     def execute_cb(self, goal):
+        current_task.task = TaskStatus.SQUARE
         self.action_sequence(self.data)
+
+
+def publish_task(event):
+    """Callback for timer which publishes the current task being attempted."""
+    task_pub.publish(current_task)
 
 
 if __name__ == '__main__':
     rospy.init_node("taskr")
+
+    task_pub = rospy.Publisher("/task", TaskStatus, queue_size=1)
+    rospy.Timer(rospy.Duration(0.2), publish_task)
 
     # Initialize tasks.
     Initialize("initialize_task")

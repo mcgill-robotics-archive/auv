@@ -1,8 +1,0 @@
-# BUOYS TASK
-# Move to buoys. Move to specific colour and pull down buoy are options.
-actions:
-  - move:
-      distance: 10
-      depth: 2
-      yaw: 0.0
-      feedback: True
