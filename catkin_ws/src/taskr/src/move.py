@@ -61,7 +61,7 @@ class Move(object):
             server.set_preempted()
             return
 
-            self.vel_client.wait_for_result()
+        self.vel_client.wait_for_result()
 
         ctrl_goal.cmd.surgeSpeed = self.VELOCITY * self.VEL_COEFFICIENT
 

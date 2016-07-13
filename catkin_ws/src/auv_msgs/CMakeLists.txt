@@ -11,26 +11,29 @@ find_package(catkin REQUIRED COMPONENTS
 
 add_message_files(
   FILES
-  #added by Controls
+  # Added by Controls
   SetPosition.msg
   SetVelocity.msg
   MotorCommands.msg
   SolenoidCommands.msg
   VisualServoCommand.msg
 
-  #added by State Estimation
+  # Added by State Estimation
   RangeBearingElevation.msg
   SlamEstimate.msg
 
-  #added by CV
+  # Added by CV
   CVTarget.msg
 
-  #added by IO
+  # Added by IO
   RadioCommands.msg
   CPUTemperature.msg
 
-  #added by hydrophones
+  # Added by hydrophones
   Signals.msg
+
+  # Added by Taskr
+  TaskStatus.msg
 )
 
 add_service_files(FILES
