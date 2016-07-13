@@ -3,4 +3,4 @@
 	url = git@github.com:mcgill-robotics/ros-tritech-micron.git
 [submodule "catkin_ws/src/ros_opentld"]
 	path = catkin_ws/src/ros_opentld
-	url = git@github.com:Ronan0912/ros_opentld.git
+	url = git@github.com:mcgill-robotics/ros_opentld.git
