@@ -1,4 +1,4 @@
-# BUOYS TASK
+# BUOY TASK
 actions:
   - move:  # Move close to the buoys
       distance: 2

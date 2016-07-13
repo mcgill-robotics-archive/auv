@@ -5,7 +5,7 @@ from actionlib import SimpleActionClient
 from planner.msg import TaskAction, TaskGoal
 
 # The list of the possible tasks to test
-TASKS = ["bin", "buoys", "initialize", "gate", "maneuver", "octagon", "square",
+TASKS = ["bin", "buoy", "initialize", "gate", "maneuver", "octagon", "square",
          "torpedo"]
 
 

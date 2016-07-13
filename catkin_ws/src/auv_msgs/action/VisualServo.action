@@ -2,6 +2,7 @@
 VisualServoCommand cmd
 ---
 # Result definition.
+bool success
 ---
 # Feedback definition.
 float32 x_error

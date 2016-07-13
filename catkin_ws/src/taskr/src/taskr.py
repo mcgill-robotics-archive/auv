@@ -116,7 +116,7 @@ class Bins(Task):
 
 
 class Buoys(Task):
-    YAML = "buoys.yaml"
+    YAML = "buoy.yaml"
 
     def __init__(self, name):
         super(Buoys, self).__init__(name, self.execute_cb)
@@ -206,7 +206,7 @@ if __name__ == '__main__':
     # Initialize tasks.
     Initialize("initialize_task")
     Bins("bin_task")
-    Buoys("buoys_task")
+    Buoys("buoy_task")
     Gate("gate_task")
     Maneuver("maneuver_task")
     Octagon("octagon_task")
