@@ -52,23 +52,20 @@ class VisualServo(object):
                         MODELS_PATH + self.target)
         rospy.set_param('ros_tld_tracker_node/loadModel', True)
 
-        # while loop with rate to check if no box for some time
-        while True:
-            rospy.logdebug("Visual Servoing")
-            self.controls_client.send_goal(ctrl_goal)
+        rospy.logdebug("Visual Servoing")
+        self.controls_client.send_goal(ctrl_goal)
 
-            # Check if we received preempt request from Taskr.
-            if server.is_preempt_requested():
-                rospy.loginfo("Visual Servo Preempted")
-                # Send preempt request to Controls
-                self.controls_client.cancel_goal()
-                server.set_preempted()
-                return
+        # Check if we received preempt request from Taskr.
+        if server.is_preempt_requested():
+            rospy.loginfo("Visual Servo Preempted")
+            # Send preempt request to Controls
+            self.controls_client.cancel_goal()
+            server.set_preempted()
+            return
 
-            # self.controls_client.wait_for_result()
-
-            rospy.sleep(0.05)
-            continue
+        rospy.loginfo("Waiting for results")
+        self.controls_client.wait_for_result()
+        rospy.loginfo("Successfully located target!")
 
     def tracked_obj_callback(self, box):
         if box.confidence > 0.50:
@@ -87,7 +84,6 @@ class VisualServo(object):
 
             point = Point()
             point.x = 0.0  # TODO: get x (surge) distance based on size of bb
-            # TODO: assign real distance to y and z based on size of bb
             point.y = x_dist_to_target
             point.z = y_dist_to_target
             self.pub.publish(point)

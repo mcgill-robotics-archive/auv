@@ -6,7 +6,7 @@ import rospy
 from geometry_msgs.msg import Wrench
 from auv_msgs.msg import (
     SetVelocityAction, SetVelocityFeedback, SetVelocityResult, SetPositionAction,
-    SetPositionFeedback, VisualServoAction, VisualServoFeedback)
+    SetPositionFeedback, VisualServoAction, VisualServoFeedback, VisualServoResult)
 import tf
 from tf.transformations import euler_from_quaternion, euler_matrix
 from actionlib import SimpleActionServer
@@ -169,8 +169,10 @@ def loop(event):
     global angles_estimated, depth_estimated, depth_desired, surge_speed
 
     if not mission:
+        rospy.loginfo("No Mission")
         return
     if not (pos_server.is_active() or vel_server.is_active() or vservo_server.is_active()):
+        rospy.logwarn("No actionlib server is active")
         return
 
     try:
@@ -199,6 +201,7 @@ def loop(event):
                       + pos_derivative_error * pos_derivative_gains)
             angles_estimated[2] = yaw_err
         elif vservo_server.is_active():
+            rospy.loginfo("Visual Servo Server Active")
             (x_err, y_err, z_err), quaternion = get_transform('/robot', target_frame_id)
             pos_proportional_error_prev = pos_proportional_error
             pos_proportional_error = np.array([x_err, y_err])
@@ -263,6 +266,14 @@ def loop(event):
             feedback.y_error = pos_proportional_error[1]
             feedback.depth_error = proportional_error[3]
             vservo_server.publish_feedback(feedback)
+
+            # Must be greater than exact zero to make sure
+            # we don't return success when object is lost:
+            if (0 < fabs(feedback.y_error) < 0.1 and
+               0 < fabs(feedback.depth_error) < 0.1):
+                result = VisualServoResult()
+                result.success = True
+                vservo_server.set_succeeded(result)
 
         output = (integral_error * integral_gains
                   + proportional_error * proportional_gains
