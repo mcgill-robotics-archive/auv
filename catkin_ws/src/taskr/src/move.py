@@ -77,7 +77,9 @@ class Move(object):
             if self.feedback and self.sonar_correction != 0:
                 rospy.loginfo("Correcting sonar by {}".format(self.sonar_correction))
                 # Correct the yaw and then reset.
-                ctrl_goal.cmd.yaw -= self.sonar_correction
+                new_yaw = ctrl_goal.cmd.yaw - self.sonar_correction
+                # Wrap between -pi and pi
+                ctrl_goal.cmd.yaw = (new_yaw + numpy.pi) % (2 * numpy.pi) - numpy.pi
                 self.sonar_correction = 0
 
             self.vel_client.send_goal(ctrl_goal)
