@@ -20,6 +20,7 @@ vservo_server = None
 depth_desired = 0.0
 depth_estimated = 0.0
 angles_desired = np.zeros(3)
+angles_estimated = np.zeros(3)
 proportional_error = np.zeros(4)
 integral_error = np.zeros(4)
 
