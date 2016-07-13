@@ -73,7 +73,7 @@ if __name__ == "__main__":
         for task in data["tasks"]:
             goal = TaskGoal()
             goal.task = task["name"]
-            smach.Sequence.add(task["state"],
+            smach.Sequence.add(task["name"],
                                SimpleActionState(task["server"],
                                                  TaskAction,
                                                  goal=goal))
