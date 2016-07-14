@@ -1,9 +1,11 @@
-# Goal definition.
-SetVelocity cmd
+#Goal definition.
+VisualServoCommand cmd
 ---
 # Result definition.
 bool success
 ---
 # Feedback definition.
-float32 yaw_error
+float32 x_error
+float32 y_error
 float32 depth_error
+

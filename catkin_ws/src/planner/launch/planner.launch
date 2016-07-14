@@ -1,5 +1,6 @@
 <launch>
-    <node name="planner" pkg="planner" type="XAutonomy" output="screen">
-        <rosparam file="$(find planner)/config/dead_reckoning.yaml" />
-    </node>
+  <node name="planner" pkg="planner" type="planner" output="screen">
+    <param name="tasks" value="$(find planner)/config/tasks.yaml" />
+    <param name="mission_topic" value="/mission" />
+  </node>
 </launch>

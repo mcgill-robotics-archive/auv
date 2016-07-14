@@ -26,7 +26,7 @@ find_package(Boost REQUIRED COMPONENTS)
 
 ## Have to put this in a separate find_package because we need to
 ## find cmake_modules first
-find_package(Eigen REQUIRED)
+find_package(Eigen3 REQUIRED)
 
 catkin_package(
   CATKIN_DEPENDS
@@ -50,4 +50,4 @@ include_directories(${Boost_INCLUDE_DIRS} ${catkin_INCLUDE_DIRS})
 add_subdirectory(pose)
 add_subdirectory(tf)
 add_subdirectory(ukf)
-
+add_subdirectory(servo)
