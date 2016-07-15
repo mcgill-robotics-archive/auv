@@ -5,7 +5,7 @@ kd_xPos: 0
 
 kp_yPos: 40.0
 ki_yPos: 0
-kd_yPos: 0
+kd_yPos: 5
 
 kp_xHydro: 0.5e6
 ki_xHydro: 0.0
@@ -17,7 +17,7 @@ kd_yHydro: 0.0
 
 kp_depth: 150.0
 ki_depth: 4.0
-kd_depth: 10.0
+kd_depth: 30.0 # (vservo) # 10.0 (normal)
 
 kp_pitch: 1.0
 ki_pitch: 0.0
