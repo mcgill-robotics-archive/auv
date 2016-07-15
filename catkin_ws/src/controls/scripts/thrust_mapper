@@ -32,9 +32,7 @@ l_6y = 0.372 # Brad: 14.631 # or 13.169 inches
 l_7y = 0.327 # Brad: 12.867 # or 6.331 inches
 l_8y = 0.327 # Brad: 12.867 # or 6.331 inches
 
-# Thruster T2 is wired in the opposite direction so the sign is reversed for 
-# the second column of matrix T1234_to_Fx_Fy_Mz
-T1234_to_Fx_Fy_Mz = matrix([[1,1,0,0],[0,0,-1,-1],[l_1z,-l_2z,-l_3z,l_4z]])
+T1234_to_Fx_Fy_Mz = matrix([[1,1,0,0],[0,0,1,1],[l_1z,-l_2z,l_3z,-l_4z]])
 Fx_Fy_Mz_to_T1234 = pinv(T1234_to_Fx_Fy_Mz, rcond = 1e-15)
 T5678_to_Fz_Mx_My = matrix([[-1,-1,-1,-1],[l_5x,-l_6x,-l_7x,l_8x],[l_5y,l_6y,-l_7y,-l_8y]])
 Fz_Mx_My_to_T5678 = pinv(T5678_to_Fz_Mx_My, rcond= 1e-15)
@@ -54,7 +52,7 @@ def Wrench_to_thrust_callback(data):
     cmds_msg.port_surge = T1234[0]
     cmds_msg.starboard_surge = T1234[1]
     cmds_msg.bow_sway = T1234[2]
-    cmds_msg.stern_sway = T1234[3]
+    cmds_msg.stern_sway = -T1234[3]
     cmds_msg.port_bow_heave = T5678[0]
     cmds_msg.starboard_bow_heave = T5678[1]
     cmds_msg.starboard_stern_heave = T5678[2]
