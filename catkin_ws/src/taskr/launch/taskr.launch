@@ -9,5 +9,6 @@
     <param name="vel_coefficient" value="20" />
     <param name="use_feedback" value="$(arg use_feedback)" />
     <param name="task_file" value="$(arg task_file)" />
+    <param name="models_path" value="$(find taskr)/models/" />
   </node>
 </launch>

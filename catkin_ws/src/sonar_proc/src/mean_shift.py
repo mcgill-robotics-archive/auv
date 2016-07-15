@@ -68,7 +68,7 @@ def cluster(data):
     rospy.loginfo("number of clusters : {}".format(number_of_clusters))
     rospy.loginfo("average intensities : {}".format(average_intensities))
     rospy.loginfo("sizes : {}".format(sizes))
-    rospy.loginfo("cluster centers : {}"(cluster_centers))
+    rospy.loginfo("cluster centers : {}".format(cluster_centers))
 
     cluster_array = ClusterArray()
     cluster_array.header.stamp = rospy.get_rostime()
