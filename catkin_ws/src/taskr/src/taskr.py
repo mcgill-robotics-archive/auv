@@ -14,7 +14,8 @@ from planner.msg import TaskFeedback, TaskResult, TaskAction
 
 TASK_PATH = RosPack().get_path("taskr") + "/tasks/"
 current_task = TaskStatus()
-current_task.task = TaskStatus.IDLE
+current_task.task = TaskStatus.TASK_IDLE
+current_task.action = TaskStatus.ACTION_IDLE
 
 
 class Task(object):
@@ -38,30 +39,6 @@ class Task(object):
         )
         self._as.start()
 
-    def create_action(self, action, value):
-        """Creates the appropriate action object using the name of the action
-        from the YAML key.
-
-        Args:
-            action: Name of the action.
-            value: Args of the YAML, of undefined type. The action is
-                   responsible for knowing the type, and the user is
-                   responsible for providing the appropriate data in the
-                   YAML.
-        """
-        if action == "move":
-            return Move(value)
-        elif action == "shoot":
-            return Shoot(value)
-        elif action == "visual_servo":
-            return VisualServo(value)
-        elif action == "acoustic_servo":
-            return AcousticServo(value)
-        elif action == "initialize":
-            return Initializer(value)
-        else:
-            rospy.logerr("{} is not a known type.".format(action))
-
     def action_sequence(self, data):
         """Iterates through the action sequence defined in the task's YAML file
         and completes each of the actions.
@@ -73,8 +50,28 @@ class Task(object):
             # There should only be one top level key so one iteration of this inner loop.
             for (key, value) in actions.iteritems():
                 print key, value
-                action = self.create_action(key, value)
-                action.start(self._as, self._feedback)
+                if key == "move":
+                    current_task.action = TaskStatus.MOVE
+                    move = Move(value)
+                    move.start(self._as, self._feedback)
+                elif key == "shoot":
+                    current_task.action = TaskStatus.SHOOT
+                    shoot = Shoot(value)
+                    shoot.start(self._as, self._feedback)
+                elif key == "visual_servo":
+                    current_task.action = TaskStatus.VISUAL_SERVO
+                    visual_servo = VisualServo(value)
+                    visual_servo.start(self._as, self._feedback)
+                elif key == "acoustic_servo":
+                    current_task.action = TaskStatus.ACOUSTIC_SERVO
+                    acoustic_servo = AcousticServo(value)
+                    acoustic_servo.start(self._as, self._feedback)
+                elif key == "initialize":
+                    current_task.action = TaskStatus.INITIALIZE
+                    initialize = Initializer(value)
+                    initialize.start(self._as, self._feedback)
+                else:
+                    rospy.logerr("{} is not a known type.".format(key))
                 # Check whether the action has been preempted by the client.
                 if self._as.is_preempt_requested():
                     rospy.loginfo("{}: Preempted".format(self._action_name))
@@ -86,6 +83,8 @@ class Task(object):
         if not self._as.is_active():
             return
 
+        current_task.task = TaskStatus.TASK_IDLE
+        current_task.action = TaskStatus.ACTION_IDLE
         self._result.success = True
         self._as.set_succeeded(self._result)
 
