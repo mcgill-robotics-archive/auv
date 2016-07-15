@@ -8,13 +8,17 @@ import rospy
 
 from tld_msgs.msg import BoundingBox
 
-
-BUOY_DIAMETER = 0.20
 IMAGE_WIDTH = 1296
 IMAGE_HEIGHT = 964
 IMAGE_CENTER_X = IMAGE_WIDTH / 2
 IMAGE_CENTER_Y = IMAGE_HEIGHT / 2
-DIST_ERROR = 0.1
+
+# TODO: Parametrize:
+TARGET_WIDTH = 0.20
+TARGET_HEIGHT = 0.20
+DESIRED_DISTANCE_TO_TARGET = 1
+
+PIXEL_THRESH_DONE = 800 * TARGET_WIDTH / DESIRED_DISTANCE_TO_TARGET
 
 
 class VisualServo(object):
@@ -30,8 +34,8 @@ class VisualServo(object):
         # center of the bounding box
         self.aimed_x = IMAGE_CENTER_X
         self.aimed_y = IMAGE_CENTER_Y
-        self.target_width = BUOY_DIAMETER
-        self.target_height = BUOY_DIAMETER
+        self.target_width = TARGET_WIDTH
+        self.target_height = TARGET_HEIGHT
 
         self.models_path = rospy.get_param("~models_path")
 
