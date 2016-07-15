@@ -27,7 +27,7 @@ class Move(object):
         # If feedback is to be used, subscribe to sonar.
         if self.feedback:
             rospy.loginfo("Move with feedback requested")
-            self.sonar_sub = rospy.Subscriber("/sonar_proc/goal", Point, self.sonar_callback)
+            self.sonar_sub = rospy.Subscriber("/sonar_proc/task_point", Point, self.sonar_callback)
             self.sonar_correction = 0
 
         # Create velocity action client for controls server.
