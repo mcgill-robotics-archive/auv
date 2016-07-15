@@ -2,7 +2,6 @@
 from actionlib import SimpleActionClient
 
 from auv_msgs.msg import VisualServoAction, VisualServoGoal
-
 from geometry_msgs.msg import Point
 
 import rospy
@@ -34,6 +33,8 @@ class VisualServo(object):
         self.target_width = BUOY_DIAMETER
         self.target_height = BUOY_DIAMETER
 
+        self.models_path = rospy.get_param("~models_path")
+
         self.pub = rospy.Publisher(target, Point, queue_size=10)
         self.sub = rospy.Subscriber(
             '/tld_tracked_object', BoundingBox, self.tracked_obj_callback)
@@ -46,6 +47,10 @@ class VisualServo(object):
 
         rospy.logdebug("Visual Servo Goal: {}".format(ctrl_goal))
 
+        rospy.set_param('ros_tld_tracker_node/modelImportFile',
+                        self.models_path + self.target)
+        rospy.set_param('ros_tld_tracker_node/loadModel', True)
+
         # while loop with rate to check if no box for some time
         while True:
             rospy.logdebug("Visual Servoing")
@@ -56,7 +61,7 @@ class VisualServo(object):
                 rospy.loginfo("Visual Servo Preempted")
                 # Send preempt request to Controls
                 self.controls_client.cancel_goal()
-                self._as.set_preempted()
+                server.set_preempted()
                 return
 
             # self.controls_client.wait_for_result()
