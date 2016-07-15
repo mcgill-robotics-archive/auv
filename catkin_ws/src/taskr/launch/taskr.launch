@@ -1,11 +1,13 @@
 <launch>
   <arg name="use_feedback" default="false"
     doc="The global off switch for feedback. Set to false to never use feedback." />
+  <arg name="task_file" default="$(find taskr)/tasks/tasks.yaml" />
 
   <node name="taskr" pkg="taskr" type="taskr.py" output="screen">
-      <param name="velocity" value="0.33" />
-      <param name="vel_cmd_rate" value="10" />
-      <param name="vel_coefficient" value="20" />
-      <param name="use_feedback" value="$(arg use_feedback)" />
+    <param name="velocity" value="0.33" />
+    <param name="vel_cmd_rate" value="10" />
+    <param name="vel_coefficient" value="20" />
+    <param name="use_feedback" value="$(arg use_feedback)" />
+    <param name="task_file" value="$(arg task_file)" />
   </node>
 </launch>
