@@ -2,15 +2,12 @@
 from actionlib import SimpleActionClient
 
 from auv_msgs.msg import VisualServoAction, VisualServoGoal
-from rospkg import RosPack
-
 from geometry_msgs.msg import Point
 
 import rospy
 
 from tld_msgs.msg import BoundingBox
 
-MODELS_PATH = RosPack().get_path("taskr") + "/models/"
 
 BUOY_DIAMETER = 0.20
 IMAGE_WIDTH = 1296
@@ -36,6 +33,8 @@ class VisualServo(object):
         self.target_width = BUOY_DIAMETER
         self.target_height = BUOY_DIAMETER
 
+        self.models_path = rospy.get_param("~models_path")
+
         self.pub = rospy.Publisher(target, Point, queue_size=10)
         self.sub = rospy.Subscriber(
             '/tld_tracked_object', BoundingBox, self.tracked_obj_callback)
@@ -49,7 +48,7 @@ class VisualServo(object):
         rospy.logdebug("Visual Servo Goal: {}".format(ctrl_goal))
 
         rospy.set_param('ros_tld_tracker_node/modelImportFile',
-                        MODELS_PATH + self.target)
+                        self.models_path + self.target)
         rospy.set_param('ros_tld_tracker_node/loadModel', True)
 
         rospy.logdebug("Visual Servoing")
