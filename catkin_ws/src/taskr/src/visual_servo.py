@@ -42,6 +42,7 @@ class VisualServo(object):
         self.aimed_y = IMAGE_CENTER_Y
         self.target_width = TARGET_WIDTH
         self.target_height = TARGET_HEIGHT
+        self.bb_size_width = 0
 
         self.models_path = rospy.get_param("~models_path")
 
@@ -79,19 +80,24 @@ class VisualServo(object):
 
             rospy.loginfo("Waiting for results")
             self.controls_client.wait_for_result()
-            rospy.loginfo("Successfully located target!")
+            rospy.loginfo("Successfully aimed at target!")
 
-            # Surge forward before doing vservo again
-            self.current_yaw, self.current_depth = get_yaw_and_depth()
-            move_cmd = {"distance": OPEN_LOOP_SURGE_DIST,
-                        "depth": self.current_depth,
-                        "yaw": self.current_yaw,
-                        "feedback": False}
-            move_action = Move(move_cmd)
-            move_action.start(server, feedback_msg)
+            if self.bb_size_width > PIXEL_THRESH_DONE:
+                rospy.loginfo("Visual servo complete: target is in range")
+                break
+            else:
+                # Surge forward before doing vservo again
+                self.current_yaw, self.current_depth = get_yaw_and_depth()
+                move_cmd = {"distance": OPEN_LOOP_SURGE_DIST,
+                            "depth": self.current_depth,
+                            "yaw": self.current_yaw,
+                            "feedback": False}
+                move_action = Move(move_cmd)
+                move_action.start(server, feedback_msg)
 
     def tracked_obj_callback(self, box):
         if box.confidence > 0.50:
+            self.bb_size_width = box.width
             self.last_frame_time = rospy.get_rostime()
 
             box_center_x = box.x + box.width / 2
