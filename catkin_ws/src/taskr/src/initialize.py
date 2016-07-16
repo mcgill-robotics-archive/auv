@@ -4,16 +4,23 @@ from actionlib import SimpleActionClient
 from actionlib_msgs.msg import GoalStatus
 from blinky.srv import UpdatePlannerLights
 from auv_msgs.msg import InitializeHorizonAction, InitializeHorizonGoal
+from geometry_msgs.msg import Wrench
 
 
-class Initializer(object):
+class Initializer(object):    
     def __init__(self, times):
         self.countdown = rospy.Duration(times["countdown"])
         self.drift_check = (rospy.Duration(times["drift_check"])
                             if "drift_check" in times else rospy.Duration(2))
-
+        self.controls_pub = rospy.Publisher('controls/wrench',
+                                       Wrench,
+                                       queue_size=1)
         self.initialize_client = SimpleActionClient("initialize_horizon", InitializeHorizonAction)
         self.initialize_client.wait_for_server()
+
+    def init_thrusters(self):
+        zero_msg = Wrench()
+        self.controls_pub.pub(zero_msg)
 
     def start(self, server, feedback_msg):
         initialize_goal = InitializeHorizonGoal()
@@ -40,4 +47,7 @@ class Initializer(object):
             except Exception as e:
                 rospy.logerr("Blinky request unsuccessful: {}".format(e))
 
-            server.set_aborted()
+            server.set_aborted()            
+
+        self.init_thrusters()
+        
