@@ -51,6 +51,10 @@ def Wrench_to_thrust_callback(data):
     cmds_msg = MotorCommands()
     cmds_msg.port_surge = T1234[0]
     cmds_msg.starboard_surge = T1234[1]
+    # Bow sway thruster wiring is reversed.
+    # All other thrusters have the same convention:
+    # positive motor command will make the thruster push water from
+    # the pointy end to the round end
     cmds_msg.bow_sway = -T1234[2]
     cmds_msg.stern_sway = T1234[3]
     cmds_msg.port_bow_heave = T5678[0]
