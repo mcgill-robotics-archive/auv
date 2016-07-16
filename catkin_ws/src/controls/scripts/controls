@@ -92,8 +92,7 @@ def visual_servo_callback():
     target_frame_id = cmd.target_frame_id
     angles_desired[0] = cmd.roll
     angles_desired[1] = cmd.pitch
-    # keep current yaw when getting a vservo goal:
-    angles_desired[2] = angles_estimated[2]
+    angles_desired[2] = cmd.yaw
 
 
 def set_velocity_preempt():
