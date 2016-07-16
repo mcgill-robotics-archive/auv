@@ -10,47 +10,42 @@ from actionlib import SimpleActionClient
 from auv_msgs.msg import SetVelocityGoal
 from auv_msgs.msg import SetVelocityAction
 
-__author__ = "Malcolm Watt"
+from utils import get_yaw_and_depth
+from move import Move
 
+__author__ = "Malcolm Watt and Wei-Di Chang"
 
 class AcousticServo(object):
     """Acoustic servo action.
 
     This action tracks the difference between the current IMU heading and
-    the heading required by Hydrophones. It then attempts to minimize the
-    difference between the two while moving forward.
+    the Hydrophones determined heading. It then attempts to move towards
+    the pinger.
     """
-
-    VELOCITY = rospy.get_param("taskr/velocity", default=1)
-    RATE = rospy.get_param("taskr/vel_cmd_rate", default=10)
-    VEL_COEFFICIENT = rospy.get_param("taskr/vel_coefficient", default=1)
     DEPTH = 2.0
-    PREEMPT_CHECK_FREQUENCY = 10  # Hz
+    SURGE_STEP = 0.5
+    PREEMPT_CHECK_FREQUENCY = 10  # Hz    
 
     def __init__(self, topic):
-        """Constructor for the AcousticServo action.i
+        """Constructor for the AcousticServo action.
 
         Args:
             topic:  the topic name for the action
         """
         self.topic = topic
 
-        # Keep track of the last ten orrientations for IMU and Hydrophones
-        self.imu_heading_log = []
-        self.imu_heading = 0
+        # Keep track of current IMU and last 10 Hydrophones heading
+        self.robot_heading = 0
+
         self.pinger_heading_log = []
         self.pinger_heading = 0
 
-        # Create velocity action client for controls server.
-        self.vel_client = SimpleActionClient("controls_velocity",
-                                             SetVelocityAction)
-        self.vel_client.wait_for_server()
+        self.heading_error = 0
 
         self.server = None
         self.feedback_msg = None
 
         rospy.Subscriber("hyd_test", Float32, self.proc_estim_head)
-        rospy.Subscriber("imu_test", Float32, self.proc_imu_head)
 
     def start(self, server, feedback_msg):
         """Servo toward the pinger.
@@ -73,59 +68,24 @@ class AcousticServo(object):
                 return
             rate.sleep()
 
-    def proc_imu_head(self, data):
-        """Update the current heading of the robot.
-
-        Args:
-            data: ROS message data object containing the current heading of the
-                  robot in degrees.
-        """
-        self.imu_heading = data.data
-        self.imu_heading_log.append(self.imu_heading)
-
-    def proc_estim_head(self, data):
+    def proc_estim_head(self, msg):
         """Update the estimated pinger heading, and send control commands.
 
         Args:
             data: ROS message data object containing the estimated heading of
-                  the pinger in 8ths of a circle (i.e. a value between 0 & 7).
+                  the pinger (i.e. -pi to pi).
         """
-        # Input range is 0-7, so to conv to degrees multiply by 45
-        self.pinger_heading = data.data * 45
+        # Input range is -PI-PI
+        self.pinger_heading = msg.data
         self.pinger_heading_log.append(self.pinger_heading)
 
-        imu_log = self.imu_heading_log  # Clone the log to local variable
-        self.imu_heading_log = []       # Clear the log to avoid reusing data
+        self.robot_heading, _ = get_yaw_and_depth()
 
-        heading = imu_log[-1]  # The most recent imu value (units: degrees)
+        self.heading_error = self.robot_heading - self.pinger_heading   
 
-        target_heading = self.pinger_heading - heading % 365  # degrees
-        self.move(target_heading)
-
-    def move(self, yaw):
-        """Send command to move the robot forward at the given yaw.
-
-        Args:
-            yaw: The heading we need to adjust to in degrees relative to the
-                 horizon's frame of reference.
-        """
-        rospy.loginfo("Move at yaw: {0}".format(yaw))
-        ctrl_goal = SetVelocityGoal()
-        ctrl_goal.cmd.depth = self.DEPTH
-
-        # Threshold above which we should only attempt to adjust yaw
-        if yaw >= 45:
-            ctrl_goal.cmd.yaw = radians(yaw)
-            self.vel_client.send_goal(ctrl_goal)
-
-        # Adjust yaw while sending one seconds worth of surge commands
-        else:
-            ctrl_goal.cmd.yaw = radians(yaw)
-
-            ctrl_goal.cmd.surgeSpeed = self.VELOCITY * self.VEL_COEFFICIENT
-            rate = rospy.Rate(self.RATE)
-
-            # Send surge commands for 1 second
-            for i in range(0, self.RATE):
-                self.vel_client.send_goal(ctrl_goal)
-                rate.sleep()
+        move_cmd = {"distance": self.SURGE_STEP,
+                     "depth": self.DEPTH,
+                     "yaw": self.pinger_heading,
+                     "feedback": False}
+        move_action = Move(move_cmd)
+        move_action.start(self.server, self.feedback_msg)
