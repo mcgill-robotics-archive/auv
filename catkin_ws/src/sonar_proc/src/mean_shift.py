@@ -72,7 +72,7 @@ def cluster(data):
 
     cluster_array = ClusterArray()
     cluster_array.header.stamp = rospy.get_rostime()
-    cluster_array.header.frame_id = "robot"
+    cluster_array.header.frame_id = data.header.frame_id
 
     clusters = zip(cluster_centers, average_intensities, sizes)
     for center, average_intensity, size in clusters:
