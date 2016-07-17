@@ -21,6 +21,11 @@ class Move(object):
         self.depth = point["depth"]
         self.yaw = point["yaw"]
 
+        if self.distance < 0:
+            self.forward = True
+        else: 
+            self.forward = False
+
         # Whether to get yaw feedback from sensors.
         self.feedback = (point["feedback"] if "feedback" in point else False) and self.USE_FEEDBACK
 
@@ -64,6 +69,9 @@ class Move(object):
         self.vel_client.wait_for_result()
 
         ctrl_goal.cmd.surgeSpeed = self.VELOCITY * self.VEL_COEFFICIENT
+
+        if not self.forward:
+            ctrl_goal.cmd.surgeSpeed *= -1
 
         start = rospy.Time.now()
 
