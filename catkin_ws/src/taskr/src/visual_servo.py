@@ -3,13 +3,13 @@ from actionlib import SimpleActionClient
 
 from auv_msgs.msg import VisualServoAction, VisualServoGoal
 
-from geometry_msgs.msg import Point
+from geometry_msgs.msg import Point, Vector3Stamped
 
 from move import Move
 
 import rospy
 
-from utils import get_yaw_and_depth
+from std_msgs.msg import Float64
 
 from tld_msgs.msg import BoundingBox
 
@@ -46,17 +46,22 @@ class VisualServo(object):
 
         self.models_path = rospy.get_param("~models_path")
 
-        self.pub = rospy.Publisher(target, Point, queue_size=10)
+        self.current_yaw = 0
+        self.current_depth = 0
+
+        self.pub = rospy.Publisher("target", Point, queue_size=10)
         self.sub_tracked_object = rospy.Subscriber(
             '/tld_tracked_object', BoundingBox, self.tracked_obj_callback)
-
-        self.current_yaw, self.current_depth = get_yaw_and_depth()
+        self.sub_yaw = rospy.Subscriber(
+            '/robot_state', Vector3Stamped, self.yaw_callback)
+        self.sub_depth = rospy.Subscriber(
+            '/state_estimation/depth', Float64, self.depth_callback)
 
     def start(self, server, feedback_msg):
         rospy.loginfo("Starting VisualServo action")
 
         ctrl_goal = VisualServoGoal()
-        ctrl_goal.cmd.target_frame_id = self.target
+        ctrl_goal.cmd.target_frame_id = "target"
         ctrl_goal.cmd.yaw = self.current_yaw
 
         rospy.logdebug("Visual Servo Goal: {}".format(ctrl_goal))
@@ -87,13 +92,18 @@ class VisualServo(object):
                 break
             else:
                 # Surge forward before doing vservo again
-                self.current_yaw, self.current_depth = get_yaw_and_depth()
                 move_cmd = {"distance": OPEN_LOOP_SURGE_DIST,
                             "depth": self.current_depth,
                             "yaw": self.current_yaw,
                             "feedback": False}
                 move_action = Move(move_cmd)
                 move_action.start(server, feedback_msg)
+                rospy.loginfo("Surged forward")
+                rospy.loginfo("BoundingBox Size: %i / %i", self.bb_size_width,
+                              PIXEL_THRESH_DONE)
+
+        # Stop tracking by setting model file to empty
+        rospy.set_param('ros_tld_tracker_node/modelImportFile', '')
 
     def tracked_obj_callback(self, box):
         if box.confidence > 0.50:
@@ -125,3 +135,9 @@ class VisualServo(object):
             point.y = 0.0
             point.z = 0.0
             self.pub.publish(point)
+
+    def yaw_callback(self, robot_state):
+        self.current_yaw = robot_state.vector.z
+
+    def depth_callback(self, depth):
+        self.current_depth = depth
