@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 import rospy
 import numpy
+from math import fabs
 from actionlib import SimpleActionClient
 from geometry_msgs.msg import Point
 from auv_msgs.msg import SetVelocityAction, SetVelocityGoal
@@ -22,9 +23,9 @@ class Move(object):
         self.yaw = point["yaw"]
 
         if self.distance < 0:
-            self.forward = True
-        else: 
             self.forward = False
+        else: 
+            self.forward = True
 
         # Whether to get yaw feedback from sensors.
         self.feedback = (point["feedback"] if "feedback" in point else False) and self.USE_FEEDBACK
@@ -52,7 +53,7 @@ class Move(object):
         ctrl_goal.cmd.depth = self.depth
         ctrl_goal.cmd.yaw = self.yaw
 
-        time = self.get_time(self.distance)
+        time = self.get_time(fabs(self.distance))
 
         # Send yaw goal without velocity first.
         rospy.loginfo("Sending initial yaw only")
