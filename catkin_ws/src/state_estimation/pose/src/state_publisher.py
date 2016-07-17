@@ -32,7 +32,7 @@ if __name__ == '__main__':
     	(trans, rot) = get_robot_pose()
     	(roll, pitch, yaw) = tf.transformations.euler_from_quaternion(rot)
     	msg = Vector3Stamped()
-    	msg.header.stamp = rospy.Time()
+    	msg.header.stamp = rospy.Time.now()
     	msg.vector.x = roll
     	msg.vector.y = pitch
     	msg.vector.z = yaw
