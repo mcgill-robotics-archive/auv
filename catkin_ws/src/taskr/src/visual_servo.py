@@ -18,20 +18,24 @@ IMAGE_HEIGHT = 964
 IMAGE_CENTER_X = IMAGE_WIDTH / 2
 IMAGE_CENTER_Y = IMAGE_HEIGHT / 2
 
-# TODO: Parametrize:
-TARGET_WIDTH = 0.20
-TARGET_HEIGHT = 0.20
-DESIRED_DISTANCE_TO_TARGET = 1
-
-PIXEL_THRESH_DONE = 800 * TARGET_WIDTH / DESIRED_DISTANCE_TO_TARGET
-OPEN_LOOP_SURGE_DIST = 0.5
-
 
 class VisualServo(object):
     def __init__(self, target):
         rospy.loginfo("Initializing VisualServo action with target {}"
                       .format(target))
         self.target = target
+        self.target_width = rospy.get_param(
+            "~vservo/{}/width".format(target), default=0.2)
+        self.target_height = rospy.get_param(
+            "~vservo/{}/height".format(target), default=0.2)
+        self.desired_distance_to_target = rospy.get_param(
+            "~vservo/desired_distance_to_target", default=1)
+        self.open_loop_surge_distance = rospy.get_param(
+            "~vservo/open_loop_surge_distance", default=0.5)
+
+        self.pixel_thresh_done = (800 * self.target_width /
+                                  self.desired_distance_to_target)
+
         self.controls_client = SimpleActionClient("controls_vservo",
                                                   VisualServoAction)
         self.controls_client.wait_for_server()
@@ -40,8 +44,7 @@ class VisualServo(object):
         # center of the bounding box
         self.aimed_x = IMAGE_CENTER_X
         self.aimed_y = IMAGE_CENTER_Y
-        self.target_width = TARGET_WIDTH
-        self.target_height = TARGET_HEIGHT
+
         self.bb_size_width = 0
 
         self.models_path = rospy.get_param("~models_path")
@@ -87,12 +90,12 @@ class VisualServo(object):
             self.controls_client.wait_for_result()
             rospy.loginfo("Successfully aimed at target!")
 
-            if self.bb_size_width > PIXEL_THRESH_DONE:
+            if self.bb_size_width > self.pixel_thresh_done:
                 rospy.loginfo("Visual servo complete: target is in range")
                 break
             else:
                 # Surge forward before doing vservo again
-                move_cmd = {"distance": OPEN_LOOP_SURGE_DIST,
+                move_cmd = {"distance": self.open_loop_surge_distance,
                             "depth": self.current_depth,
                             "yaw": self.current_yaw,
                             "feedback": False}
@@ -100,7 +103,7 @@ class VisualServo(object):
                 move_action.start(server, feedback_msg)
                 rospy.loginfo("Surged forward")
                 rospy.loginfo("BoundingBox Size: %i / %i", self.bb_size_width,
-                              PIXEL_THRESH_DONE)
+                              self.pixel_thresh_done)
 
         # Stop tracking by setting model file to empty
         rospy.set_param('ros_tld_tracker_node/modelImportFile', '')
