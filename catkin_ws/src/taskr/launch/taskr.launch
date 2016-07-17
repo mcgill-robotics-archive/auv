@@ -17,8 +17,8 @@
       <param name="vservo/torpedo_target/width" value="1.2" />
 
       <!-- Likely to be tweaked -->
-      <param name="vservo/desired_distance_to_target" value="1.0" />
-      <param name="vservo/open_loop_surge_distance" value="0.5" />
+      <param name="vservo/desired_distance_to_target" value="0.8" />
+      <param name="vservo/open_loop_surge_distance" value="1.2" />
 
   </node>
 </launch>

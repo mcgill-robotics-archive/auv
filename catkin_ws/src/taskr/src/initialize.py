@@ -20,7 +20,7 @@ class Initializer(object):
 
     def init_thrusters(self):
         zero_msg = Wrench()
-        self.controls_pub.pub(zero_msg)
+        self.controls_pub.publish(zero_msg)
 
     def start(self, server, feedback_msg):
         initialize_goal = InitializeHorizonGoal()

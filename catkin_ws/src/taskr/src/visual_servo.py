@@ -99,6 +99,7 @@ class VisualServo(object):
                             "depth": self.current_depth,
                             "yaw": self.current_yaw,
                             "feedback": False}
+                rospy.loginfo(move_cmd)
                 move_action = Move(move_cmd)
                 move_action.start(server, feedback_msg)
                 rospy.loginfo("Surged forward")
