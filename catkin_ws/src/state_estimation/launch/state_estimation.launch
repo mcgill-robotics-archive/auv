@@ -26,4 +26,7 @@
     <param name="offset" value="0.00" />
     <param name="window" value="10" />
   </node>
+
+  <node name="state_publisher" type="state_publisher" pkg="state_estimation">
+  </node>
 </launch>
