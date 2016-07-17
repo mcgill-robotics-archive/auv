@@ -143,4 +143,4 @@ class VisualServo(object):
         self.current_yaw = robot_state.vector.z
 
     def depth_callback(self, depth):
-        self.current_depth = depth
+        self.current_depth = depth.data

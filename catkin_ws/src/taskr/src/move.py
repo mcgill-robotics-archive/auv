@@ -17,12 +17,15 @@ class Move(object):
     USE_FEEDBACK = rospy.get_param("taskr/use_feedback")
     ERROR_THRESHOLD = rospy.get_param("taskr/yaw_error_threshold", default=numpy.pi / 8)
 
-    depth_sub = rospy.Subscriber('state_estimation/depth', Float64, self.depth_callback)
-    pose_sub = rospy.Subscriber('robot_state', Vector3Stamped, self.pose_callback)
-
 
     def __init__(self, point):
         """Constructor for the Move object."""
+        self.curr_yaw = 0
+        self.curr_depth = 0
+
+        self.depth_sub = rospy.Subscriber('state_estimation/depth', Float64, self.depth_callback)
+        self.pose_sub = rospy.Subscriber('robot_state', Vector3Stamped, self.pose_callback)
+
         self.distance = point["distance"]
         self.depth = point["depth"]
         self.yaw = point["yaw"]        
@@ -69,8 +72,8 @@ class Move(object):
 
         time = self.get_time(fabs(self.distance))
 
-        # Send yaw goal without velocity first.
-        rospy.loginfo("Sending initial yaw only")
+        # Send yaw and depth goal without velocity first.
+        rospy.loginfo("Sending initial yaw and depth only")
         # Send to velocity server
         self.vel_client.send_goal(ctrl_goal)
         # Check if we received preempt request from Taskr.

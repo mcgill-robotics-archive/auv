@@ -67,7 +67,7 @@ def set_velocity_callback():
     sway_speed = cmd.swaySpeed
     depth_desired = cmd.depth
     last_heading = cmd.yaw
-    rospy.info('Received New Goal: {}'.format(cmd))
+    rospy.loginfo('Received New Goal: {}'.format(cmd))
 
 
 def set_position_callback():
