@@ -1,11 +1,9 @@
 #!/usr/bin/env python
-from math import fabs
 import numpy as np
 import rospy
 import tf
 from geometry_msgs.msg import Vector3Stamped
-from tf.transformations import euler_from_quaternion, euler_matrix
-from std_msgs.msg import Float32, Float64
+from tf.transformations import euler_from_quaternion
 
 listener = None
 
@@ -25,7 +23,6 @@ def get_robot_pose():
 if __name__ == '__main__':
     rospy.init_node('state_publisher')
     listener = tf.TransformListener()
-    #depth_sub = rospy.Subscriber('state_estimation/depth', Float64, depth_cb)
     state_pub = rospy.Publisher('robot_state',
         Vector3Stamped,
         queue_size=1)
