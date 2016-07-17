@@ -4,45 +4,25 @@
 """Hydrophones signal analysis."""
 
 import rospy
+import math
 from hydrophones import Mic
-from auv_msgs.msg import Signals, TDOAs
+from auv_msgs.msg import Signals
+from std_msgs.msg import Float64
 from hydrophones.gccphat import estimate
 from hydrophones.multilateration import solve
 from hydrophones.freq import get_frequency_energy
 
-FS = 972972.97297
-
-mics = [
-    Mic((0.00, 0.00, 0.00)),
-    Mic((-0.013, 0.00, 0.00)),
-    Mic((-0.013, -0.013, 0.00)),
-    Mic((0.00, -0.013, 0.00))
-]
-
+FS = 1028571.4286
 
 def analyze(msg):
-    print(get_frequency_energy(msg.quadrant_1, FS, 28000))
-    tdoa = [
-        estimate(msg.quadrant_2, msg.quadrant_1, FS),
-        estimate(msg.quadrant_2, msg.quadrant_2, FS),
-        estimate(msg.quadrant_2, msg.quadrant_3, FS),
-        estimate(msg.quadrant_2, msg.quadrant_4, FS)
-    ]
-    tdoas = TDOAs()
-    tdoas.port_bow_starboard_bow = tdoa[0]
-    tdoas.port_bow_starboard_stern = tdoa[3]
-    tdoas.port_bow_port_stern = tdoa[2]
-    pub.publish(tdoas)
-    for dt in tdoa:
-        print(dt)
-    x, y = solve(mics, tdoa, 1500.0)
-    print(x, y)
-    print("---")
-
+    tdx = estimate(msg.quadrant_1[:-6], msg.quadrant_2[6:], FS)
+    tdy = estimate(msg.quadrant_1[:-10], msg.quadrant_4[10:], FS)
+    yaw = Float64()
+    yaw.data = math.atan2(tdx, tdy)
+    pub.publish(yaw)
 
 if __name__ == "__main__":
-    global pub
-    rospy.init_node("tdoa")
+    rospy.init_node("hydrophones")
+    pub = rospy.Publisher("~yaw", Float64)
     rospy.Subscriber("/nucleo/signals", Signals, analyze, queue_size=10)
-    pub = rospy.Publisher("hydrophones", TDOAs, queue_size=100)
     rospy.spin()

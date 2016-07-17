@@ -34,16 +34,20 @@ def estimate(base, sample, fs, upscale=0.001):
     gccphat = np.divide(gcc, np.absolute(gcc))
 
     # The TDOA is then defined as: TDOA = argmax(IFFT(GCC-PHAT))
-    dt_signal = np.fft.ifft(gccphat)
+    dt_signal = np.fft.ifft(gcc)
+    t = np.arange(len(base)) / fs
+    max_td = 1e-5
+    dt_signal = [0 if time > max_td and time < t[-1] - max_td else s
+                for time, s in zip(t, dt_signal)]
     argmax = np.argmax(dt_signal)
 
     # Interpolate for slightly better accuracy.
     # Only interpolate around the peak because this process is slow.
-    begin, end = (max(0, argmax - 5), min(argmax + 5, len(dt_signal)))
-    s = np.arange(begin, end)
-    u = np.arange(begin, end, upscale)
-    upsampled_dt_signal = upsample(dt_signal[begin:end], s, u)
-    argmax = begin + np.argmax(upsampled_dt_signal) * upscale
+    # begin, end = (max(0, argmax - 5), min(argmax + 5, len(dt_signal)))
+    # s = np.arange(begin, end)
+    # u = np.arange(begin, end, upscale)
+    # upsampled_dt_signal = upsample(dt_signal[begin:end], s, u)
+    # argmax = begin + np.argmax(upsampled_dt_signal) * upscale
 
     # Convert to seconds.
     dt = float(argmax) / fs
