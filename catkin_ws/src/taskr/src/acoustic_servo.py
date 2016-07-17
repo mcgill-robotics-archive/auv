@@ -4,13 +4,14 @@
 """Acoustic servo action."""
 
 import rospy
+import tf
 from math import radians
 from std_msgs.msg import Float32
 from actionlib import SimpleActionClient
-from auv_msgs.msg import SetVelocityGoal
-from auv_msgs.msg import SetVelocityAction
+from auv_msgs.msg import SetVelocityGoal, SetVelocityAction
+from geometry_msgs.msg import Vector3Stamped
 
-from utils import get_yaw_and_depth
+# from utils import get_yaw_and_depth
 from move import Move
 
 __author__ = "Malcolm Watt and Wei-Di Chang"
@@ -22,9 +23,11 @@ class AcousticServo(object):
     the Hydrophones determined heading. It then attempts to move towards
     the pinger.
     """
-    DEPTH = 2.0
+    DEPTH = 0.0
     SURGE_STEP = 0.5
     PREEMPT_CHECK_FREQUENCY = 10  # Hz    
+
+
 
     def __init__(self, topic):
         """Constructor for the AcousticServo action.
@@ -46,6 +49,7 @@ class AcousticServo(object):
         self.feedback_msg = None
 
         rospy.Subscriber("hyd_test", Float32, self.proc_estim_head)
+        self.pose_sub = rospy.Subscriber('robot_state', Vector3Stamped, self.state_cb)
 
     def start(self, server, feedback_msg):
         """Servo toward the pinger.
@@ -66,7 +70,11 @@ class AcousticServo(object):
                 rospy.loginfo("AcousticServo preempted")
                 server.set_preempted()
                 return
-            rate.sleep()
+            rospy.sleep(0.1)
+            continue
+
+    def state_cb(self, msg):
+        self.robot_heading = msg.vector.z
 
     def proc_estim_head(self, msg):
         """Update the estimated pinger heading, and send control commands.
@@ -79,9 +87,9 @@ class AcousticServo(object):
         self.pinger_heading = msg.data
         self.pinger_heading_log.append(self.pinger_heading)
 
-        self.robot_heading, _ = get_yaw_and_depth()
-
         self.heading_error = self.robot_heading - self.pinger_heading   
+
+        print "DDDD"
 
         move_cmd = {"distance": self.SURGE_STEP,
                      "depth": self.DEPTH,
@@ -89,3 +97,5 @@ class AcousticServo(object):
                      "feedback": False}
         move_action = Move(move_cmd)
         move_action.start(self.server, self.feedback_msg)
+
+
