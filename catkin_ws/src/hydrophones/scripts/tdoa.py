@@ -23,6 +23,6 @@ def analyze(msg):
 
 if __name__ == "__main__":
     rospy.init_node("hydrophones")
-    pub = rospy.Publisher("~yaw", Float64)
+    pub = rospy.Publisher("~yaw", Float64, queue_size=1)
     rospy.Subscriber("/nucleo/signals", Signals, analyze, queue_size=10)
     rospy.spin()
