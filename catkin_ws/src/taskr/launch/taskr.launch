@@ -5,7 +5,7 @@
   <node name="taskr" pkg="taskr" type="taskr.py" output="screen">
       <param name="velocity" value="0.33" />
       <param name="vel_cmd_rate" value="10" />
-      <param name="vel_coefficient" value="20" />
+      <param name="vel_coefficient" value="22" />
       <param name="use_feedback" value="$(arg use_feedback)" />
       <param name="models_path" value="$(find taskr)/models/" />
   </node>
