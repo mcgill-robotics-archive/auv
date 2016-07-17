@@ -104,7 +104,7 @@ if __name__ == "__main__":
                                     connector_outcomes=["invalid"])
 
         # Add the concurrent state machine.
-        smach.StateMachine.add_auto("CONCURRENT", csm, connector_outcomes=["succeeded"])
+        smach.StateMachine.add_auto("CONCURRENT", csm, connector_outcomes=["succeeded"], transitions ={'aborted':'MISSION'})
 
     sis = smach_ros.IntrospectionServer("planner_test", task_machine, "/SM_ROOT")
     sis.start()
