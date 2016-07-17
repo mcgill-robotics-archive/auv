@@ -28,6 +28,7 @@ class Clustering(object):
         self.intensities = pointcloud.channels[0].values
         self.numpy_points = numpy.array(self.points)
         self.size = len(self.points)
+        self.frame_id = pointcloud.header.frame_id
 
     def _populate(self, pointcloud):
         points = [[point.x, point.y] for point in pointcloud.points]
@@ -70,7 +71,7 @@ class Clustering(object):
         for i, cluster_center in enumerate(cluster_centers):
             marker = Marker()
 
-            marker.header.frame_id = "robot"
+            marker.header.frame_id = self.frame_id
             marker.header.stamp = stamp
 
             # Marker namespace.
