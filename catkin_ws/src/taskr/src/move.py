@@ -17,7 +17,6 @@ class Move(object):
     USE_FEEDBACK = rospy.get_param("taskr/use_feedback")
     ERROR_THRESHOLD = rospy.get_param("taskr/yaw_error_threshold", default=numpy.pi / 8)
 
-
     def __init__(self, point):
         """Constructor for the Move object."""
         self.curr_yaw = 0
@@ -147,4 +146,3 @@ class Move(object):
 
     def pose_callback(self, msg):
         self.curr_yaw = msg.vector.z
-
