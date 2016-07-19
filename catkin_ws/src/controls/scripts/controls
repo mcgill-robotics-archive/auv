@@ -301,6 +301,10 @@ def loop(event):
         # on translation (to avoid unexpected sway):
         force = [fx, fy, output[3]]
 
+        # Remove negative z forces to account for the robot's buoyancy
+        if force[2] < 0:
+            force[2] = 0
+
         wrench_msg = Wrench()
         wrench_msg.force.x = force[0]
         wrench_msg.force.y = force[1]
