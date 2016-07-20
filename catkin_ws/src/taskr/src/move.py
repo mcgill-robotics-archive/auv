@@ -20,6 +20,7 @@ class Move(object):
         self.distance = point["distance"]
         self.depth = point["depth"]
         self.yaw = point["yaw"]
+        self.axis = point["axis"].lower() if "axis" in point else "surge"
 
         # Whether to get yaw feedback from sensors.
         self.feedback = (point["feedback"] if "feedback" in point else False) and self.USE_FEEDBACK
@@ -63,7 +64,16 @@ class Move(object):
 
         self.vel_client.wait_for_result()
 
-        ctrl_goal.cmd.surgeSpeed = self.VELOCITY * self.VEL_COEFFICIENT
+        if self.axis == "surge":
+            ctrl_goal.cmd.surgeSpeed = self.VELOCITY * self.VEL_COEFFICIENT
+        elif self.axis == "sway":
+            ctrl_goal.cmd.swaySpeed = self.VELOCITY * self.VEL_COEFFICIENT
+        else:
+            rospy.logerr("Incorrect axis: {}".format(self.axis))
+            rospy.loginfo("Assuming you mean surge... Consider getting more sleep.")
+            ctrl_goal.cmd.surgeSpeed = self.VELOCITY * self.VEL_COEFFICIENT
+
+            return
 
         start = rospy.Time.now()
 
@@ -71,7 +81,7 @@ class Move(object):
         # Should run RATE * TIME times. For exmaple, if we send cmds at
         # 10 cmd/s (Hz), for 5 seconds, we need to loop 50 times.
         for i in range(0, int(self.RATE * time)):
-            print "Sending Surge", float(i) / self.RATE, "s /", time, "s"
+            print "Sending", self.axis, float(i) / self.RATE, "s /", time, "s"
 
             # Only if feedback is being used, correct yaw.
             if self.feedback and self.sonar_correction != 0:
