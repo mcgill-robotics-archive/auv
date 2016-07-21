@@ -38,10 +38,10 @@ class ScanStitcher(object):
     def make_config(self, data):
         """Updates scan cofigurations when configuration is published."""
         self.scan_config["left_limit"] = data.left_limit
-        self.scan_config["left_limit"] = data.right_limit
+        self.scan_config["right_limit"] = data.right_limit
         self.scan_config["step"] = data.step
 
-        total = abs(self.scan_config["left_limit"] - self.scan_config["left_limit"])
+        total = abs(self.scan_config["left_limit"] - self.scan_config["right_limit"])
 
         # For continuous data, default to 2pi.
         if total == 0 or data.continuous:
