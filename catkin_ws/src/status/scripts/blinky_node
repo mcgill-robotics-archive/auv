@@ -49,10 +49,9 @@ class BlinkyNode(object):
             pass
 
         elif currentStatus.action == currentStatus.ACTION_IDLE:
-            self.blinky_proxy_call(RGB(255, 0, 0)) # Red
+            self.blinky_proxy_call(RGB(255, 0, 0)) # Red / Off Cycle
             rospy.sleep(0.2)
-
-            self.blinky_proxy_call(RGB(0,0,0)) # Turn Off
+            self.blinky_proxy_call(RGB(0,0,0))
 
         else:
             rospy.logerr("{} is not a known type.".format(key))
