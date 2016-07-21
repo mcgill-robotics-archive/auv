@@ -21,6 +21,10 @@ class BlinkyNode(object):
         self.blinky_sub = rospy.Subscriber('/task', TaskStatus, 
                 self.update_blinky_colors, queue_size = 1)
 
+        self.blinky_proxy = rospy.ServiceProxy('update_planner_lights',
+                UpdatePlannerLights)
+
+
     def update_blinky_colors(self, TaskStatusMsg):
         currentStatus = TaskStatus()
         currentStatus.task = TaskStatusMsg.task
@@ -29,7 +33,47 @@ class BlinkyNode(object):
         rospy.loginfo("ID = {0}. Action is {1}. Task is {2}".format(
             rospy.get_caller_id(), currentStatus.action, currentStatus.task))
 
+        if currentStatus.action == currentStatus.MOVE:
+            self.blinky_proxy_call(RGB(255, 0, 255)) # Magenta
+
+        elif currentStatus.action == currentStatus.SHOOT:
+            self.blinky_proxy_call(RGB(255, 215, 0)) # Gold
+
+        elif currentStatus.action == currentStatus.VISUAL_SERVO:
+            self.blinky_proxy_call(RGB(0, 255, 0)) # Green
+
+        elif currentStatus.action == currentStatus.ACOUSTIC_SERVO:
+            self.blinky_proxy_call(RGB(0, 0, 255)) # Blue
+
+        elif currentStatus.action == currentStatus.INITIALIZE:
+            pass
+
+        elif currentStatus.action == currentStatus.ACTION_IDLE:
+            self.blinky_proxy_call(RGB(255, 0, 0)) # Red
+            rospy.sleep(0.2)
+
+            self.blinky_proxy_call(RGB(0,0,0)) # Turn Off
+
+        else:
+            rospy.logerr("{} is not a known type.".format(key))
         
+        """ Prevents the robot from calling blinky service too often"""
+        rospy.sleep(0.2)
+
+    def blinky_proxy_call(self, color):
+
+        """Color three center blinky tapes stripes"""
+
+        try:
+            result = self.blinky_proxy(colors)
+
+            if result.success != 0:
+                rospy.logerr(
+                        'Blinky call unsuccessful for {0}. Error: {1}'.format(
+                            self.previousStatus, result))
+
+        except Exception as e:
+            rospy.logerr('Blinky exception: {}'.format(e))
 
 if __name__ == '__main__':
     BlinkyNode()
