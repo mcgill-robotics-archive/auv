@@ -1,0 +1,37 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
+""" BlinkyNode object.
+
+This listens to /task node and change the blinky tapes color according
+to the state of the robot by calling the blinky service proxy.
+"""
+
+import rospy
+from auv_msgs.msg import TaskStatus
+
+__author__ = "Yichi Zhang"
+
+
+class BlinkyNode(object):
+
+    def __init__(self):
+        rospy.init_node('blinky_listener')
+        
+        self.blinky_sub = rospy.Subscriber('/task', TaskStatus, 
+                self.update_blinky_colors, queue_size = 1)
+
+    def update_blinky_colors(self, TaskStatusMsg):
+        currentStatus = TaskStatus()
+        currentStatus.task = TaskStatusMsg.task
+        currentStatus.action = TaskStatusMsg.action
+
+        rospy.loginfo("ID = {0}. Action is {1}. Task is {2}".format(
+            rospy.get_caller_id(), currentStatus.action, currentStatus.task))
+
+        
+
+if __name__ == '__main__':
+    BlinkyNode()
+    rospy.spin()
+
