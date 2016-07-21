@@ -1,9 +1,11 @@
 #!/usr/bin/env python
 import rospy
 import numpy
+from math import fabs
 from actionlib import SimpleActionClient
-from geometry_msgs.msg import Point
+from geometry_msgs.msg import Point, Vector3Stamped
 from auv_msgs.msg import SetVelocityAction, SetVelocityGoal
+from std_msgs.msg import Float64
 
 
 class Move(object):
@@ -17,9 +19,21 @@ class Move(object):
 
     def __init__(self, point):
         """Constructor for the Move object."""
+        self.curr_yaw = 0
+        self.curr_depth = 0
+
+        self.depth_sub = rospy.Subscriber('state_estimation/depth', Float64, self.depth_callback)
+        self.pose_sub = rospy.Subscriber('robot_state', Vector3Stamped, self.pose_callback)
+
         self.distance = point["distance"]
         self.depth = point["depth"]
-        self.yaw = point["yaw"]
+        self.yaw = point["yaw"]        
+
+        self.maintain_yaw = (self.yaw == "same")
+        self.maintain_depth = (self.depth == "same")
+
+        # Whether to move forward or backwards
+        self.forward = (self.distance >= 0)
 
         # Whether to get yaw feedback from sensors.
         self.feedback = (point["feedback"] if "feedback" in point else False) and self.USE_FEEDBACK
@@ -32,7 +46,7 @@ class Move(object):
 
         # Create velocity action client for controls server.
         self.vel_client = SimpleActionClient("controls_velocity", SetVelocityAction)
-        self.vel_client.wait_for_server()
+        self.vel_client.wait_for_server()        
 
     def start(self, server, feedback_msg):
         """Do the move action.
@@ -44,13 +58,21 @@ class Move(object):
         rate = rospy.Rate(self.RATE)
 
         ctrl_goal = SetVelocityGoal()
-        ctrl_goal.cmd.depth = self.depth
-        ctrl_goal.cmd.yaw = self.yaw
 
-        time = self.get_time(self.distance)
+        if self.maintain_depth:
+            ctrl_goal.cmd.depth = self.curr_depth
+        else:
+            ctrl_goal.cmd.depth = self.depth
 
-        # Send yaw goal without velocity first.
-        rospy.loginfo("Sending initial yaw only")
+        if self.maintain_yaw:
+            ctrl_goal.cmd.yaw = self.curr_yaw
+        else:
+            ctrl_goal.cmd.yaw = self.yaw
+
+        time = self.get_time(fabs(self.distance))
+
+        # Send yaw and depth goal without velocity first.
+        rospy.loginfo("Sending initial yaw and depth only")
         # Send to velocity server
         self.vel_client.send_goal(ctrl_goal)
         # Check if we received preempt request from Taskr.
@@ -64,6 +86,9 @@ class Move(object):
         self.vel_client.wait_for_result()
 
         ctrl_goal.cmd.surgeSpeed = self.VELOCITY * self.VEL_COEFFICIENT
+
+        if not self.forward:
+            ctrl_goal.cmd.surgeSpeed *= -1
 
         start = rospy.Time.now()
 
@@ -115,3 +140,9 @@ class Move(object):
         if error < self.ERROR_THRESHOLD:
             rospy.loginfo("Correction seems valid, shifting by {}".format(error))
             self.sonar_correction = error
+
+    def depth_callback(self, msg):
+        self.curr_depth = msg.data
+
+    def pose_callback(self, msg):
+        self.curr_yaw = msg.vector.z
