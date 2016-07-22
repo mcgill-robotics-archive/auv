@@ -3,7 +3,7 @@
 # style points!
 actions:
   - move:
-      distance: 10
-      depth: 2
-      yaw: 0.0
+      distance: 1
+      depth: 0.5
+      yaw: -0.5
       feedback: True
