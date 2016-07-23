@@ -49,22 +49,22 @@ class BlinkyNode(object):
             rospy.get_caller_id(), task_msg.action, task_msg.task))
         toggle = False
 
-        if task_msg.action == task_msg.MOVE:
+        if task_msg.action == TaskStatus.MOVE:
             self.blinky_proxy_call(RGB(255, 0, 255)) # Magenta
 
-        elif task_msg.action == task_msg.SHOOT:
+        elif task_msg.action == TaskStatus.SHOOT:
             self.blinky_proxy_call(RGB(255, 215, 0)) # Gold
 
-        elif task_msg.action == task_msg.VISUAL_SERVO:
+        elif task_msg.action == TaskStatus.VISUAL_SERVO:
             self.blinky_proxy_call(RGB(0, 255, 0)) # Green
 
-        elif task_msg.action == task_msg.ACOUSTIC_SERVO:
+        elif task_msg.action == TaskStatus.ACOUSTIC_SERVO:
             self.blinky_proxy_call(RGB(0, 0, 255)) # Blue
 
-        elif task_msg.action == task_msg.INITIALIZE:
+        elif task_msg.action == TaskStatus.INITIALIZE:
             pass
 
-        elif task_msg.action == task_msg.ACTION_IDLE:
+        elif task_msg.action == TaskStatus.ACTION_IDLE:
             toggle = not toggle
             if toggle:
                 self.blinky_proxy_call(RGB(255, 0, 0)) # Red / Off Cycle
