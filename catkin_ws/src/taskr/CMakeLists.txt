@@ -4,6 +4,7 @@ project(taskr)
 find_package(catkin REQUIRED COMPONENTS
   actionlib
   actionlib_msgs
+  genmsg
   geometry_msgs
   message_generation
   rospy

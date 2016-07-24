@@ -14,7 +14,7 @@ from auv_msgs.msg import TaskStatus
 from planner.msg import TaskFeedback, TaskResult, TaskAction
 from geometry_msgs.msg import Vector3Stamped
 from std_msgs.msg import Float64
-from taskr.msg import HydrophonesFeedback, HydrophonesResult
+from taskr.msg import HydrophonesFeedback, HydrophonesResult, HydrophonesAction
 
 TASK_PATH = RosPack().get_path("taskr") + "/tasks/"
 current_task = TaskStatus()
@@ -217,13 +217,14 @@ class Square(Task):
 class ChooseTask(object):
     """Choose which task to do based on hydrophones."""
 
-    WINDOW = 10
+    WINDOW_GOAL = 1
+    WINDOW_YAW = 10
     THRESHOLD = 0.001
 
     def __init__(self):
         self._action_name = "hydro_choose_task"
         self._as = SimpleActionServer(
-            self._action_name, TaskAction,
+            self._action_name, HydrophonesAction,
             execute_cb=self.execute_cb,
             auto_start=False
         )
@@ -237,8 +238,8 @@ class ChooseTask(object):
 
     def execute_cb(self, goal):
         # TODO: Find out what not seeing the pinger looks like
-        while not len(self.goals) > self.WINDOW and not len(self.yaws) > self.WINDOW:
-            rospy.loginfo("Collecting data!")
+        rospy.loginfo("Collecting data!")
+        while not len(self.goals) > self.WINDOW_GOAL and not len(self.yaws) > self.WINDOW_YAW:
             if self._as.is_preempt_requested():
                 rospy.logerr("Hydrophones preempted")
                 self._as.set_preempted()
@@ -248,7 +249,7 @@ class ChooseTask(object):
             feedback.hydro_heading = numpy.mean(self.goals)
             self._as.publish_feedback(feedback)
 
-        rospy.loginfo("Enough data has been collected!")
+        rospy.loginfo("Enough data has been collected.")
 
         orientation = numpy.mean(self.yaws)
         goal = numpy.mean(self.goals)
@@ -258,8 +259,10 @@ class ChooseTask(object):
         result = HydrophonesResult()
 
         if delta_theta > 0:  # Positive angle
+            rospy.loginfo("Hydrophones are to the right.")
             result.quadrant = "right"
         else:
+            rospy.loginfo("Hydrophones are to the left.")
             result.quadrant = "left"
 
         self._as.set_succeeded(result)
@@ -270,7 +273,7 @@ class ChooseTask(object):
     def pose_cb(self, msg):
         self.yaws.append(msg.vector.z)
 
-    def normalize_angle(theta1, theta2):
+    def normalize_angle(self, theta1, theta2):
         """Return theta1 - theta2 normalized between -pi and pi. There's
         probably a library for this, I know ros angles exists for C++."""
         delta = theta1 - theta2
@@ -297,5 +300,6 @@ if __name__ == '__main__':
     Octagon("octagon_task")
     Torpedo("torpedo_task")
     Square("square_task")
+    ChooseTask()
 
     rospy.spin()

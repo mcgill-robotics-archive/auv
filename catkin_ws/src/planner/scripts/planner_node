@@ -77,7 +77,9 @@ def create_cond_sm(data):
         smach.StateMachine.add(data["name"],
                                SimpleActionState(data["server"],
                                                  HydrophonesAction,
-                                                 goal="goal"),
+                                                 result_cb=choose_task_result_cb,
+                                                 goal=goal,
+                                                 outcomes=["aborted", "succeeded", "preempted", "left", "right"]),
                                transitions=data["transitions"])
 
         # Create a sequential state machine for the sequence of tasks to be done
@@ -98,6 +100,15 @@ def create_cond_sm(data):
             cond_machine.add(branch_name, branch)
 
     return cond_machine
+
+
+def choose_task_result_cb(userdata, status, result):
+    if result.quadrant == "left":
+        return "left"
+    elif result.quadrant == "right":
+        return "right"
+    else:
+        rospy.logerr("Unrecognized action result {}".format(result.quadrant))
 
 
 if __name__ == "__main__":
