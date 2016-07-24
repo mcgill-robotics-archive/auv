@@ -94,6 +94,7 @@ class Move(object):
 
         if not self.forward:
             ctrl_goal.cmd.surgeSpeed *= -1
+	    ctrl_goal.cmd.swaySpeed *= -1
 
         start = rospy.Time.now()
 
