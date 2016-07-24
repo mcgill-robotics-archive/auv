@@ -1,24 +1,24 @@
 # BUOY TASK
 actions:
   - move:  # Move close to the buoys
-      distance: 2
-      depth: 2
+      distance: 0
+      depth: 1 
       yaw: 0.0
       feedback: True
   - visual_servo: "red_buoy"  # Aim at red buoy
   - move:  # Hit red buoy
-      distance: 1
-      depth: 2
+      distance: 2 
+      depth: 1 
       yaw: 0.0
       feedback: False
-  - move:  # Back up
-      distance: -2
-      depth: 2
-      yaw: 0.0
-      feedback: False
-  - visual_servo: "yellow_buoy"  # Aim at yellow buoy
-  - move:  # Hit yellow buoy
-      distance: 2
-      depth: 2
-      yaw: 0.0
-      feedback: False
+#  - move:  # Back up
+#      distance: -1
+#      depth: 1 
+#      yaw: 0.0
+#      feedback: False
+#  - visual_servo: "yellow_buoy"  # Aim at yellow buoy
+#  - move:  # Hit yellow buoy
+#      distance: 1
+#      depth: 0.5 
+#      yaw: 0.0
+#      feedback: False

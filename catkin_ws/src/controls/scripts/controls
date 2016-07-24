@@ -7,7 +7,7 @@ from geometry_msgs.msg import Wrench
 from auv_msgs.msg import (
     SetVelocityAction, SetVelocityFeedback, SetVelocityResult,
     SetPositionAction, SetPositionFeedback,
-    VisualServoAction, VisualServoFeedback)
+    VisualServoAction, VisualServoFeedback, VisualServoResult)
 import tf
 from tf.transformations import euler_from_quaternion
 from actionlib import SimpleActionServer
@@ -67,7 +67,7 @@ def set_velocity_callback():
     sway_speed = cmd.swaySpeed
     depth_desired = cmd.depth
     last_heading = cmd.yaw
-    rospy.info('Received New Goal: {}'.format(cmd))
+    rospy.loginfo('Received New Goal: {}'.format(cmd))
 
 
 def set_position_callback():
@@ -92,8 +92,7 @@ def visual_servo_callback():
     target_frame_id = cmd.target_frame_id
     angles_desired[0] = cmd.roll
     angles_desired[1] = cmd.pitch
-    # keep current yaw when getting a vservo goal:
-    angles_desired[2] = angles_estimated[2]
+    angles_desired[2] = cmd.yaw
 
 
 def set_velocity_preempt():
@@ -182,10 +181,12 @@ def loop(event):
     global angles_estimated, depth_estimated, depth_desired, surge_speed
 
     if not mission:
+        rospy.loginfo("No Mission")
         return
     if not (pos_server.is_active() or
             vel_server.is_active() or
             vservo_server.is_active()):
+        rospy.logwarn("No actionlib server is active")
         return
 
     try:
@@ -215,6 +216,7 @@ def loop(event):
                       pos_derivative_error * pos_derivative_gains)
             angles_estimated[2] = yaw_err
         elif vservo_server.is_active():
+            rospy.loginfo("Visual Servo Server Active")
             (x_err, y_err, z_err), quaternion = get_transform('/robot',
                                                               target_frame_id)
             pos_proportional_error_prev = pos_proportional_error
@@ -226,6 +228,9 @@ def loop(event):
                       pos_proportional_error * pos_proportional_gains +
                       pos_derivative_error * pos_derivative_gains)
             depth_desired = depth_estimated + z_err
+            if z_err == 0:
+                depth_desired = 1
+            # check how to keep last depth before losing target
 
         proportional_error_prev = proportional_error.copy()
         proportional_error[0:3] = angles_desired - angles_estimated
@@ -249,6 +254,8 @@ def loop(event):
             feedback.yaw_error = proportional_error[2]
             feedback.depth_error = proportional_error[3]
             vel_server.publish_feedback(feedback)
+            print "YAW ERROR", feedback.yaw_error
+            print "DEPTH ERROR", feedback.depth_error
             if (fabs(feedback.yaw_error) < yaw_error_tol and
                fabs(feedback.depth_error) < depth_error_tol):
                 # Close enough, tell client we're done turning
@@ -268,6 +275,14 @@ def loop(event):
             feedback.y_error = pos_proportional_error[1]
             feedback.depth_error = proportional_error[3]
             vservo_server.publish_feedback(feedback)
+
+            # Must be greater than exact zero to make sure
+            # we don't return success when object is lost:
+            if (0 < fabs(feedback.y_error) < 0.1 and
+               0 < fabs(feedback.depth_error) < 0.1):
+                result = VisualServoResult()
+                result.success = True
+                vservo_server.set_succeeded(result)
 
         output = (integral_error * integral_gains +
                   proportional_error * proportional_gains +
