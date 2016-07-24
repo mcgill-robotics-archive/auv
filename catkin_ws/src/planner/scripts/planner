@@ -8,17 +8,10 @@ from threading import Thread
 from std_msgs.msg import Bool
 from smach_ros import SimpleActionState
 from planner.msg import TaskGoal, TaskAction
+from taskr.msg import HydrophonesGoal, HydrophonesAction
 
-# TODO: Make these params.
 TASKS_PATH = rospy.get_param("planner/tasks")
 MISSION_TOPIC = rospy.get_param("planner/mission_topic")
-
-# Note: I am assuming that when the mission switch is pressed (start mission),
-# a std_msgs/Bool message is published on the /mission topic with data True.
-# When the mission switch is pulled (kill), I assume that a False value is
-# sent. This should be updated with the correct data.
-
-# TODO: Do not kill the state machine on kill -> go to the "MISSION" state.
 
 
 def mission_start_cb(ud, msg):
@@ -55,12 +48,84 @@ def concurrent_child_term_cb(outcome_map):
     return False
 
 
+def create_cond_sm(data):
+    """Create a conditional state machine that chooses which branch of
+    sequential tasks to execute based on the outcome of an action server.
+    Currently, this only works with Hydrophones, hopefully that's all we need...
+    See Jana to generalize. or maybe Jana will get annoyed at her own design
+    choices and fix it before then.
+
+    The transisions from action results to the sequential state machine name
+    must be defined as a dictionary in the yaml. The names of the sequential
+    state machines must match a key in the results dictionary.
+
+                    ACTION STATE (calls an action server to return some string
+                          |       which determines which sequence to execute)
+                       __ | __
+                     /         \
+                BRANCH1      BRANCH2      (This entire SM is returned, and it
+                   |            |          can be added as a task to the
+                 TASK         TASK         main task sequential machine)
+                   |            |
+                 TASK         TASK
+    """
+    cond_machine = smach.StateMachine(outcomes=["aborted", "succeeded", "preempted"])
+
+    with cond_machine:
+        goal = HydrophonesGoal()
+        goal.task = data["name"]
+        smach.StateMachine.add(data["name"],
+                               SimpleActionState(data["server"],
+                                                 HydrophonesAction,
+                                                 goal="goal"),
+                               transitions=data["transitions"])
+
+        # Create a sequential state machine for the sequence of tasks to be done
+        # based on each result.
+        for branch_name, tasks in data["results"].iteritems():
+            branch = smach.Sequence(outcomes=["succeeded", "aborted", "preempted"],
+                                    connector_outcome="succeeded")
+            with branch:
+                # Add each in the branch to the state machine.
+                for task in tasks:
+                    goal = TaskGoal()
+                    goal.task = task["name"]
+                    branch.add(task["name"],
+                               SimpleActionState(task["server"],
+                                                 TaskAction,
+                                                 goal=goal))
+
+            cond_machine.add(branch_name, branch)
+
+    return cond_machine
+
+
 if __name__ == "__main__":
     rospy.init_node("planner")
 
     # Get the task sequence from the yaml.
     with open(TASKS_PATH, "r") as f:
         data = yaml.load(f)
+
+    # Jana would like everyone to observe how ugly and uneditable smach is.
+    """
+    SUMMARY: All this is what is inside task_machine. Note any TASK can be a
+    conditional one.
+
+                             MONITOR MISSION   (Just listens for START then moves on)
+                                    |
+                           -------------------- (concurrent container)
+            MONITOR KILL                          TASK SEQUENCE
+                 |                                      |   (when any of these
+                 |                                    TASK   concurrent processes
+                 |                                      |    ends, state jumps to
+                 |                                    TASK   top again)
+                 |                                      |
+                 |                                    TASK
+                  ______                          ______
+                        \                        /
+                           GOTO MONITOR MISSION
+    """
 
     # The task state machine has a simple sequence of action state tasks,
     # defined based on data from the yaml.
@@ -71,12 +136,18 @@ if __name__ == "__main__":
         # Iterate through the yaml, adding an action state to the task
         # container for each entry.
         for task in data["tasks"]:
-            goal = TaskGoal()
-            goal.task = task["name"]
-            smach.Sequence.add(task["name"],
-                               SimpleActionState(task["server"],
-                                                 TaskAction,
-                                                 goal=goal))
+            if task["name"].upper() == "CONDITIONAL":
+                # Create a new state machine to deal with conditional state.
+                cond_machine = create_cond_sm(task)
+                smach.Sequence.add("CONDITIONAL", cond_machine)
+            else:
+                # Regular task, add the task to the sequence.
+                goal = TaskGoal()
+                goal.task = task["name"]
+                smach.Sequence.add(task["name"],
+                                   SimpleActionState(task["server"],
+                                                     TaskAction,
+                                                     goal=goal))
 
     # The concurrent state machine runs a mission kill switch monitor in
     # parallel with the task sequence. If the mission is killed, the whole
@@ -104,7 +175,9 @@ if __name__ == "__main__":
                                     connector_outcomes=["invalid"])
 
         # Add the concurrent state machine.
-        smach.StateMachine.add_auto("CONCURRENT", csm, connector_outcomes=["succeeded"], transitions ={'aborted':'MISSION'})
+        smach.StateMachine.add_auto("CONCURRENT", csm,
+                                    connector_outcomes=["succeeded"],
+                                    transitions={'aborted': 'MISSION'})
 
     sis = smach_ros.IntrospectionServer("planner_test", task_machine, "/SM_ROOT")
     sis.start()

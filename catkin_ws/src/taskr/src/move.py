@@ -27,7 +27,7 @@ class Move(object):
 
         self.distance = point["distance"]
         self.depth = point["depth"]
-        self.yaw = point["yaw"]        
+        self.yaw = point["yaw"]
 
         self.maintain_yaw = (self.yaw == "same")
         self.maintain_depth = (self.depth == "same")
@@ -46,7 +46,7 @@ class Move(object):
 
         # Create velocity action client for controls server.
         self.vel_client = SimpleActionClient("controls_velocity", SetVelocityAction)
-        self.vel_client.wait_for_server()        
+        self.vel_client.wait_for_server()
 
     def start(self, server, feedback_msg):
         """Do the move action.
