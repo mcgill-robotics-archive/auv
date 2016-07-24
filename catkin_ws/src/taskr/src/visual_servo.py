@@ -32,7 +32,16 @@ class VisualServo(object):
             "~vservo/desired_distance_to_target", default=1)
         self.open_loop_surge_distance = rospy.get_param(
             "~vservo/open_loop_surge_distance", default=0.5)
+        self.recovery_action_timeout = rospy.Duration.from_sec(
+            rospy.get_param("~vservo/recovery_action_timeout", default=3))
+        self.end_action_timeout = rospy.Duration.from_sec(
+            rospy.get_param("~vservo/end_action_timeout", default=30))
 
+        # The formula below was tuned by checking the pixel size of the 0.2m
+        # wide buoy at 0.5, 1, 2, and 3m from the camera.
+        # The pixel size is roughly inversely proportional to the distance.
+        # At 1m, the 0.2m wide buoy is ~160 pixels on camera,
+        # hence the factor of 160/0.2 = 800
         self.pixel_thresh_done = (800 * self.target_width /
                                   self.desired_distance_to_target)
 
@@ -45,6 +54,7 @@ class VisualServo(object):
         self.aimed_x = IMAGE_CENTER_X
         self.aimed_y = IMAGE_CENTER_Y
 
+        self.last_frame_time = rospy.get_rostime()
         self.bb_size_width = 0
 
         self.models_path = rospy.get_param("~models_path")
@@ -76,6 +86,10 @@ class VisualServo(object):
         rospy.logdebug("Visual Servoing")
 
         while True:
+            if (rospy.get_rostime() - self.last_frame_time <
+                    self.end_action_timeout):
+                rospy.logwarn("Target lost, moving on")
+
             self.controls_client.send_goal(ctrl_goal)
 
             # Check if we received preempt request from Taskr.
@@ -111,8 +125,8 @@ class VisualServo(object):
 
     def tracked_obj_callback(self, box):
         if box.confidence > 0.50:
-            self.bb_size_width = box.width
             self.last_frame_time = rospy.get_rostime()
+            self.bb_size_width = box.width
 
             box_center_x = box.x + box.width / 2
             box_center_y = box.y + box.height / 2
@@ -133,7 +147,7 @@ class VisualServo(object):
             point.z = y_dist_to_target
             self.pub.publish(point)
         else:
-            # TODO: try to find it again (after some time?)
+            # TODO: try to find it again using sway and/or heave
             point = Point()
             point.x = 0.0
             point.y = 0.0
