@@ -17,7 +17,6 @@ class Move(object):
     USE_FEEDBACK = rospy.get_param("taskr/use_feedback")
     ERROR_THRESHOLD = rospy.get_param("taskr/yaw_error_threshold", default=numpy.pi / 8)
 
-
     def __init__(self, point):
         """Constructor for the Move object."""
         self.curr_yaw = 0
@@ -28,8 +27,8 @@ class Move(object):
 
         self.distance = point["distance"]
         self.depth = point["depth"]
-        self.yaw = point["yaw"]        
-
+        self.yaw = point["yaw"]
+        self.sway = point["sway"] if "sway" in point else False
         self.maintain_yaw = (self.yaw == "same")
         self.maintain_depth = (self.depth == "same")
 
@@ -86,10 +85,16 @@ class Move(object):
 
         self.vel_client.wait_for_result()
 
-        ctrl_goal.cmd.surgeSpeed = self.VELOCITY * self.VEL_COEFFICIENT
+        if not self.sway:
+            ctrl_goal.cmd.surgeSpeed = self.VELOCITY * self.VEL_COEFFICIENT
+            rospy.loginfo("Surge command received!")
+        else:
+            ctrl_goal.cmd.swaySpeed = self.VELOCITY * self.VEL_COEFFICIENT
+            rospy.loginfo("Sway command received!")
 
         if not self.forward:
             ctrl_goal.cmd.surgeSpeed *= -1
+	    ctrl_goal.cmd.swaySpeed *= -1
 
         start = rospy.Time.now()
 
@@ -97,7 +102,7 @@ class Move(object):
         # Should run RATE * TIME times. For exmaple, if we send cmds at
         # 10 cmd/s (Hz), for 5 seconds, we need to loop 50 times.
         for i in range(0, int(self.RATE * time)):
-            print "Sending Surge", float(i) / self.RATE, "s /", time, "s"
+            print "Sending cmd", float(i) / self.RATE, "s /", time, "s"
 
             # Only if feedback is being used, correct yaw.
             if self.feedback and self.sonar_correction != 0:
@@ -147,4 +152,3 @@ class Move(object):
 
     def pose_callback(self, msg):
         self.curr_yaw = msg.vector.z
-
