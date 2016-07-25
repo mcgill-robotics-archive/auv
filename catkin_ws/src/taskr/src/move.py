@@ -76,8 +76,6 @@ class Move(object):
 
         time = self.get_time(fabs(self.distance))
 
-        print self.curr_yaw, self.curr_depth
-
         # Send yaw and depth goal without velocity first.
         rospy.loginfo("Sending initial yaw and depth only")
         # Send to velocity server
