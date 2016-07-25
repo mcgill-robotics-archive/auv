@@ -4,7 +4,7 @@
   <arg name="camera_serial" value="15440217"/>
   <arg name="calibrated" default="0" />
 
-  <group ns="camera">
+  <group ns="camera_down">
     <node pkg="nodelet" type="nodelet" name="camera_nodelet_manager" args="manager" />
 
     <node pkg="nodelet" type="nodelet" name="camera_nodelet"
