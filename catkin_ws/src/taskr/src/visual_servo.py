@@ -33,9 +33,17 @@ class VisualServo(object):
         self.open_loop_surge_distance = rospy.get_param(
             "~vservo/open_loop_surge_distance", default=0.5)
         self.recovery_action_timeout = rospy.Duration.from_sec(
-            rospy.get_param("~vservo/recovery_action_timeout", default=3))
+            rospy.get_param("~vservo/recovery_action_timeout", default=20))
+        self.servo_action_timeout = rospy.Duration.from_sec(
+            rospy.get_param("~vservo/servo_action_timeout", default=15))
         self.end_action_timeout = rospy.Duration.from_sec(
-            rospy.get_param("~vservo/end_action_timeout", default=30))
+            rospy.get_param("~vservo/end_action_timeout", default=60))
+        self.recovery_half_dist_init = rospy.get_param(
+            "~vservo/recovery_half_dist_init", default=0.5)
+        self.recovery_max_tries = rospy.get_param(
+            "~vservo/recovery_max_tries", default=3)
+
+        self.recovery_half_dist = self.recovery_half_dist_init
 
         # The formula below was tuned by checking the pixel size of the 0.2m
         # wide buoy at 0.5, 1, 2, and 3m from the camera.
@@ -85,10 +93,13 @@ class VisualServo(object):
 
         rospy.logdebug("Visual Servoing")
 
+        recovery_tries = 0
+
         while True:
-            if (rospy.get_rostime() - self.last_frame_time <
+            if (rospy.get_rostime() - self.last_frame_time >
                     self.end_action_timeout):
                 rospy.logwarn("Target lost, moving on")
+                break
 
             self.controls_client.send_goal(ctrl_goal)
 
@@ -101,24 +112,64 @@ class VisualServo(object):
                 return
 
             rospy.loginfo("Waiting for results")
-            self.controls_client.wait_for_result()
-            rospy.loginfo("Successfully aimed at target!")
+            result = self.controls_client.wait_for_result(
+                self.servo_action_timeout)
 
-            if self.bb_size_width > self.pixel_thresh_done:
-                rospy.loginfo("Visual servo complete: target is in range")
-                break
-            else:
-                # Surge forward before doing vservo again
-                move_cmd = {"distance": self.open_loop_surge_distance,
-                            "depth": self.current_depth,
-                            "yaw": self.current_yaw,
-                            "feedback": False}
-                rospy.loginfo(move_cmd)
-                move_action = Move(move_cmd)
-                move_action.start(server, feedback_msg)
-                rospy.loginfo("Surged forward")
-                rospy.loginfo("BoundingBox Size: %i / %i", self.bb_size_width,
-                              self.pixel_thresh_done)
+            if result:  # Successfully centered
+                rospy.loginfo("Successfully aimed at target!")
+
+                if self.bb_size_width > self.pixel_thresh_done:
+                    rospy.loginfo("Visual servo complete: target is in range")
+                    break
+                else:
+                    # Surge forward before doing vservo again
+                    move_cmd = {"distance": self.open_loop_surge_distance,
+                                "depth": self.current_depth,
+                                "yaw": self.current_yaw,
+                                "feedback": False}
+                    rospy.loginfo(move_cmd)
+                    move_action = Move(move_cmd)
+                    move_action.start(server, feedback_msg)
+                    rospy.loginfo("Surged forward")
+                    rospy.loginfo("BoundingBox Size: %i / %i",
+                                  self.bb_size_width, self.pixel_thresh_done)
+            else:  # Did not center on time
+                rospy.logwarn("Target servo timed out")
+                if (rospy.get_rostime() - self.last_frame_time <
+                        self.recovery_action_timeout):
+                    rospy.loginfo("Not time to end yet, try again")
+                    continue
+
+                if recovery_tries >= self.recovery_max_tries:
+                    rospy.logwarn("Tried and failed. Moving on.")
+                    return_move_cmd = {"distance": -1 *
+                                       self.recovery_half_dist_init,
+                                       "depth": self.current_depth,
+                                       "yaw": self.current_yaw,
+                                       "sway": True,
+                                       "feedback": False}
+                    rospy.loginfo(return_move_cmd)
+                    recovery_move_action = Move(return_move_cmd)
+                    recovery_move_action.start(server, feedback_msg)
+                    break
+
+                if recovery_tries == 0:  # half step to the right
+                    self.recovery_dist = self.recovery_half_dist_init
+                elif recovery_tries == 1:  # whole step to the left
+                    self.recovery_dist *= -2
+                else:  # whole step to the opposite direction
+                    self.recovery_dist *= -1
+
+                recovery_move_cmd = {"distance": self.recovery_dist,
+                                     "depth": self.current_depth,
+                                     "yaw": self.current_yaw,
+                                     "sway": True,
+                                     "feedback": False}
+
+                rospy.loginfo(recovery_move_cmd)
+                recovery_move_action = Move(recovery_move_cmd)
+                recovery_move_action.start(server, feedback_msg)
+                recovery_tries += 1
 
         # Stop tracking by setting model file to empty
         rospy.set_param('ros_tld_tracker_node/modelImportFile', '')
@@ -147,7 +198,6 @@ class VisualServo(object):
             point.z = y_dist_to_target
             self.pub.publish(point)
         else:
-            # TODO: try to find it again using sway and/or heave
             point = Point()
             point.x = 0.0
             point.y = 0.0

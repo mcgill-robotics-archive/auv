@@ -230,7 +230,7 @@ def loop(event):
             depth_desired = depth_estimated + z_err
             if z_err == 0:
                 depth_desired = 1
-            # check how to keep last depth before losing target
+            # TODO: check how to keep last depth before losing target
 
         proportional_error_prev = proportional_error.copy()
         proportional_error[0:3] = angles_desired - angles_estimated
@@ -254,8 +254,6 @@ def loop(event):
             feedback.yaw_error = proportional_error[2]
             feedback.depth_error = proportional_error[3]
             vel_server.publish_feedback(feedback)
-            print "YAW ERROR", feedback.yaw_error
-            print "DEPTH ERROR", feedback.depth_error
             if (fabs(feedback.yaw_error) < yaw_error_tol and
                fabs(feedback.depth_error) < depth_error_tol):
                 # Close enough, tell client we're done turning
