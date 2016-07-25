@@ -45,9 +45,6 @@ class BlinkyNode(object):
         if self.last_task.task != task_msg.task:
             self.transition()
 
-        if self.last_task.action == task_msg.action:
-            return
-
         if task_msg.action == TaskStatus.MOVE:
             self.blinky_proxy_call(RGB(255, 0, 255))  # Magenta
 
@@ -79,12 +76,13 @@ class BlinkyNode(object):
         self.blinky_proxy_call(RGB(255, 255, 255))
         rospy.sleep(0.5)
         self.blinky_proxy_call(RGB(0, 0, 0))
-        rospy.sleep(0.5)
+        rospy.sleep(0.3)
         self.blinky_proxy_call(RGB(255, 255, 255))
         rospy.sleep(0.5)
         self.blinky_proxy_call(RGB(0, 0, 0))
-        rospy.sleep(0.5)
+        rospy.sleep(0.3)
         self.blinky_proxy_call(RGB(255, 255, 255))
+        rospy.sleep(0.5)
 
     def blinky_proxy_call(self, color):
 
