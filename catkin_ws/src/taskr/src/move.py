@@ -19,18 +19,15 @@ class Move(object):
 
     def __init__(self, point):
         """Constructor for the Move object."""
-        self.curr_yaw = 0
-        self.curr_depth = 0
+        self.curr_yaw = None
+        self.curr_depth = None
 
         self.depth_sub = rospy.Subscriber('state_estimation/depth', Float64, self.depth_callback)
         self.pose_sub = rospy.Subscriber('robot_state', Vector3Stamped, self.pose_callback)
 
         self.distance = point["distance"]
-        self.depth = point["depth"]
-        self.yaw = point["yaw"]        
-
-        self.maintain_yaw = (self.yaw == "same")
-        self.maintain_depth = (self.depth == "same")
+        self.depth = point["depth"] if "depth" in point else None
+        self.yaw = point["yaw"] if "yaw" in point else None
 
         # Whether to move forward or backwards
         self.forward = (self.distance >= 0)
@@ -46,7 +43,7 @@ class Move(object):
 
         # Create velocity action client for controls server.
         self.vel_client = SimpleActionClient("controls_velocity", SetVelocityAction)
-        self.vel_client.wait_for_server()        
+        self.vel_client.wait_for_server()
 
     def start(self, server, feedback_msg):
         """Do the move action.
@@ -59,12 +56,20 @@ class Move(object):
 
         ctrl_goal = SetVelocityGoal()
 
-        if self.maintain_depth:
+        # If depth was not set, take the current depth.
+        if not self.depth:
+            while not self.curr_depth:
+                pass
+
             ctrl_goal.cmd.depth = self.curr_depth
         else:
             ctrl_goal.cmd.depth = self.depth
 
-        if self.maintain_yaw:
+        # If yaw was not set, take the current yaw.
+        if not self.yaw:
+            while not self.curr_yaw:
+                pass
+
             ctrl_goal.cmd.yaw = self.curr_yaw
         else:
             ctrl_goal.cmd.yaw = self.yaw

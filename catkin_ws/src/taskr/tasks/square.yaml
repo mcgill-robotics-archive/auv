@@ -2,7 +2,10 @@
 # Represents any series of actions for testing purposes.
 actions:
   - move:
-      distance: 2 
-      depth: 0.75 
+      distance: 2
+      depth: 0.75
       yaw: 1.57
+      feedback: False
+  - move:
+      distance: 2
       feedback: False
