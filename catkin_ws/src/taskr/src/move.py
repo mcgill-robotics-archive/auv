@@ -150,8 +150,6 @@ class Move(object):
 
     def depth_callback(self, msg):
         self.curr_depth = msg.data
-        print "cb depth"
 
     def pose_callback(self, msg):
         self.curr_yaw = msg.vector.z
-        print "cb pose"
