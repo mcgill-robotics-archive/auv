@@ -27,7 +27,9 @@ class BlinkyNode(object):
                                            queue_size=1)
 
         self.blinky_proxy = rospy.ServiceProxy('update_planner_lights', UpdatePlannerLights)
-        self.last_task = None
+        self.last_task = TaskStatus()
+        self.last_task.action = TaskStatus.ACTION_IDLE
+        self.last_task.task = TaskStatus.TASK_IDLE
 
     def update_blinky_colors(self, task_msg):
         """ Choose a color for the blinky tapes depending on the
