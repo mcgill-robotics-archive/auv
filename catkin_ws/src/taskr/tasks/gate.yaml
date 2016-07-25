@@ -1,0 +1,8 @@
+# GATE TASK
+# The gate is a purely dead reckoning task.
+actions:
+  - move:
+      distance: 3 
+      depth: 0.5 
+      yaw: 0.26 
+      feedback: False

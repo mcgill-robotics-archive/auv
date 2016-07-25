@@ -32,24 +32,26 @@ class ScanStitcher(object):
         self.scan_pub = rospy.Publisher("full_scan", PointCloud, queue_size=1)
 
         self.clouds = []
-        self.full = False
         self.scan_config = {}
+        self.num_slices = None  # The number of slices in a full scan.
 
     def make_config(self, data):
         """Updates scan cofigurations when configuration is published."""
-        if (not self.scan_config or
-                self.scan_config["left_limit"] != data.left_limit or
-                self.scan_config["right_limit"] != data.right_limit or
-                self.scan_config["range"] != data.range or
-                self.scan_config["num_bins"] != data.nbins or
-                self.scan_config["steps"] != data.step or
-                self.scan_config["clockwise"] != data.scanright):
-            self.scan_config["left_limit"] = data.left_limit
-            self.scan_config["right_limit"] = data.right_limit
-            self.scan_config["range"] = data.range
-            self.scan_config["num_bins"] = data.nbins
-            self.scan_config["steps"] = data.step
-            self.scan_config["clockwise"] = data.scanright
+        self.scan_config["left_limit"] = data.left_limit
+        self.scan_config["right_limit"] = data.right_limit
+        self.scan_config["step"] = data.step
+
+        total = abs(self.scan_config["left_limit"] - self.scan_config["right_limit"])
+
+        # For continuous data, default to 2pi.
+        if total == 0 or data.continuous:
+            total = 2 * math.pi
+
+        self.num_slices = total / self.scan_config["step"]
+
+        # In the case of 49.999999 for example, must round before casting to
+        # avoid data loss.
+        self.num_slices = int(round(self.num_slices, 0))
 
     def stitch(self, data):
         """Callback for stitch. If scan is not full, add a slice, otherwise
@@ -60,34 +62,18 @@ class ScanStitcher(object):
             return
 
         # Check if scan is full.
-        if not self.full:
-            self.add(data)
+        if not self.full():
+            self.clouds.append(data)
         else:
             # Publish current scan.
             self.scan_pub.publish(self.to_full_scan(data.header.frame_id))
 
             # Clear the scan data scan.
             self.clouds = []
-            self.full = False
 
-    def empty(self):
-        """Returns True the scan is empty and False otherwise."""
-        return len(self.clouds) == 0
-
-    def add(self, cloud_slice):
-        """Adds a slice to the scan.
-
-        Args:
-            scan_slice: Slice of the scan.
-        """
-        theta = round(self.theta(cloud_slice.points[10]), 4)
-
-        # Update full variable if the end is reached.
-        if not self.empty() and (theta == round(self.scan_config["right_limit"], 4) or
-                                 theta == round(self.scan_config["left_limit"], 4)):
-            self.full = True
-
-        self.clouds.append(cloud_slice)
+    def full(self):
+        """Returns True the scan is full and False otherwise."""
+        return len(self.clouds) == self.num_slices
 
     def to_full_scan(self, frame):
         """Returns the sonar data as a point cloud.

@@ -1,0 +1,5 @@
+# TORPEDO TASK
+# Move to torpedos and then shoot.
+actions:
+  - shoot: "port_torpedo"
+  - shoot: "starboard_torpedo"
