@@ -150,7 +150,7 @@ void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef *hadc)
     }
   }
 
-  if (ping_start && get_frequency(data_1, 30, 1028571.4286) == 30000) {
+  if (ping_start) {
     Stop_ADC(&hadc1);
     in_ping = 1;
     Start_ADC(&hadc1, (uint32_t*) data_1);
