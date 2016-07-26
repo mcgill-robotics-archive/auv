@@ -20,6 +20,7 @@ vservo_server = None
 
 depth_desired = 0.0
 depth_estimated = 0.0
+depth_vservo_no_target = 0.0
 angles_desired = np.zeros(3)
 angles_estimated = np.zeros(3)
 proportional_error = np.zeros(4)
@@ -85,7 +86,8 @@ def set_position_callback():
 
 
 def visual_servo_callback():
-    global angles_desired, angles_estimated, target_frame_id
+    global angles_desired, angles_estimated, target_frame_id, depth_estimated
+    global depth_vservo_no_target
     set_velocity_preempt()
     set_position_preempt()
     cmd = vservo_server.accept_new_goal().cmd
@@ -93,6 +95,7 @@ def visual_servo_callback():
     angles_desired[0] = cmd.roll
     angles_desired[1] = cmd.pitch
     angles_desired[2] = cmd.yaw
+    depth_vservo_no_target = depth_estimated
 
 
 def set_velocity_preempt():
@@ -179,6 +182,7 @@ def loop(event):
     global pos_proportional_error, pos_integral_error, proportional_error
     global integral_error
     global angles_estimated, depth_estimated, depth_desired, surge_speed
+    global depth_vservo_no_target
 
     if not mission:
         rospy.loginfo("No Mission")
@@ -227,10 +231,13 @@ def loop(event):
             fx, fy = (pos_integral_error * pos_integral_gains +
                       pos_proportional_error * pos_proportional_gains +
                       pos_derivative_error * pos_derivative_gains)
-            depth_desired = depth_estimated + z_err
-            if z_err == 0:
-                depth_desired = 1
-            # TODO: check how to keep last depth before losing target
+
+            if z_err == 0:  # keep latest depth before vservo lost target
+                depth_desired = depth_vservo_no_target
+                rospy.logwarn("Not seeing target, setting depth_desired to depth_vservo_no_target: %f", depth_vservo_no_target)
+            else:
+                depth_desired = depth_estimated + z_err
+                depth_vservo_no_target = depth_desired
 
         proportional_error_prev = proportional_error.copy()
         proportional_error[0:3] = angles_desired - angles_estimated
