@@ -28,6 +28,7 @@ class Move(object):
         self.distance = point["distance"]
 
         self.sway = point["sway"] if "sway" in point else False
+
         self.depth = point["depth"] if "depth" in point else None
         self.yaw = point["yaw"] if "yaw" in point else None
 
@@ -101,7 +102,7 @@ class Move(object):
 
         if not self.forward:
             ctrl_goal.cmd.surgeSpeed *= -1
-	    ctrl_goal.cmd.swaySpeed *= -1
+            ctrl_goal.cmd.swaySpeed *= -1
 
         start = rospy.Time.now()
 

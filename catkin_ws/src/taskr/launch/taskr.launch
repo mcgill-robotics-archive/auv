@@ -1,28 +1,34 @@
 <launch>
   <arg name="use_feedback" default="false"
     doc="The global off switch for feedback. Set to false to never use feedback." />
+  <arg name="task_file" default="$(find taskr)/tasks/tasks.yaml" />
 
-  <node name="taskr" pkg="taskr" type="taskr.py" output="screen">
-      <param name="velocity" value="0.33" />
-      <param name="vel_cmd_rate" value="10" />
-      <param name="vel_coefficient" value="22" />
-      <param name="use_feedback" value="$(arg use_feedback)" />
-      <param name="models_path" value="$(find taskr)/models/" />
+  <node name="taskr" pkg="taskr" type="taskr_node.py" output="screen">
+    <param name="velocity" value="0.33" />
+    <param name="vel_cmd_rate" value="10" />
+    <param name="vel_coefficient" value="22" />
+    <param name="use_feedback" value="$(arg use_feedback)" />
+    <param name="models_path" value="$(find taskr)/models/" />
+    <param name="task_file" value="$(arg task_file)" />
 
-      <param name="vservo/red_buoy/height" value="0.2" />
-      <param name="vservo/red_buoy/width" value="0.2" />
-      <param name="vservo/green_buoy/height" value="0.2" />
-      <param name="vservo/green_buoy/width" value="0.2" />
-      <param name="vservo/torpedo_target/height" value="1.2" />
-      <param name="vservo/torpedo_target/width" value="1.2" />
+    <param name="velocity" value="0.33" />
+    <param name="vel_cmd_rate" value="10" />
+    <param name="vel_coefficient" value="20" />
+    <param name="models_path" value="$(find taskr)/models/" />
 
-      <!-- Likely to be tweaked -->
-      <param name="vservo/desired_distance_to_target" value="0.8" />
-      <param name="vservo/open_loop_surge_distance" value="1.2" />
-      <param name="vservo/recovery_action_timeout" value="15" />
-      <param name="vservo/end_action_timeout" value="120" />
-      <param name="vservo/recovery_half_dist_init" value="0.5" />
-      <param name="vservo/recovery_max_tries" value="3" />
+    <param name="vservo/red_buoy/height" value="0.2" />
+    <param name="vservo/red_buoy/width" value="0.2" />
+    <param name="vservo/green_buoy/height" value="0.2" />
+    <param name="vservo/green_buoy/width" value="0.2" />
+    <param name="vservo/torpedo_target/height" value="1.2" />
+    <param name="vservo/torpedo_target/width" value="1.2" />
 
+    <!-- Likely to be tweaked -->
+    <param name="vservo/desired_distance_to_target" value="0.8" />
+    <param name="vservo/open_loop_surge_distance" value="1.2" />
+    <param name="vservo/recovery_action_timeout" value="15" />
+    <param name="vservo/end_action_timeout" value="120" />
+    <param name="vservo/recovery_half_dist_init" value="0.5" />
+    <param name="vservo/recovery_max_tries" value="3" />
   </node>
 </launch>
