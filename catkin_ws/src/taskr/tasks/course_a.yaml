@@ -28,7 +28,7 @@ buoy:
 maneuver:
   actions:
     - move:
-        distance: 6.11
+        distance: 10.35
         depth: 1.2
         yaw: -0.104
 
@@ -37,7 +37,7 @@ maneuver:
 octagon:
   actions:
     - move:
-        distance: 3.79
+        distance: 14.84
         depth: 1.2
         yaw: 0.3
     - move:
@@ -49,7 +49,7 @@ octagon:
 bins:
   actions:
     - move:
-        distance: 6.5
+        distance: 12.87
         depth: 1.2
         yaw: -2.6
 
