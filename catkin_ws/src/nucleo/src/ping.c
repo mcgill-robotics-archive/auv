@@ -32,7 +32,7 @@ float32_t fft(uint32_t* buff, uint32_t size, uint32_t target, float32_t fs)
 }
 
 
-uint32_t get_frequency(uint16_t* buff, uint32_t size, float32_t fs)
+uint32_t get_frequency(uint32_t* buff, uint32_t size, float32_t fs)
 {
     uint32_t target_frequencies[] = {25000, 30000, 35000, 40000};
     float32_t temp_buff[size];
