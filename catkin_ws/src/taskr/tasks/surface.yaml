@@ -81,14 +81,14 @@ octagon:
 square:
   actions:
     - move:
-        distance: 2
-        depth: 0.7
+        distance: 1
+        depth: 0.5
         yaw: 0
     - move:
         distance: 0
-        depth: 0
+        depth: 0.1
         yaw: 0
     - move:
         distance: 1
-        depth: 0.7
+        depth: 0.5
         yaw: 0

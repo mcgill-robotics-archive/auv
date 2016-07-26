@@ -49,4 +49,6 @@ class Initializer(object):
 
             server.set_aborted()
 
-        self.init_thrusters()
+        for i in range(10):
+            self.init_thrusters()
+            rospy.sleep(0.1)

@@ -118,6 +118,8 @@ if __name__ == "__main__":
     with open(TASKS_PATH, "r") as f:
         data = yaml.load(f)
 
+    rospy.loginfo("YAML path {}".format(TASKS_PATH))
+
     # Jana would like everyone to observe how ugly and uneditable smach is.
     """
     SUMMARY: All this is what is inside task_machine. Note any TASK can be a

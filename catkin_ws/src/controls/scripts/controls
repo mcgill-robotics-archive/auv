@@ -185,7 +185,6 @@ def loop(event):
     global depth_vservo_no_target
 
     if not mission:
-        rospy.loginfo("No Mission")
         return
     if not (pos_server.is_active() or
             vel_server.is_active() or
@@ -261,6 +260,7 @@ def loop(event):
             feedback.yaw_error = proportional_error[2]
             feedback.depth_error = proportional_error[3]
             vel_server.publish_feedback(feedback)
+            rospy.logdebug("feedback.depth_error: %f", feedback.depth_error)
             if (fabs(feedback.yaw_error) < yaw_error_tol and
                fabs(feedback.depth_error) < depth_error_tol):
                 # Close enough, tell client we're done turning
@@ -308,6 +308,7 @@ def loop(event):
 
         # Remove negative z forces to account for the robot's buoyancy
         if force[2] < 0:
+            rospy.loginfo("Negative z force being corrected to 0")
             force[2] = 0
 
         wrench_msg = Wrench()
