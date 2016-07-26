@@ -4,7 +4,7 @@ import rospy
 from std_msgs.msg import Float32
 from auv_msgs.msg import CPUTemperature
 import numpy as np
-
+import time
 
 class RingBuffer(object):
     def __init__(self, size):
@@ -18,9 +18,9 @@ min_real_voltage = 5
 # Must be an odd size so median doesn't average
 computer_voltages = RingBuffer(51)
 computer_warn = 21.0
-computer_shutoff = 20.0
+computer_shutoff = 20
 motor_voltages = RingBuffer(51)
-motor_warn = 11.0
+motor_warn = 10.75
 motor_shutoff = 10.5
 temperature_values = RingBuffer(11)
 temperature_warn = 85
