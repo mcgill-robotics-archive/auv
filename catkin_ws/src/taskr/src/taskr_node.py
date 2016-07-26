@@ -282,6 +282,8 @@ if __name__ == '__main__':
     rospy.Timer(rospy.Duration(0.2), publish_task)
 
     TASK_PATH = rospy.get_param("taskr/task_file")
+    
+    rospy.loginfo("YAML path: {}".format(TASK_PATH))
 
     with open(yaml.load(TASK_PATH)) as f:
         DATA = yaml.load(f)
