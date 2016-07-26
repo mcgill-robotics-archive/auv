@@ -10,7 +10,7 @@ initialize:
 gate:
   actions:
     - move:
-        distance: 12 # 10.6
+        distance: 10.6
         depth: 1.2
         yaw: 0.0
 
@@ -26,29 +26,24 @@ buoy:
 # Maneuver with feedback. Might want to do something fancy at the end for
 # style points!
 maneuver:
-  actions:
+    actions:
     - move:
         distance: 4.63
         depth: 1.2
         yaw: -0.104
-
-# OCTAGON TASK
-# Search for octogon using hydrophones.
-octagon:
-  actions:
     - move:
-        distance: 3.79
+        distance: 0
         depth: 1.2
-        yaw: 0.3
+        yaw: -0.2
 
 # BINS TASK
 # Drop marker in bins.
 bins:
   actions:
     - move:
-        distance: 6.5
-        depth: 1.2
-        yaw: -2.6
+        distance: 10
+        depth: 2
+        yaw: 0.0
 
 # TORPEDO TASK
 # Move to torpedos and then shoot.
@@ -56,12 +51,20 @@ torpedo:
   actions:
     - shoot: "port_torpedo"
 
+# OCTAGON TASK
+# Search for octogon using hydrophones.
+octagon:
+  actions:
+    - acoustic_servo: hydrophones
+    - move:
+        distance: 0
+        depth: 0.1
+
 # TEST TASK
 # Represents any series of actions for testing purposes.
 square:
   actions:
     - move:
-        distance: 6
+        distance: -2
         depth: 1.2
-        yaw: 0
-        feedback: False
+        sway: True
