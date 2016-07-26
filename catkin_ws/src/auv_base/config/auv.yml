@@ -1,0 +1,25 @@
+# ~/.tmuxinator/auv.yml
+
+name: MAIN
+root: /home/robotics/auv
+
+pre: export SHELL=/bin/zsh && export PATH=/usr/local/sbin/:/usr/local/bin/:/usr/sbin:${PATH}:/sbin:/usr/games:/usr/local/games
+
+windows:
+    - core: roscore
+    - serial: roslaunch arduino teensy.launch --wait
+    - cameras:
+        panes:
+          - roslaunch auv_base camera_front.launch --wait
+          - roslaunch auv_base camera_down.launch --wait
+    - sonar:
+        panes:
+          - roslaunch tritech_micron tritech_micron.launch --wait
+          - roslaunch sonar_proc sonar_proc.launch --wait
+    - state_estimation: roslaunch state_estimation state_estimation.launch --wait
+    - controls: roslaunch controls controls.launch --wait
+    - status: roslaunch status status.launch --wait --screen
+    - planner: roslaunch planner planner.launch --wait
+    - taskr: roslaunch taskr taskr.launch --wait
+    - hydrophones: roslaunch hydrophones hydrophones.launch --wait
+    - auto_shutdown: rosrun status auto_shutdown
