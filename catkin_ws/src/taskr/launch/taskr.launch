@@ -3,8 +3,12 @@
     doc="The global off switch for feedback. Set to false to never use feedback." />
   <arg name="task_file" default="$(find taskr)/tasks/tasks.yaml" />
 
-  <node name="taskr" pkg="taskr" type="taskr.py" output="screen">
+  <node name="taskr" pkg="taskr" type="taskr_node.py" output="screen">
+    <param name="velocity" value="0.33" />
+    <param name="vel_cmd_rate" value="10" />
+    <param name="vel_coefficient" value="22" />
     <param name="use_feedback" value="$(arg use_feedback)" />
+    <param name="models_path" value="$(find taskr)/models/" />
     <param name="task_file" value="$(arg task_file)" />
 
     <param name="velocity" value="0.33" />

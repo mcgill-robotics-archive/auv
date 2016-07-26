@@ -26,6 +26,7 @@ class Move(object):
         self.pose_sub = rospy.Subscriber('robot_state', Vector3Stamped, self.pose_callback)
 
         self.distance = point["distance"]
+
         self.sway = point["sway"] if "sway" in point else False
 
         self.depth = point["depth"] if "depth" in point else None
