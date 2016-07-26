@@ -110,7 +110,7 @@ void Start_ADC(ADC_HandleTypeDef* hadc, uint32_t* buff)
   }
   else
   {
-    if (HAL_ADC_Start_DMA(hadc, buff, 15) != HAL_OK)
+    if (HAL_ADC_Start_DMA(hadc, buff, 30) != HAL_OK)
     {
       char* error;
       uint8_t instance = Get_ADC_Instance(hadc);
@@ -144,13 +144,13 @@ void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef *hadc)
 {
   uint8_t ping_start = 0;
 
-  for (uint8_t i = 0; i < 15; i++) {
+  for (uint8_t i = 0; i < 30; i++) {
     if (data_1[i] > 240) {
       ping_start = 1;
     }
   }
 
-  if (ping_start) {
+  if (ping_start && get_frequency(data_1, 30, 1028571.4286) == 30000) {
     Stop_ADC(&hadc1);
     in_ping = 1;
     Start_ADC(&hadc1, (uint32_t*) data_1);
