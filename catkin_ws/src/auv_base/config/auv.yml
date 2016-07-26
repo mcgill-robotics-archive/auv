@@ -1,6 +1,6 @@
 # ~/.tmuxinator/auv.yml
 
-name: MAIN 
+name: MAIN
 root: /home/robotics/auv
 
 pre: export SHELL=/bin/zsh && export PATH=/usr/local/sbin/:/usr/local/bin/:/usr/sbin:${PATH}:/sbin:/usr/games:/usr/local/games
@@ -10,15 +10,15 @@ windows:
     - serial: roslaunch arduino teensy.launch --wait
     - cameras:
         panes:
-          - roslaunch pointgrey_camera_driver camera_front.launch --wait
-          - roslaunch svo_ros live.launch --wait
-          # - roslaunch computer_vision camera_down.launch --wait
-    - sonar: roslaunch tritech_micron tritech_micron.launch --wait
+          - roslaunch auv_base camera_front.launch --wait
+          - roslaunch auv_base camera_base.launch --wait
+    - sonar:
+        panes:
+          - roslaunch tritech_micron tritech_micron.launch --wait
+          - roslaunch sonar_proc sonar_proc.launch --wait
     - state_estimation: roslaunch state_estimation state_estimation.launch --wait
     - controls: roslaunch controls controls.launch --wait
     - status: roslaunch status status.launch --wait --screen
-#    - games: roslaunch games pong_pvp.launch --wait --screen
     - planner: roslaunch planner planner.launch --wait
-    - auto_shutdown: rosrun status auto_shutdown 
-#    - hydrophones: roslaunch hydrophones hydrophones.launch --wait
-#    - bagging: bag record --name semifinal2
+    - taskr: roslaunch taskr taskr.launch --wait
+    - auto_shutdown: rosrun status auto_shutdown
