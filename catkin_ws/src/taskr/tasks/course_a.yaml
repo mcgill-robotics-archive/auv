@@ -28,7 +28,7 @@ buoy:
 maneuver:
   actions:
     - move:
-        distance: 4.63
+        distance: 6.11
         depth: 1.2
         yaw: -0.104
 
