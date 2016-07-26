@@ -26,5 +26,9 @@
     <!-- Likely to be tweaked -->
     <param name="vservo/desired_distance_to_target" value="0.8" />
     <param name="vservo/open_loop_surge_distance" value="1.2" />
+    <param name="vservo/recovery_action_timeout" value="15" />
+    <param name="vservo/end_action_timeout" value="120" />
+    <param name="vservo/recovery_half_dist_init" value="0.5" />
+    <param name="vservo/recovery_max_tries" value="3" />
   </node>
 </launch>
