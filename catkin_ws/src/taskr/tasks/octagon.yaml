@@ -1,9 +1,0 @@
-# OCTAGON TASK
-# Search for octogon using hydrophones.
-actions:
-  - acoustic_servo: "hydrophones"
-  - move:
-      distance: -0.5
-      depth: 0.5
-      yaw: 0.0
-      feedback: False

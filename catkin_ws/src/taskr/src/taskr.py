@@ -7,12 +7,10 @@ from shoot import Shoot
 from initialize import Initializer
 from visual_servo import VisualServo
 from acoustic_servo import AcousticServo
-from rospkg import RosPack
 from actionlib import SimpleActionServer
 from auv_msgs.msg import TaskStatus
 from planner.msg import TaskFeedback, TaskResult, TaskAction
 
-TASK_PATH = RosPack().get_path("taskr") + "/tasks/"
 current_task = TaskStatus()
 current_task.task = TaskStatus.TASK_IDLE
 current_task.action = TaskStatus.ACTION_IDLE
@@ -96,8 +94,7 @@ class Initialize(Task):
         super(Initialize, self).__init__(name, self.execute_cb)
 
         # Load the YAML file.
-        with open(yaml.load(TASK_PATH + self.YAML)) as f:
-            self.data = yaml.load(f)
+        self.data = DATA["initialize"]
 
     def execute_cb(self, goal):
         current_task.task = TaskStatus.INITIALIZE
@@ -111,8 +108,7 @@ class Bins(Task):
         super(Bins, self).__init__(name, self.execute_cb)
 
         # Load the YAML file.
-        with open(yaml.load(TASK_PATH + self.YAML)) as f:
-            self.data = yaml.load(f)
+        self.data = DATA["bins"]
 
     def execute_cb(self, goal):
         current_task.task = TaskStatus.BINS
@@ -126,8 +122,7 @@ class Buoys(Task):
         super(Buoys, self).__init__(name, self.execute_cb)
 
         # Load the YAML file.
-        with open(yaml.load(TASK_PATH + self.YAML)) as f:
-            self.data = yaml.load(f)
+        self.data = DATA["buoy"]
 
     def execute_cb(self, goal):
         current_task.task = TaskStatus.BUOYS
@@ -141,8 +136,7 @@ class Gate(Task):
         super(Gate, self).__init__(name, self.execute_cb)
 
         # Load the YAML file.
-        with open(yaml.load(TASK_PATH + self.YAML)) as f:
-            self.data = yaml.load(f)
+        self.data = DATA["gate"]
 
     def execute_cb(self, goal):
         current_task.task = TaskStatus.GATE
@@ -156,8 +150,7 @@ class Maneuver(Task):
         super(Maneuver, self).__init__(name, self.execute_cb)
 
         # Load the YAML file.
-        with open(yaml.load(TASK_PATH + self.YAML)) as f:
-            self.data = yaml.load(f)
+        self.data = DATA["maneuver"]
 
     def execute_cb(self, goal):
         current_task.task = TaskStatus.MANEUVER
@@ -171,8 +164,7 @@ class Octagon(Task):
         super(Octagon, self).__init__(name, self.execute_cb)
 
         # Load the YAML file.
-        with open(yaml.load(TASK_PATH + self.YAML)) as f:
-            self.data = yaml.load(f)
+        self.data = DATA["octagon"]
 
     def execute_cb(self, goal):
         current_task.task = TaskStatus.OCTAGON
@@ -186,8 +178,7 @@ class Torpedo(Task):
         super(Torpedo, self).__init__(name, self.execute_cb)
 
         # Load the YAML file.
-        with open(yaml.load(TASK_PATH + self.YAML)) as f:
-            self.data = yaml.load(f)
+        self.data = DATA["torpedo"]
 
     def execute_cb(self, goal):
         current_task.task = TaskStatus.TORPEDO
@@ -202,8 +193,7 @@ class Square(Task):
         super(Square, self).__init__(name, self.execute_cb)
 
         # Load the YAML file.
-        with open(yaml.load(TASK_PATH + self.YAML)) as f:
-            self.data = yaml.load(f)
+        self.data = DATA["square"]
 
     def execute_cb(self, goal):
         current_task.task = TaskStatus.SQUARE
@@ -220,6 +210,11 @@ if __name__ == '__main__':
 
     task_pub = rospy.Publisher("/task", TaskStatus, queue_size=1)
     rospy.Timer(rospy.Duration(0.2), publish_task)
+
+    TASK_PATH = rospy.get_param("taskr/task_file")
+
+    with open(yaml.load(TASK_PATH)) as f:
+        DATA = yaml.load(f)
 
     # Initialize tasks.
     Initialize("initialize_task")
