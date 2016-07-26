@@ -11,7 +11,7 @@ windows:
     - cameras:
         panes:
           - roslaunch auv_base camera_front.launch --wait
-          - roslaunch auv_base camera_base.launch --wait
+          - roslaunch auv_base camera_down.launch --wait
     - sonar:
         panes:
           - roslaunch tritech_micron tritech_micron.launch --wait
