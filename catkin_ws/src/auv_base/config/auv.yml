@@ -21,4 +21,5 @@ windows:
     - status: roslaunch status status.launch --wait --screen
     - planner: roslaunch planner planner.launch --wait
     - taskr: roslaunch taskr taskr.launch --wait
+    - hydrophones: roslaunch hydrophones hydrophones.launch --wait
     - auto_shutdown: rosrun status auto_shutdown

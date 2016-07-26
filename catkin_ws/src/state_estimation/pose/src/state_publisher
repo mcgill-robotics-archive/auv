@@ -9,7 +9,7 @@ listener = None
 
 def get_robot_pose():
     global listener
-    listener.waitForTransform("/initial_horizon", "/robot", rospy.Time(), rospy.Duration(0.1))
+    listener.waitForTransform("/initial_horizon", "/robot", rospy.Time(), rospy.Duration(0.2))
 
     (trans, rot) = listener.lookupTransform(
         # FROM
