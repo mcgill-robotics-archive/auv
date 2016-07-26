@@ -15,3 +15,10 @@ catkin_ws/logs
 *.swo
 *.swp
 .DS_Store
+
+# Compiled files
+*.o
+*.d
+*.bin
+*.map
+*.elf
