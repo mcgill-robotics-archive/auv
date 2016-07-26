@@ -1,0 +1,100 @@
+# INITIALIZE.
+initialize:
+  actions:
+    - initialize:
+        countdown: 5 
+        drift_check: 2
+
+# GATE TASK
+# The gate is a purely dead reckoning task.
+gate:
+  actions:
+    - move:
+        distance: 10
+        depth: 2
+        yaw: 0.0
+        feedback: False
+
+# BUOY TASK
+buoy:
+  actions:
+    - move:  # Move close to the buoys
+        distance: 2
+        depth: 2
+        yaw: 0.0
+        feedback: True
+    - visual_servo: "red_buoy"  # Aim at red buoy
+    - move:  # Hit red buoy
+        distance: 1
+        depth: 2
+        yaw: 0.0
+        feedback: False
+    - move:  # Back up
+        distance: -2
+        depth: 2
+        yaw: 0.0
+        feedback: False
+    - visual_servo: "yellow_buoy"  # Aim at yellow buoy
+    - move:  # Hit yellow buoy
+        distance: 2
+        depth: 2
+        yaw: 0.0
+        feedback: False
+
+# MANEUVER TASK
+# Maneuver with feedback. Might want to do something fancy at the end for
+# style points!
+maneuver:
+  actions:
+    - move:
+        distance: 10
+        depth: 2
+        yaw: 0.0
+        feedback: True
+
+# BINS TASK
+# Drop marker in bins.
+bins:
+  actions:
+    - move:
+        distance: 10
+        depth: 2
+        yaw: 0.0
+        feedback: False
+    - visual_servo: "bins"
+    - shoot: "bottom"
+
+# TORPEDO TASK
+# Move to torpedos and then shoot.
+torpedo:
+  actions:
+    - shoot: "port_torpedo"
+
+# OCTAGON TASK
+# Search for octogon using hydrophones.
+octagon:
+  actions:
+    - acoustic_servo: "hydrophones"
+
+# TEST TASK
+# Represents any series of actions for testing purposes.
+square:
+  actions:
+    - move:
+        distance: 3
+        depth: 0.5
+        yaw: 0
+    - move:
+        distance: -3
+        depth: 0.5
+        yaw: 0
+    - move:
+        distance: 1
+        depth: 0.5
+        yaw: 0
+        sway: True
+    - move:
+        distance: -1
+        depth: 0.5
+        yaw: 0
+        sway: True

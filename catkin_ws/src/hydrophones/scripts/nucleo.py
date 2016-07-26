@@ -6,6 +6,7 @@
 import rospy
 import bitstring
 from serial import Serial
+from datetime import datetime
 from auv_msgs.msg import Signals
 
 __author__ = "Anass Al-Wohoush"
@@ -28,6 +29,9 @@ headers = (
     BOOTUP_HEADER
 )
 
+# Preserve messed up and skipped headers.
+corrupted_log = open("{}_corrupted.log".format(datetime.now()), "a+")
+
 
 def get_header(ser):
     """Gets next header from serial buffer.
@@ -40,15 +44,16 @@ def get_header(ser):
     """
     while ser.readable() and not rospy.is_shutdown():
         # Read until next line feed.
-        header = ser.readline().strip()
+        header = ser.readline()
 
         # Verify if header is valid.
-        if header in headers:
+        if header.strip() in headers:
             return header
 
         # Otherwise reset.
-        if header:
+        if header and header != "\n":
             rospy.logerr("Skipped %d bytes", len(header))
+            print >> corrupted_log, header,
         header = ""
 
 
@@ -65,9 +70,15 @@ def get_data(ser, header):
     # Get data.
     raw = ser.read(RAW_BUFFERSIZE)
 
-    # Determine ADC.
-    _, i = header.strip("]").split()
-    quadrant = int(i)
+    # Determine quadrant.
+    if "DATA 1" in header:
+        quadrant = 1
+    elif "DATA 2" in header:
+        quadrant = 2
+    elif "DATA 3" in header:
+        quadrant = 3
+    elif "DATA 4" in header:
+        quadrant = 4
 
     # Convert to array.
     stream = bitstring.BitStream(bytes=raw)
@@ -108,10 +119,10 @@ if __name__ == "__main__":
     pub = rospy.Publisher("~signals", Signals, queue_size=1)
 
     # Get baudrate.
-    baudrate = int(rospy.get_param("~baudrate", 230400))
+    baudrate = int(rospy.get_param("~baudrate", 115200))
 
     # Get whether 12 bit mode or not.
-    TWELVE_BIT_MODE = bool(rospy.get_param("~twelve_bit_mode", False))
+    TWELVE_BIT_MODE = bool(rospy.get_param("~twelve_bit_mode", True))
     rospy.loginfo("Assuming %d bit mode", 12 if TWELVE_BIT_MODE else 8)
     INT_SIZE = 16 if TWELVE_BIT_MODE else 8
 
@@ -119,10 +130,7 @@ if __name__ == "__main__":
     BUFFERSIZE = int(rospy.get_param("~buffersize", 1024))
     RAW_BUFFERSIZE = 2 * BUFFERSIZE if TWELVE_BIT_MODE else BUFFERSIZE
 
-    # Get port name.
-    port = str(rospy.get_param("~port", "/dev/nucleo"))
-
-    with Serial(port, baudrate=baudrate) as ser:
+    with Serial("/dev/nucleo", baudrate=baudrate) as ser:
         rospy.loginfo("Waiting for device...")
         while not ser.readable() and not rospy.is_shutdown():
             pass

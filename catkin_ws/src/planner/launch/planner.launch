@@ -1,6 +1,8 @@
 <launch>
-  <node name="planner" pkg="planner" type="planner" output="screen">
-    <param name="tasks" value="$(find planner)/config/tasks.yaml" />
+  <arg name="task_file" default="$(find planner)/config/run1.yaml" />
+
+  <node name="planner" pkg="planner" type="planner_node" output="screen">
+    <param name="tasks" value="$(arg task_file)" />
     <param name="mission_topic" value="/mission" />
   </node>
 </launch>
