@@ -246,6 +246,8 @@ class ChooseTask(object):
 
         delta_theta = self.normalize_angle(orientation, goal)
 
+        rospy.loginfo("Got heading {} and delta {}".format(goal, delta_theta))
+
         result = HydrophonesResult()
 
         if delta_theta > 0:  # Positive angle

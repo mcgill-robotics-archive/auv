@@ -40,6 +40,9 @@ octagon:
         distance: 3.79
         depth: 1.2
         yaw: 0.3
+    - move:
+        distance: 0
+        depth: 0.1
 
 # BINS TASK
 # Drop marker in bins.
