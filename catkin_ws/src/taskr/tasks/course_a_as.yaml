@@ -26,9 +26,9 @@ buoy:
 # Maneuver with feedback. Might want to do something fancy at the end for
 # style points!
 maneuver:
-    actions:
+  actions:
     - move:
-        distance: 4.63
+        distance: 10.35
         depth: 1.2
         yaw: -0.104
     - move:
@@ -41,9 +41,9 @@ maneuver:
 bins:
   actions:
     - move:
-        distance: 10
-        depth: 2
-        yaw: 0.0
+        distance: 12.87
+        depth: 1.2
+        yaw: -2.6
 
 # TORPEDO TASK
 # Move to torpedos and then shoot.
@@ -55,7 +55,10 @@ torpedo:
 # Search for octogon using hydrophones.
 octagon:
   actions:
-    - acoustic_servo: hydrophones
+    - move:
+        distance: 14.84
+        depth: 1.2
+        yaw: 0.3
     - move:
         distance: 0
         depth: 0.1

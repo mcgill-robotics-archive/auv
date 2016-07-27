@@ -32,7 +32,7 @@ float32_t fft(uint32_t* buff, uint32_t size, uint32_t target, float32_t fs)
 }
 
 
-uint32_t get_frequency(uint32_t* buff, uint32_t size, float32_t fs)
+uint32_t get_frequency(uint16_t* buff, uint32_t size, float32_t fs)
 {
     uint32_t target_frequencies[] = {25000, 30000, 35000, 40000};
     float32_t temp_buff[size];
@@ -52,7 +52,7 @@ uint32_t get_frequency(uint32_t* buff, uint32_t size, float32_t fs)
     uint32_t target_bin = 0;
 
     for (int i = 0; i < 4; i++) {
-        target_bin = (uint32_t) (target_frequencies[i] * size / fs);
+        target_bin = (uint32_t) round(target_frequencies[i] * size / fs);
         if (freq[target_bin] > max) {
             frequency = target_frequencies[i];
             max = freq[target_bin];
