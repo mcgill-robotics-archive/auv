@@ -58,10 +58,9 @@ class Move(object):
         rate = rospy.Rate(self.RATE)
 
         ctrl_goal = SetVelocityGoal()
-        
-        # print self.yaw, self.depth, self.sway
+
         # If depth was not set, take the current depth.
-        if not self.depth:
+        if self.depth is None:
             while not self.curr_depth:
                 pass
 
@@ -70,7 +69,7 @@ class Move(object):
             ctrl_goal.cmd.depth = self.depth
 
         # If yaw was not set, take the current yaw.
-        if not self.yaw:
+        if self.yaw is None:
             while not self.curr_yaw:
                 pass
 

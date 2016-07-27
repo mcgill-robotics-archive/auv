@@ -167,7 +167,8 @@ if __name__ == "__main__":
     # machine terminates.
     csm = smach.Concurrence(outcomes=["succeeded", "aborted", "preempted"],
                             default_outcome="aborted",
-                            child_termination_cb=concurrent_child_term_cb)
+                            child_termination_cb=concurrent_child_term_cb,
+                            outcome_map={"succeeded": {"TASKS": "succeeded"}, "aborted": {"KILL": "invalid"}})
 
     with csm:
         # Add the kill switch monitor.
@@ -183,14 +184,19 @@ if __name__ == "__main__":
 
     with task_machine:
         # Add a state that waits for the mission switch.
-        smach.StateMachine.add_auto("MISSION",
-                                    smach_ros.MonitorState(MISSION_TOPIC, Bool, mission_start_cb),
-                                    connector_outcomes=["invalid"])
+        smach.StateMachine.add("MISSION",
+                               smach_ros.MonitorState(MISSION_TOPIC, Bool, mission_start_cb),
+                               transitions={"invalid": "CONCURRENT"})
+
+        # Add a state that waits for the mission switch to be pulled on success
+        # if the previous mission was successful.
+        smach.StateMachine.add("MISSION_RESET",
+                               smach_ros.MonitorState(MISSION_TOPIC, Bool, mission_kill_cb),
+                               transitions={"invalid": "MISSION"})
 
         # Add the concurrent state machine.
-        smach.StateMachine.add_auto("CONCURRENT", csm,
-                                    connector_outcomes=["succeeded"],
-                                    transitions={'aborted': 'MISSION'})
+        smach.StateMachine.add("CONCURRENT", csm,
+                               transitions={"succeeded": "MISSION_RESET", "aborted": "MISSION"})
 
     sis = smach_ros.IntrospectionServer("planner_test", task_machine, "/SM_ROOT")
     sis.start()
