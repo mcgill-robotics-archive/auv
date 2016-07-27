@@ -41,7 +41,7 @@ class BlinkyNode(object):
         rospy.loginfo("ID = {}. Action is {}. Task is {}".format(
             rospy.get_caller_id(), task_msg.action, task_msg.task))
 
-        if self.last_task.task != task_msg.task and self.last_task.task == TaskStatus.INITIALIZE:
+        if self.last_task.task != task_msg.task and self.last_task.task != TaskStatus.INITIALIZE:
             self.transition()
 
         if task_msg.action == TaskStatus.MOVE:
