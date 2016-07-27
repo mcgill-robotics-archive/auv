@@ -213,7 +213,7 @@ class ChooseTask(object):
     """Choose which task to do based on hydrophones."""
 
     WINDOW_GOAL = 1
-    WINDOW_YAW = 10
+    WINDOW_YAW = 5
     THRESHOLD = 0.001
 
     def __init__(self):
@@ -234,7 +234,7 @@ class ChooseTask(object):
     def execute_cb(self, goal):
         # TODO: Find out what not seeing the pinger looks like
         rospy.loginfo("Collecting data!")
-        while not len(self.goals) > self.WINDOW_GOAL and not len(self.yaws) > self.WINDOW_YAW:
+        while len(self.goals) < self.WINDOW_GOAL and len(self.yaws) < self.WINDOW_YAW:
             if self._as.is_preempt_requested():
                 rospy.logerr("Hydrophones preempted")
                 self._as.set_preempted()
