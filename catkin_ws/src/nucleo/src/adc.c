@@ -172,15 +172,17 @@ void HAL_ADC_ConvHalfCpltCallback(ADC_HandleTypeDef* hadc)
   char energy_buff[30];
   if (in_ping) {
     in_ping = 0;
-    uint32_t frequency = get_frequency(data_1, HALF_BUFFERSIZE, 1028571.4286);
+    uint32_t frequency = get_frequency((uint32_t*) data_1, HALF_BUFFERSIZE, 1028571.4286);
     sprintf(energy_buff, "frequency: %d", frequency);
     log_debug(energy_buff);
-    if (0 && get_frequency(data_1, HALF_BUFFERSIZE, 1028571.4286) != 30000) {
+    if (0 && get_frequency((uint32_t*) data_1, HALF_BUFFERSIZE, 1028571.4286) != 30000)
+    {
       Stop_ADC(&hadc1);
       Stop_ADC(&hadc2);
       Stop_ADC(&hadc3);
       Stop_ADC(&hadc4);
       Start_ADC(&hadc1, (uint32_t*) data_1);
+      return;
     }
     if (Get_ADC_Instance(hadc) == 1)
     {
