@@ -5,6 +5,7 @@ import yaml
 import numpy
 from move import Move
 from shoot import Shoot
+from spinny import Spinny
 from initialize import Initializer
 from visual_servo import VisualServo
 from acoustic_servo import AcousticServo
@@ -68,6 +69,10 @@ class Task(object):
                     current_task.action = TaskStatus.ACOUSTIC_SERVO
                     acoustic_servo = AcousticServo(value)
                     acoustic_servo.start(self._as, self._feedback)
+                elif key == "spinny":
+                    current_task.action = TaskStatus.MOVE
+                    spinny = Spinny(value)
+                    spinny.start(self._as, self._feedback)
                 elif key == "initialize":
                     current_task.action = TaskStatus.INITIALIZE
                     initialize = Initializer(value)
@@ -284,7 +289,7 @@ if __name__ == '__main__':
     rospy.Timer(rospy.Duration(0.2), publish_task)
 
     TASK_PATH = rospy.get_param("taskr/task_file")
-    
+
     rospy.loginfo("YAML path: {}".format(TASK_PATH))
 
     with open(yaml.load(TASK_PATH)) as f:

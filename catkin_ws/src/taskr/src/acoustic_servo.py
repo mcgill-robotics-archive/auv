@@ -23,7 +23,7 @@ class AcousticServo(object):
     """
     DEPTH = 0.5
     SURGE_STEP = 0.5
-    PREEMPT_CHECK_FREQUENCY = 1  # Hz    
+    PREEMPT_CHECK_FREQUENCY = 1  # Hz
 
     def __init__(self, topic):
         """Constructor for the AcousticServo action.
