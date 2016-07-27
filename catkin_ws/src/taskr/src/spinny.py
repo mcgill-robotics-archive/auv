@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 import rospy
-from math import fabs
+from math import pi, fabs
 from actionlib import SimpleActionClient
 from geometry_msgs.msg import Vector3Stamped
 from auv_msgs.msg import SetVelocityAction, SetVelocityGoal
@@ -48,11 +48,7 @@ class Spinny(object):
 
         start_yaw = self.curr_yaw
 
-        ctrl_goal.cmd.yaw = start_yaw + self.ANGLE_INCREMENT
-        self.vel_client.send_goal(ctrl_goal)
-        self.vel_client.wait_for_result()
-
-        while not fabs(self.curr_yaw - start_yaw) < 0.001:
+        for i in range(0, int(2 * pi / self.ANGLE_INCREMENT)):
             ctrl_goal.cmd.yaw += self.ANGLE_INCREMENT
             self.vel_client.send_goal(ctrl_goal)
 
@@ -70,6 +66,8 @@ class Spinny(object):
 
             rate.sleep()
 
+        ctrl_goal.cmd.yaw = start_yaw
+        self.vel_client.send_goal(ctrl_goal)
         self.vel_client.wait_for_result()
 
         start = rospy.Time.now()

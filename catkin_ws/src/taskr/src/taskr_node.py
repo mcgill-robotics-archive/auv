@@ -249,7 +249,7 @@ class ChooseTask(object):
         orientation = numpy.mean(self.yaws)
         goal = numpy.mean(self.goals)
 
-        delta_theta = self.normalize_angle(orientation, goal)
+        delta_theta = goal  # self.normalize_angle(orientation, goal)
 
         rospy.loginfo("Got heading {} and delta {}".format(goal, delta_theta))
 

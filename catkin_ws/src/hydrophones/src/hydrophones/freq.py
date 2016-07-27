@@ -30,3 +30,16 @@ def get_frequency_energy(signal, fs, target):
     energy = freq[1:] / np.linalg.norm(freq[1:], axis=0)
 
     return energy[desired_bin - 1]
+
+def get_frequency(signal, fs):
+    target_frequencies = [25000, 30000, 35000, 40000]
+    max_mag = 0
+    frequency = 0
+
+    for f in target_frequencies:
+        mag = get_frequency_energy(signal, fs, f)
+        if mag > max_mag:
+            max_mag = mag
+            frequency = f
+
+    return frequency
