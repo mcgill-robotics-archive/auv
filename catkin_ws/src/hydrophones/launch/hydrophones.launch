@@ -1,6 +1,6 @@
 <launch>
   <node name="nucleo" pkg="nucleo" type="nucleo.py" output="screen">
   </node>
-  <node name="tdoas" pkg="hydrophones" type="tdoa.py" output="screen">
+  <node name="hydrophones" pkg="hydrophones" type="tdoa.py" output="screen">
   </node>
 </launch>
