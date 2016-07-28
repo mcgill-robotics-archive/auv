@@ -43,6 +43,8 @@ octagon:
   actions:
     - acoustic_servo: "hydrophones"
     - move:
+        distance: -0.6
+    - move:
         distance: 0
         depth: 0.1
 
