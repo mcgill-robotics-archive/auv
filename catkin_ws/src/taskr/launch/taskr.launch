@@ -1,7 +1,7 @@
 <launch>
   <arg name="use_feedback" default="false"
     doc="The global off switch for feedback. Set to false to never use feedback." />
-  <arg name="task_file" default="$(find taskr)/tasks/course_a.yaml" />
+  <arg name="task_file" default="$(find taskr)/tasks/course_b_as.yaml" />
 
   <node name="taskr" pkg="taskr" type="taskr_node.py" output="screen">
     <param name="velocity" value="0.33" />
