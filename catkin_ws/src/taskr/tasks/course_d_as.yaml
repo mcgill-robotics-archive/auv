@@ -29,7 +29,7 @@ maneuver:
   actions:
     - move:
         distance: 9
-        depth: 1.2
+        depth: 1.7
         yaw: 0
     - spinny: spin!
     - move:
@@ -59,7 +59,7 @@ bins:
     - move:
         distance: -0.6
     - shoot: port_dropper
-    - shoot: starboard_dropper
+    # - shoot: starboard_dropper
 
 # TORPEDO TASK
 # Move to torpedos and then shoot.
@@ -70,7 +70,7 @@ torpedo:
         depth: 1.2
         yaw: 0
     - shoot: port_torpedo
-    - shoot: starboard_torpedo
+    # - shoot: starboard_torpedo
 
 # TEST TASK
 # Represents any series of actions for testing purposes.

@@ -5,5 +5,5 @@ tasks:
     server: square_task
   - name: WAIT
     server: wait
-  - name: SQUARE
+  - name: SQUARE2
     server: square_task
