@@ -3,20 +3,20 @@ tasks:
     server: initialize_task  # name of the action server
   - name: GATE
     server: gate_task
-  - name: BUOY
-    server: buoy_task
-  - name: MANEUVER
-    server: maneuver_task
+#  - name: BUOY
+#    server: buoy_task
+#  - name: MANEUVER
+#    server: maneuver_task
   - name: CONDITIONAL
     server: hydro_choose_task
     results:
       left_tasks:
         - name: OCTAGON
           server: octagon_task
-        - name: BIN
-          server: bin_task
-        - name: TORPEDO
-          server: torpedo_task
+#        - name: BIN
+#          server: bin_task
+#        - name: TORPEDO
+#          server: torpedo_task
       right_tasks:
         - name: SQUARE
           server: square_task
