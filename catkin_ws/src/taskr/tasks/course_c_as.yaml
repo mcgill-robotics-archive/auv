@@ -31,7 +31,7 @@ maneuver:
         distance: 10.35
         depth: 1.2
         yaw: -0.227
-    - spinny: spin!
+    # - spinny: spin!
     - move:
         distance: 0
         depth: 1.2
