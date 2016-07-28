@@ -208,12 +208,47 @@ class Square(Task):
         self.action_sequence(self.data)
 
 
+class Wait(object):
+
+    SLEEP_TIME = 15
+    MOVE_RATE = 10
+
+    def __init__(self):
+        self._action_name = "wait"
+        self._as = SimpleActionServer(
+            self._action_name, TaskAction,
+            execute_cb=self.execute_cb,
+            auto_start=False
+        )
+        self._as.start()
+
+    def execute_cb(self, goal):
+        start_time = rospy.Time.now()
+        rospy.loginfo("Sleeping for {} secs".format(self.SLEEP_TIME))
+
+        rate = rospy.Rate(self.MOVE_RATE)
+        feedback = TaskFeedback()
+
+        while (rospy.Time.now() - start_time) < rospy.Duration(self.SLEEP_TIME):
+            move_cmd = {"distance": 0,
+                        "depth": 1.2}
+            move_action = Move(move_cmd)
+            move_action.start(self._as, feedback)
+
+            if self._as.is_preempt_requested():
+                rospy.logerr("Wait preempted")
+                self._as.set_preempted()
+                return
+
+            rate.sleep()
+
+        rospy.loginfo("Done sleeping")
+
+
 class ChooseTask(object):
     """Choose which task to do based on hydrophones."""
 
     WINDOW_GOAL = 1
-    WINDOW_YAW = 5
-    THRESHOLD = 0.001
 
     def __init__(self):
         self._action_name = "hydro_choose_task"
@@ -295,5 +330,6 @@ if __name__ == '__main__':
     Torpedo("torpedo_task")
     Square("square_task")
     ChooseTask()
+    Wait()
 
     rospy.spin()

@@ -10,7 +10,7 @@ initialize:
 gate:
   actions:
     - move:
-        distance: 8
+        distance: 10.5
         depth: 1.2
         yaw: 0.0
 
@@ -18,9 +18,9 @@ gate:
 buoy:
   actions:
     - move:  # Move close to the buoys
-        distance: 6
+        distance: 8.8
         depth: 1.2
-        yaw: 0.182
+        yaw: 0.55
 
 # MANEUVER TASK
 # Maneuver with feedback. Might want to do something fancy at the end for
@@ -28,14 +28,14 @@ buoy:
 maneuver:
   actions:
     - move:
-        distance: 7
+        distance: 9
         depth: 1.2
         yaw: 0.26
-    # - spinny: spin!
+    - spinny: spin!
     - move:
-        distance: 0
+        distance: 5
         depth: 1.2
-        yaw: 0.15
+        yaw: -0.70
 
 # OCTAGON TASK
 # Search for octogon using hydrophones.
@@ -56,6 +56,10 @@ bins:
         distance: 0
         depth: 1.2
     - acoustic_servo: "hydrophones"
+    - move:
+        distance: -0.6
+    - shoot: port_dropper
+    - shoot: starboard_dropper
 
 # TORPEDO TASK
 # Move to torpedos and then shoot.
@@ -65,6 +69,8 @@ torpedo:
         distance: 0
         depth: 1.2
         yaw: 0
+    - shoot: port_torpedo
+    - shoot: starboard_torpedo
 
 # TEST TASK
 # Represents any series of actions for testing purposes.
