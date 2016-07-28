@@ -21,8 +21,8 @@ class AcousticServo(object):
     the Hydrophones determined heading. It then attempts to move towards
     the pinger.
     """
-    DEPTH = 1.2
-    SURGE_STEP = 1
+    DEPTH = 0.4 # 1.2
+    SURGE_STEP = 0.7 
     PREEMPT_CHECK_FREQUENCY = 1  # Hz
     MAX_AGE = 6  # Seconds
     TIMEOUT = 300  # Seconds = 5 min
@@ -96,7 +96,7 @@ class AcousticServo(object):
                         "depth": self.DEPTH}
 
             # If we don't have a last heading, we can't determine if done.
-            if self.last_heading is None:
+            if not self.last_heading is None:
                 # If angle is greater than 90, we have reached the pinger.
                 if fabs(self.heading - self.last_heading) > 1.57:
                     rospy.loginfo("Pinger has been reached! Ending")
