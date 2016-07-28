@@ -210,7 +210,7 @@ class Square(Task):
 
 class Wait(object):
 
-    SLEEP_TIME = 15
+    SLEEP_TIME = 30
     MOVE_RATE = 10
 
     def __init__(self):
@@ -243,6 +243,10 @@ class Wait(object):
             rate.sleep()
 
         rospy.loginfo("Done sleeping")
+
+        result = TaskResult()
+        result.success = True
+        self._as.set_succeeded(result)
 
 
 class ChooseTask(object):

@@ -28,7 +28,7 @@ buoy:
 maneuver:
   actions:
     - move:
-        distance: 9
+        distance: 6.5
         depth: 1.7
         yaw: 0
     - spinny: spin!
