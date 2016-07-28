@@ -212,6 +212,8 @@ class ChooseTask(object):
     """Choose which task to do based on hydrophones."""
 
     WINDOW_GOAL = 1
+    WINDOW_YAW = 5
+    THRESHOLD = 0.001
 
     def __init__(self):
         self._action_name = "hydro_choose_task"
@@ -239,6 +241,10 @@ class ChooseTask(object):
             feedback = HydrophonesFeedback()
             feedback.hydro_heading = numpy.mean(self.goals) if self.goals else 0
             self._as.publish_feedback(feedback)
+            move_cmd = {"distance": 0,
+                        "depth": 1.2}
+            move_action = Move(move_cmd)
+            move_action.start(self._as, feedback)
 
         rospy.loginfo("Enough data has been collected.")
 
