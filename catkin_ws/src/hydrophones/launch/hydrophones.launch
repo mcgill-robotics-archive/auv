@@ -1,5 +1,5 @@
 <launch>
-  <arg name="frequency" default="30000" />
+  <arg name="frequency" default="35000" />
 
   <node name="nucleo" pkg="nucleo" type="nucleo.py" output="screen">
   </node>

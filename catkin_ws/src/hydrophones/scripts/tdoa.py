@@ -19,7 +19,7 @@ def analyze(msg):
     tdy = estimate(msg.quadrant_1[:-10], msg.quadrant_4[10:], FS)
     freq = get_frequency(msg.quadrant_1, FS)
 
-    print(freq)
+    rospy.loginfo("Pingers heard frequency {}".format(freq))
 
     if freq == DESIRED_FREQ:
         yaw = Float64()
