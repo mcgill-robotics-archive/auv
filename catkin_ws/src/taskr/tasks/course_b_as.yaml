@@ -10,7 +10,7 @@ initialize:
 gate:
   actions:
     - move:
-        distance: 14  # 13.8
+        distance: 10  # 13.8
         depth: 1.2
         yaw: 0.0
 
@@ -18,7 +18,7 @@ gate:
 buoy:
   actions:
     - move:  # Move close to the buoys
-        distance: 5  # 5.87
+        distance: 4  # 5.87
         depth: 1.2
         yaw: 0.122
 
@@ -28,7 +28,7 @@ buoy:
 maneuver:
   actions:
     - move:
-        distance: 8
+        distance: 7
         depth: 1.2
         yaw: 0.07
     - spinny: spin!
@@ -62,7 +62,7 @@ torpedo:
     - move:
         distance: 0
         depth: 1.2
-        yaw: 0
+        yaw: 1.57
 
 # TEST TASK
 # Represents any series of actions for testing purposes.
