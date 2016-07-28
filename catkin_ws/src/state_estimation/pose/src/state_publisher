@@ -9,7 +9,7 @@ listener = None
 
 def get_robot_pose():
     global listener
-    listener.waitForTransform("/initial_horizon", "/robot", rospy.Time(), rospy.Duration(0.1))
+    listener.waitForTransform("/initial_horizon", "/robot", rospy.Time(), rospy.Duration(2))
 
     (trans, rot) = listener.lookupTransform(
         # FROM
@@ -31,7 +31,7 @@ if __name__ == '__main__':
     rate = rospy.Rate(10)
     while not rospy.is_shutdown():
         (trans, rot) = get_robot_pose()
-        (roll, pitch, yaw) = tf.transformations.euler_from_quaternion(rot)
+        (roll, pitch, yaw) = euler_from_quaternion(rot)
         msg = Vector3Stamped()
         msg.header.stamp = rospy.Time.now()
         msg.vector.x = roll

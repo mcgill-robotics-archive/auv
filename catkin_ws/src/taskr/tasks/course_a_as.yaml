@@ -1,0 +1,73 @@
+# INITIALIZE.
+initialize:
+  actions:
+    - initialize:
+        countdown: 5
+        drift_check: 2
+
+# GATE TASK
+# The gate is a purely dead reckoning task.
+gate:
+  actions:
+    - move:
+        distance: 10.6
+        depth: 1.2
+        yaw: 0.0
+
+# BUOY TASK
+buoy:
+  actions:
+    - move:  # Move close to the buoys
+        distance: 6.55
+        depth: 1.2
+        yaw: -0.14
+
+# MANEUVER TASK
+# Maneuver with feedback. Might want to do something fancy at the end for
+# style points!
+maneuver:
+  actions:
+    - move:
+        distance: 10.35
+        depth: 1.2
+        yaw: -0.104
+    - move:
+        distance: 0
+        depth: 1.2
+        yaw: -0.2
+
+# BINS TASK
+# Drop marker in bins.
+bins:
+  actions:
+    - move:
+        distance: 12.87
+        depth: 1.2
+        yaw: -2.6
+
+# TORPEDO TASK
+# Move to torpedos and then shoot.
+torpedo:
+  actions:
+    - shoot: "port_torpedo"
+
+# OCTAGON TASK
+# Search for octogon using hydrophones.
+octagon:
+  actions:
+    - move:
+        distance: 14.84
+        depth: 1.2
+        yaw: 0.3
+    - move:
+        distance: 0
+        depth: 0.1
+
+# TEST TASK
+# Represents any series of actions for testing purposes.
+square:
+  actions:
+    - move:
+        distance: -2
+        depth: 1.2
+        sway: True

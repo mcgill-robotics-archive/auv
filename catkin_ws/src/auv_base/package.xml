@@ -1,0 +1,20 @@
+<?xml version="1.0"?>
+<package>
+  <name>auv_base</name>
+  <version>0.0.0</version>
+  <description>The auv_base package</description>
+
+  <maintainer email="jbpavlasek@gmail.com">Jana Pavlasek</maintainer>
+
+  <license>TODO</license>
+
+  <buildtool_depend>catkin</buildtool_depend>
+  <buildtool_depend>pointgrey_camera_driver</buildtool_depend>
+  <buildtool_depend>nodelet</buildtool_depend>
+  <run_depend>pointgrey_camera_driver</run_depend>
+  <run_depend>nodelet</run_depend>
+
+  <export>
+
+  </export>
+</package>

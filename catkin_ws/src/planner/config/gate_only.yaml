@@ -1,0 +1,5 @@
+tasks:
+  - name:  INITIALIZE  # name of the state
+    server: initialize_task  # name of the action server
+  - name: GATE
+    server: gate_task

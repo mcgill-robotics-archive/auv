@@ -1,0 +1,21 @@
+tasks:
+  - name:  INITIALIZE  # name of the state
+    server: initialize_task  # name of the action server
+  - name: GATE
+    server: gate_task
+  - name: BUOY
+    server: buoy_task
+  - name: MANEUVER
+    server: maneuver_task
+  - name: CONDITIONAL
+    server: hydro_choose_task
+    results:
+      left_tasks:
+        - name: SQUARE
+          server: square_task
+      right_tasks:
+        - name: OCTAGON
+          server: octagon_task
+    transitions:
+      left: left_tasks
+      right: right_tasks

@@ -53,7 +53,6 @@ class AcousticServo(object):
         self.feedback_msg = None
 
         self.move_cmd = {"distance": self.SURGE_STEP,
-                         "depth": self.DEPTH,
                          "yaw": self.heading,
                          "feedback": False}
 
@@ -84,7 +83,6 @@ class AcousticServo(object):
             if fabs(self.heading - self.last_heading) > 1.57:
                 break
             move_cmd = {"distance": self.SURGE_STEP,
-                        "depth": self.DEPTH,
                         "yaw": self.heading,
                         "feedback": False}
             print move_cmd

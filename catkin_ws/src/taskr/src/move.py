@@ -26,6 +26,7 @@ class Move(object):
         self.pose_sub = rospy.Subscriber('robot_state', Vector3Stamped, self.pose_callback)
 
         self.distance = point["distance"]
+
         self.sway = point["sway"] if "sway" in point else False
 
         self.depth = point["depth"] if "depth" in point else None
@@ -59,7 +60,7 @@ class Move(object):
         ctrl_goal = SetVelocityGoal()
 
         # If depth was not set, take the current depth.
-        if not self.depth:
+        if self.depth is None:
             while not self.curr_depth:
                 pass
 
@@ -68,7 +69,7 @@ class Move(object):
             ctrl_goal.cmd.depth = self.depth
 
         # If yaw was not set, take the current yaw.
-        if not self.yaw:
+        if self.yaw is None:
             while not self.curr_yaw:
                 pass
 

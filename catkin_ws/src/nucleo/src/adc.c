@@ -110,7 +110,7 @@ void Start_ADC(ADC_HandleTypeDef* hadc, uint32_t* buff)
   }
   else
   {
-    if (HAL_ADC_Start_DMA(hadc, buff, 15) != HAL_OK)
+    if (HAL_ADC_Start_DMA(hadc, buff, 30) != HAL_OK)
     {
       char* error;
       uint8_t instance = Get_ADC_Instance(hadc);
@@ -142,15 +142,19 @@ void Stop_ADC(ADC_HandleTypeDef* hadc)
 
 void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef *hadc)
 {
-  uint8_t ping_start = 0;
+  uint8_t min = 0;
+  uint8_t max = 0;
 
-  for (uint8_t i = 0; i < 15; i++) {
-    if (data_1[i] > 240) {
-      ping_start = 1;
+  for (uint8_t i = 0; i < 30; i++) {
+    if (data_1[i] > 250) {
+      max = 1;
+    }
+    if (data_1[i] < 5) {
+      min = 1;
     }
   }
 
-  if (ping_start) {
+  if (min && max) {
     Stop_ADC(&hadc1);
     in_ping = 1;
     Start_ADC(&hadc1, (uint32_t*) data_1);
@@ -168,6 +172,18 @@ void HAL_ADC_ConvHalfCpltCallback(ADC_HandleTypeDef* hadc)
   char energy_buff[30];
   if (in_ping) {
     in_ping = 0;
+    // uint32_t frequency = get_frequency((uint32_t*) data_1, HALF_BUFFERSIZE, 1028571.4286);
+    // sprintf(energy_buff, "frequency: %d", frequency);
+    // log_debug(energy_buff);
+    // if (0 && get_frequency((uint32_t*) data_1, HALF_BUFFERSIZE, 1028571.4286) != 30000)
+    // {
+    //   Stop_ADC(&hadc1);
+    //   Stop_ADC(&hadc2);
+    //   Stop_ADC(&hadc3);
+    //   Stop_ADC(&hadc4);
+    //   Start_ADC(&hadc1, (uint32_t*) data_1);
+    //   return;
+    // }
     if (Get_ADC_Instance(hadc) == 1)
     {
       Stop_ADC(&hadc1);

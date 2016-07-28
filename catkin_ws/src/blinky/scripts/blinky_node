@@ -21,7 +21,6 @@ class BlinkyNode(object):
     def __init__(self):
         rospy.init_node('blinky_listener')
 
-        self.toggle = False
         self.blinky_sub = rospy.Subscriber('/task', TaskStatus,
                                            self.update_blinky_colors,
                                            queue_size=1)
@@ -42,7 +41,7 @@ class BlinkyNode(object):
         rospy.loginfo("ID = {}. Action is {}. Task is {}".format(
             rospy.get_caller_id(), task_msg.action, task_msg.task))
 
-        if self.last_task.task != task_msg.task:
+        if self.last_task.task != task_msg.task and self.last_task.task != TaskStatus.INITIALIZE:
             self.transition()
 
         if task_msg.action == TaskStatus.MOVE:
@@ -61,11 +60,7 @@ class BlinkyNode(object):
             pass
 
         elif task_msg.action == TaskStatus.ACTION_IDLE:
-            self.toggle = not self.toggle
-            if self.toggle:
-                self.blinky_proxy_call(RGB(255, 0, 0))  # Red / Off Cycle
-            else:
-                self.blinky_proxy_call(RGB(0, 0, 0))
+            self.blinky_proxy_call(RGB(0, 0, 0))
 
         else:
             rospy.logerr("{} is not a known type.".format(task_msg.action))
