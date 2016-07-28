@@ -20,7 +20,7 @@ buoy:
     - move:  # Move close to the buoys
         distance: 8.8
         depth: 1.2
-        yaw: 0.55
+        yaw: 0.36
 
 # MANEUVER TASK
 # Maneuver with feedback. Might want to do something fancy at the end for
@@ -30,7 +30,7 @@ maneuver:
     - move:
         distance: 9
         depth: 1.2
-        yaw: 0.26
+        yaw: 0
     - spinny: spin!
     - move:
         distance: 5
