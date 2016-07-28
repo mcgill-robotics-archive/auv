@@ -24,6 +24,8 @@ class AcousticServo(object):
     DEPTH = 0.5
     SURGE_STEP = 0.5
     PREEMPT_CHECK_FREQUENCY = 1  # Hz    
+    MAX_AGE = 5  # Seconds
+    TIMEOUT = 180  # Seconds
 
     def __init__(self, topic):
         """Constructor for the AcousticServo action.
@@ -36,13 +38,17 @@ class AcousticServo(object):
         # Keep track of current IMU and last 10 Hydrophones heading
         self.robot_heading = 0
         self.heading = 0
+        self.last_heading = 0
 
         self.pinger_heading_log = []
         self.pinger_heading = 0
 
+        # Keep track of ping timestamps
+        self.heading_time = 0
+        self.last_heading_time = 0
+
         self.heading_error = 0
 
-        self.last_heading = 0
         self.server = None
         self.feedback_msg = None
 
@@ -50,6 +56,8 @@ class AcousticServo(object):
                          "depth": self.DEPTH,
                          "yaw": self.heading,
                          "feedback": False}
+
+        self.start_time = rospy.Time.now()
 
         rospy.Subscriber("hydrophones/heading", Float64, self.proc_estim_head)
         self.pose_sub = rospy.Subscriber('robot_state', Vector3Stamped, self.state_cb)
@@ -80,9 +88,12 @@ class AcousticServo(object):
                         "yaw": self.heading,
                         "feedback": False}
             print move_cmd
-            move_action = Move(move_cmd)
-            move_action.start(self.server, self.feedback_msg)
+            if (rospy.Time.now() - self.heading_time).to_sec() < MAX_AGE:            	
+	            move_action = Move(move_cmd)
+	            move_action.start(self.server, self.feedback_msg)
 
+	        if (rospy.Time.now() - self.start_time).to_sec() > TIMEOUT:
+	        	return
             rate.sleep()
             continue
 
@@ -96,8 +107,10 @@ class AcousticServo(object):
             data: ROS message data object containing the estimated heading of
                   the pinger (i.e. -pi to pi).
         """
-        # Input range is -PI-PI
         self.last_heading = self.heading
+        self.last_heading_time = self.heading_time
+
+        self.heading_time = rospy.Time.now()
         self.pinger_heading = msg.data
         self.pinger_heading_log.append(self.pinger_heading)
 
