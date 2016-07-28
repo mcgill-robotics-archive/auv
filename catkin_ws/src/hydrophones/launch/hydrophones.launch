@@ -2,6 +2,6 @@
   <node name="nucleo" pkg="nucleo" type="nucleo.py" output="screen">
   </node>
   <node name="hydrophones" pkg="hydrophones" type="tdoa.py" output="screen">
-    <param name="desired_freq" value="40000" />
+    <param name="desired_freq" value="35000" />
   </node>
 </launch>
