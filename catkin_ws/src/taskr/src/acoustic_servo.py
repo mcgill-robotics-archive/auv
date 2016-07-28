@@ -21,9 +21,9 @@ class AcousticServo(object):
     the Hydrophones determined heading. It then attempts to move towards
     the pinger.
     """
-    DEPTH = 1.2 
+    DEPTH = 1.2
     SURGE_STEP = 0.5
-    PREEMPT_CHECK_FREQUENCY = 1  # Hz    
+    PREEMPT_CHECK_FREQUENCY = 1  # Hz
     MAX_AGE = 5  # Seconds
     TIMEOUT = 180  # Seconds
 
@@ -44,7 +44,7 @@ class AcousticServo(object):
         self.pinger_heading = 0
 
         # Keep track of ping timestamps
-        self.heading_time = rospy.Time.now() 
+        self.heading_time = rospy.Time.now()
         self.last_heading_time = 0
 
         self.heading_error = 0
@@ -87,9 +87,9 @@ class AcousticServo(object):
                         "depth": self.DEPTH,
                         "feedback": False}
             print move_cmd
-            if (rospy.Time.now() - self.heading_time).to_sec() < self.MAX_AGE:            	
-	        move_action = Move(move_cmd)
-	        move_action.start(self.server, self.feedback_msg)
+            if (rospy.Time.now() - self.heading_time).to_sec() < self.MAX_AGE:
+	           move_action = Move(move_cmd)
+	           move_action.start(self.server, self.feedback_msg)
             else:
                 move_cmd = {"distance": 0,
                             "depth": self.DEPTH}

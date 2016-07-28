@@ -10,7 +10,7 @@ initialize:
 gate:
   actions:
     - move:
-        distance: 10.6
+        distance: 8
         depth: 1.2
         yaw: 0.0
 
@@ -18,9 +18,9 @@ gate:
 buoy:
   actions:
     - move:  # Move close to the buoys
-        distance: 6.55
+        distance: 6
         depth: 1.2
-        yaw: 0.105
+        yaw: 0.182
 
 # MANEUVER TASK
 # Maneuver with feedback. Might want to do something fancy at the end for
@@ -28,9 +28,9 @@ buoy:
 maneuver:
   actions:
     - move:
-        distance: 10.35
+        distance: 7
         depth: 1.2
-        yaw: -0.227
+        yaw: 0.26
     # - spinny: spin!
     - move:
         distance: 0
