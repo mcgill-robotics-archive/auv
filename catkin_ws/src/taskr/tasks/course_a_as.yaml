@@ -19,8 +19,8 @@ buoy:
   actions:
     - move:  # Move close to the buoys
         distance: 6.55
-        depth: 1.2
-        yaw: -0.14
+        depth: 1.5
+        yaw: 0
 
 # MANEUVER TASK
 # Maneuver with feedback. Might want to do something fancy at the end for
@@ -28,14 +28,18 @@ buoy:
 maneuver:
   actions:
     - move:
-        distance: 10.35
-        depth: 1.2
-        yaw: -0.104
+        distance: 7.5
+        depth: 1.7
+        yaw: -0.262
     - spinny: spin!
     - move:
-        distance: 0
-        depth: 1.2
-        yaw: -0.2
+        distance: 1
+        depth: 1.7
+        yaw: -0.262
+    - move:
+        distance: 4
+        depth: 1.7
+        yaw: -0.974
 
 # OCTAGON TASK
 # Search for octogon using hydrophones.
@@ -59,7 +63,7 @@ bins:
     - move:
         distance: -0.6
     - shoot: port_dropper
-    - shoot: starboard_dropper
+    # - shoot: starboard_dropper
 
 # TORPEDO TASK
 # Move to torpedos and then shoot.
