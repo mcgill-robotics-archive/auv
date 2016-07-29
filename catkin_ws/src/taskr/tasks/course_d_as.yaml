@@ -80,7 +80,7 @@ square:
         distance: 1
         depth: 0.3
         yaw: 0
-    - spinny: spin
-    - move:
-        distance: 1
-        depth: 0.3
+    # - spinny: spin
+    # - move:
+    #     distance: 1
+    #     depth: 0.3
