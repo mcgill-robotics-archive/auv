@@ -19,7 +19,7 @@ buoy:
   actions:
     - move:  # Move close to the buoys
         distance: 8.8
-        depth: 1.2
+        depth: 1.4
         yaw: 0.36
 
 # MANEUVER TASK
@@ -28,10 +28,14 @@ buoy:
 maneuver:
   actions:
     - move:
-        distance: 6.5
+        distance: 7
         depth: 1.7
         yaw: 0
     - spinny: spin!
+    - move:
+        distance: 2
+        depth: 1.7
+        yaw: 0
     - move:
         distance: 5
         depth: 1.2
@@ -68,9 +72,9 @@ torpedo:
     - move:
         distance: 0
         depth: 1.2
-        yaw: 0
+        yaw: -0.7
     - shoot: port_torpedo
-    # - shoot: starboard_torpedo
+    - shoot: starboard_torpedo
 
 # TEST TASK
 # Represents any series of actions for testing purposes.
