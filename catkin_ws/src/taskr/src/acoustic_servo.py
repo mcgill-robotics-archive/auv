@@ -21,11 +21,11 @@ class AcousticServo(object):
     the Hydrophones determined heading. It then attempts to move towards
     the pinger.
     """
-    DEPTH = 1.2 
-    SURGE_STEP = 0.5
-    PREEMPT_CHECK_FREQUENCY = 1  # Hz    
-    MAX_AGE = 5  # Seconds
-    TIMEOUT = 180  # Seconds
+    DEPTH = 1.2
+    SURGE_STEP = 0.7
+    PREEMPT_CHECK_FREQUENCY = 1  # Hz
+    MAX_AGE = 6  # Seconds
+    TIMEOUT = 300  # Seconds = 5 min
 
     def __init__(self, topic):
         """Constructor for the AcousticServo action.
@@ -36,15 +36,15 @@ class AcousticServo(object):
         self.topic = topic
 
         # Keep track of current IMU and last 10 Hydrophones heading
-        self.robot_heading = 0
-        self.heading = 0
-        self.last_heading = 0
+        self.robot_heading = None
+        self.heading = None
+        self.last_heading = None
 
         self.pinger_heading_log = []
         self.pinger_heading = 0
 
         # Keep track of ping timestamps
-        self.heading_time = rospy.Time.now() 
+        self.heading_time = rospy.Time.now()
         self.last_heading_time = 0
 
         self.heading_error = 0
@@ -76,30 +76,53 @@ class AcousticServo(object):
         rate = rospy.Rate(self.PREEMPT_CHECK_FREQUENCY)
 
         while True:
+            # Check for preempt
             if server.is_preempt_requested():
                 rospy.loginfo("AcousticServo preempted")
                 server.set_preempted()
                 return
-            if fabs(self.heading - self.last_heading) > 1.57:
-                break
+
+            # We have not yet received a heading. Do not move.
+            if self.heading is None:
+                rospy.loginfo("No pinger command. Staying still and waiting.")
+                move_cmd = {"distance": 0,
+                            "depth": self.DEPTH}
+                move_action = Move(move_cmd)
+                move_action.start(self.server, self.feedback_msg)
+                continue
+
             move_cmd = {"distance": self.SURGE_STEP,
                         "yaw": self.heading,
-                        "depth": self.DEPTH,
-                        "feedback": False}
-            print move_cmd
-            if (rospy.Time.now() - self.heading_time).to_sec() < self.MAX_AGE:            	
-	        move_action = Move(move_cmd)
-	        move_action.start(self.server, self.feedback_msg)
+                        "depth": self.DEPTH}
+
+            # If we don't have a last heading, we can't determine if done.
+            if self.last_heading is not None:
+                # If angle is greater than 90, we have reached the pinger.
+                if fabs(self.heading - self.last_heading) > 1.57:
+                    rospy.loginfo("Pinger has been reached! Ending")
+                    break
+
+            if (rospy.Time.now() - self.heading_time).to_sec() < self.MAX_AGE:
+                rospy.loginfo("Sending move command towards pinger {}".format(move_cmd))
+                move_action = Move(move_cmd)
+                move_action.start(self.server, self.feedback_msg)
             else:
+                rospy.loginfo("Pinger message is too old. Sending command {}".format(move_cmd))
                 move_cmd = {"distance": 0,
                             "depth": self.DEPTH}
                 move_action = Move(move_cmd)
                 move_action.start(self.server, self.feedback_msg)
 
-	    if (rospy.Time.now() - self.start_time).to_sec() > self.TIMEOUT:
-	        return
+            if (rospy.Time.now() - self.start_time).to_sec() > self.TIMEOUT:
+                rospy.loginfo("Acoustic servo has timed out.")
+                return
+
             rate.sleep()
-            continue
+
+        if server.is_preempt_requested():
+            rospy.loginfo("AcousticServo preempted")
+            server.set_preempted()
+            return
 
     def state_cb(self, msg):
         self.robot_heading = msg.vector.z
@@ -111,6 +134,10 @@ class AcousticServo(object):
             data: ROS message data object containing the estimated heading of
                   the pinger (i.e. -pi to pi).
         """
+        if self.robot_heading is None:
+            rospy.logerr("No robot heading. Panic.")
+            return
+
         self.last_heading = self.heading
         self.last_heading_time = self.heading_time
 

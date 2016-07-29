@@ -31,37 +31,46 @@ maneuver:
         distance: 10.35
         depth: 1.2
         yaw: -0.104
+    - spinny: spin!
     - move:
         distance: 0
         depth: 1.2
         yaw: -0.2
+
+# OCTAGON TASK
+# Search for octogon using hydrophones.
+octagon:
+  actions:
+    - acoustic_servo: "hydrophones"
+    - move:
+        distance: -0.6
+    - move:
+        distance: 0
+        depth: 0.1
 
 # BINS TASK
 # Drop marker in bins.
 bins:
   actions:
     - move:
-        distance: 12.87
+        distance: 0
         depth: 1.2
-        yaw: -2.6
+    - acoustic_servo: "hydrophones"
+    - move:
+        distance: -0.6
+    - shoot: port_dropper
+    - shoot: starboard_dropper
 
 # TORPEDO TASK
 # Move to torpedos and then shoot.
 torpedo:
   actions:
-    - shoot: "port_torpedo"
-
-# OCTAGON TASK
-# Search for octogon using hydrophones.
-octagon:
-  actions:
-    - move:
-        distance: 14.84
-        depth: 1.2
-        yaw: 0.3
     - move:
         distance: 0
-        depth: 0.1
+        depth: 1.2
+        yaw: 0
+    - shoot: port_torpedo
+    - shoot: starboard_torpedo
 
 # TEST TASK
 # Represents any series of actions for testing purposes.
