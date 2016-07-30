@@ -80,8 +80,4 @@ octagon:
 # Represents any series of actions for testing purposes.
 square:
   actions:
-    - move:
-        distance: 6
-        depth: 1
-        yaw: 0
-        feedback: False
+    - visual_servo: "red_buoy"

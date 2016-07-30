@@ -79,11 +79,8 @@ torpedo:
 # TEST TASK
 # Represents any series of actions for testing purposes.
 square:
-  actions:
-    - move:
-        distance: 1
-        depth: 0.3
-        yaw: 0
+    actions:
+        - visual_servo: red_buoy
     # - spinny: spin
     # - move:
     #     distance: 1

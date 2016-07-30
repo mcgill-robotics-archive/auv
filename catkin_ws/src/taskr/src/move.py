@@ -107,7 +107,7 @@ class Move(object):
         start = rospy.Time.now()
 
         # Send surge commands.
-        # Should run RATE * TIME times. For exmaple, if we send cmds at
+        # Should run RATE * TIME times. For example, if we send cmds at
         # 10 cmd/s (Hz), for 5 seconds, we need to loop 50 times.
         for i in range(0, int(self.RATE * time)):
             print "Sending cmd", float(i) / self.RATE, "s /", time, "s"
