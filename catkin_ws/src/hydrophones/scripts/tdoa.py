@@ -11,10 +11,8 @@ from std_msgs.msg import Float64
 from hydrophones.gccphat import estimate
 from hydrophones.freq import get_frequency
 
-
 FS = 1028571.4286
 
-last_call = rospy.Time.now()
 
 def analyze(msg):
     tdx = estimate(msg.quadrant_1[:-5], msg.quadrant_2[5:], FS)
@@ -37,6 +35,7 @@ def analyze(msg):
 if __name__ == "__main__":
     global pub
     rospy.init_node("hydrophones")
+    last_call = rospy.Time.now()
 
     DESIRED_FREQ = rospy.get_param("hydrophones/desired_freq")
 
