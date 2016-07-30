@@ -18,7 +18,7 @@ gate:
 buoy:
   actions:
     - move:  # Move close to the buoys
-        distance: 6  # 5.87
+        distance: 9  # 5.87
         depth: 1.5
         yaw: 0.0
 
@@ -39,7 +39,7 @@ maneuver:
     - move: # last turn
         distance: 4
         depth: 1.2
-        yaw: 1.047
+        yaw: 0.873
 
 # OCTAGON TASK
 # Search for octogon using hydrophones.

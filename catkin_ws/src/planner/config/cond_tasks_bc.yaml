@@ -13,13 +13,21 @@ tasks:
       left_tasks:
         - name: OCTAGON
           server: octagon_task
+        - name: WAIT
+          server: wait
         - name: BIN
           server: bin_task
         - name: TORPEDO
           server: torpedo_task
       right_tasks:
-        - name: SQUARE
-          server: square_task
+        - name: BIN
+          server: bin_task
+        - name: TORPEDO
+          server: torpedo_task
+        - name: WAIT
+          server: wait
+        - name: OCTAGON
+          server: octagon_task
     transitions:
       left: left_tasks
       right: right_tasks
