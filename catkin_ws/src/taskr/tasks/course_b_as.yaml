@@ -76,12 +76,12 @@ torpedo:
     - move:
         distance: 0
         depth: 1.7
-        yaw: 1.57
+        yaw: 2.1
     - shoot: port_torpedo
     - move:
         distance: 0
         depth: 1.3
-        yaw: 1.57
+        yaw: 1.83
     - shoot: starboard_torpedo
 
 # TEST TASK
