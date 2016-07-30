@@ -18,9 +18,15 @@ gate:
 buoy:
   actions:
     - move:  # Move close to the buoys
-        distance: 8.8
+        distance: 2.0
         depth: 1.4
         yaw: 0.36
+    - visual_servo: red_buoy
+    - move:
+        distance: -1
+    - visual_servo: green_buoy
+    - move:
+        distance: 3
 
 # MANEUVER TASK
 # Maneuver with feedback. Might want to do something fancy at the end for
@@ -79,8 +85,12 @@ torpedo:
 # TEST TASK
 # Represents any series of actions for testing purposes.
 square:
-    actions:
-        - visual_servo: red_buoy
+  actions:
+    - move:
+        distance: 0
+        depth: 1.2
+        yaw: 0
+    - visual_servo: red_buoy
     # - spinny: spin
     # - move:
     #     distance: 1
