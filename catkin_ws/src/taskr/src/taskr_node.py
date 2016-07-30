@@ -210,7 +210,7 @@ class Square(Task):
 
 class Wait(object):
 
-    SLEEP_TIME = 20
+    SLEEP_TIME = 30
     MOVE_RATE = 10
 
     def __init__(self):
