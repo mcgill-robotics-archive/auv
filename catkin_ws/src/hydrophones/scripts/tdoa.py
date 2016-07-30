@@ -5,11 +5,11 @@
 
 import rospy
 import math
+import time
 from auv_msgs.msg import Signals
 from std_msgs.msg import Float64
 from hydrophones.gccphat import estimate
 from hydrophones.freq import get_frequency
-
 
 FS = 1028571.4286
 
@@ -21,7 +21,13 @@ def analyze(msg):
 
     rospy.loginfo("Pingers heard frequency {}".format(freq))
 
-    if freq == DESIRED_FREQ:
+    current_call = rospy.Time.now()
+    time_delta = current_call - last_call
+
+    if freq == DESIRED_FREQ and time_delta.to_sec() > 0.3:
+        global last_call
+        last_call = current_call
+
         yaw = Float64()
         yaw.data = math.atan2(tdx, tdy)
         pub.publish(yaw)
@@ -29,6 +35,7 @@ def analyze(msg):
 if __name__ == "__main__":
     global pub
     rospy.init_node("hydrophones")
+    last_call = rospy.Time.now()
 
     DESIRED_FREQ = rospy.get_param("hydrophones/desired_freq")
 
