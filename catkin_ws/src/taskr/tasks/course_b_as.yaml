@@ -19,7 +19,7 @@ buoy:
   actions:
     - move:  # Move close to the buoys
         distance: 9  # 5.87
-        depth: 1.5
+        depth: 1.7
         yaw: 0.0
 
 # MANEUVER TASK
@@ -28,7 +28,7 @@ buoy:
 maneuver:
   actions:
     - move: # move to maneuver
-        distance: 11
+        distance: 5
         depth: 1.7
         yaw: -0.698
     - spinny: spin!
