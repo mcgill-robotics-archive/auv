@@ -19,27 +19,16 @@ gate:
 buoy:
   actions:
     - move:  # Move close to the buoys
-        distance: 2
-        depth: 2
-        yaw: 0.0
-        feedback: True
-    - visual_servo: "red_buoy"  # Aim at red buoy
-    - move:  # Hit red buoy
-        distance: 1
-        depth: 2
-        yaw: 0.0
-        feedback: False
-    - move:  # Back up
-        distance: -2
-        depth: 2
-        yaw: 0.0
-        feedback: False
-    - visual_servo: "yellow_buoy"  # Aim at yellow buoy
-    - move:  # Hit yellow buoy
-        distance: 2
-        depth: 2
-        yaw: 0.0
-        feedback: False
+        distance: 1  # 5.87
+        depth: 1
+    - visual_servo: red_buoy
+    - move:
+        distance: 1.0
+    - move:
+        distance: -1.0
+    - visual_servo: green_buoy
+    - move:
+        distance: 3.0
 
 # MANEUVER TASK
 # Maneuver with feedback. Might want to do something fancy at the end for
@@ -47,9 +36,9 @@ buoy:
 maneuver:
   actions:
     - move:
-        distance: 10
-        depth: 2
-        yaw: 0.0
+        distance: 2
+        depth: 1
+        yaw: 1
         feedback: True
 
 # BINS TASK

@@ -99,6 +99,13 @@ class VisualServo(object):
             if (rospy.get_rostime() - self.last_frame_time >
                     self.end_action_timeout):
                 rospy.logwarn("Target lost, moving on")
+
+                # Surge forward as last resort
+                move_cmd = {"distance": 3 * self.open_loop_surge_distance}
+                rospy.loginfo(move_cmd)
+                move_action = Move(move_cmd)
+                move_action.start(server, feedback_msg)
+                rospy.loginfo("Surged forward")
                 break
 
             self.controls_client.send_goal(ctrl_goal)
@@ -144,31 +151,31 @@ class VisualServo(object):
                     rospy.logwarn("Tried and failed. Moving on.")
                     return_move_cmd = {"distance": -1 *
                                        self.recovery_half_dist_init,
-                                       "depth": self.current_depth,
-                                       "yaw": self.current_yaw,
-                                       "sway": True,
-                                       "feedback": False}
+                                       "sway": True}
                     rospy.loginfo(return_move_cmd)
                     recovery_move_action = Move(return_move_cmd)
                     recovery_move_action.start(server, feedback_msg)
                     break
 
-                if recovery_tries == 0:  # half step to the right
-                    self.recovery_dist = self.recovery_half_dist_init
-                elif recovery_tries == 1:  # whole step to the left
+                if recovery_tries == 0:  # half step to the left
+                    self.recovery_dist = -1 * self.recovery_half_dist_init
+                elif recovery_tries == 1:  # whole step to the opposite direction
                     self.recovery_dist *= -2
                 else:  # whole step to the opposite direction
                     self.recovery_dist *= -1
 
                 recovery_move_cmd = {"distance": self.recovery_dist,
-                                     "depth": self.current_depth,
-                                     "yaw": self.current_yaw,
-                                     "sway": True,
-                                     "feedback": False}
+                                     "sway": True}
 
                 rospy.loginfo(recovery_move_cmd)
                 recovery_move_action = Move(recovery_move_cmd)
                 recovery_move_action.start(server, feedback_msg)
+
+                recovery_surge_cmd = {"distance": 0.7}
+                rospy.loginfo(recovery_surge_cmd)
+                recovery_surge_action = Move(recovery_surge_cmd)
+                recovery_surge_action.start(server, feedback_msg)
+
                 recovery_tries += 1
 
         # Stop tracking by setting model file to empty

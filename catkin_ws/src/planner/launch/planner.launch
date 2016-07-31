@@ -1,5 +1,5 @@
 <launch>
-  <arg name="task_file" default="$(find planner)/config/cond_tasks_bc.yaml" />
+  <arg name="task_file" default="$(find planner)/config/cond_tasks_ad.yaml" />
 
   <node name="planner" pkg="planner" type="planner_node" output="screen">
     <param name="tasks" value="$(arg task_file)" />
