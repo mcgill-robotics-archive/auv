@@ -2,17 +2,19 @@
 
 import rospy
 import yaml
+import numpy
 from move import Move
 from shoot import Shoot
+from spinny import Spinny
 from initialize import Initializer
 from visual_servo import VisualServo
 from acoustic_servo import AcousticServo
-from rospkg import RosPack
 from actionlib import SimpleActionServer
 from auv_msgs.msg import TaskStatus
 from planner.msg import TaskFeedback, TaskResult, TaskAction
+from std_msgs.msg import Float64
+from taskr.msg import HydrophonesFeedback, HydrophonesResult, HydrophonesAction
 
-TASK_PATH = RosPack().get_path("taskr") + "/tasks/"
 current_task = TaskStatus()
 current_task.task = TaskStatus.TASK_IDLE
 current_task.action = TaskStatus.ACTION_IDLE
@@ -66,6 +68,10 @@ class Task(object):
                     current_task.action = TaskStatus.ACOUSTIC_SERVO
                     acoustic_servo = AcousticServo(value)
                     acoustic_servo.start(self._as, self._feedback)
+                elif key == "spinny":
+                    current_task.action = TaskStatus.MOVE
+                    spinny = Spinny(value)
+                    spinny.start(self._as, self._feedback)
                 elif key == "initialize":
                     current_task.action = TaskStatus.INITIALIZE
                     initialize = Initializer(value)
@@ -96,8 +102,7 @@ class Initialize(Task):
         super(Initialize, self).__init__(name, self.execute_cb)
 
         # Load the YAML file.
-        with open(yaml.load(TASK_PATH + self.YAML)) as f:
-            self.data = yaml.load(f)
+        self.data = DATA["initialize"]
 
     def execute_cb(self, goal):
         current_task.task = TaskStatus.INITIALIZE
@@ -111,8 +116,7 @@ class Bins(Task):
         super(Bins, self).__init__(name, self.execute_cb)
 
         # Load the YAML file.
-        with open(yaml.load(TASK_PATH + self.YAML)) as f:
-            self.data = yaml.load(f)
+        self.data = DATA["bins"]
 
     def execute_cb(self, goal):
         current_task.task = TaskStatus.BINS
@@ -126,8 +130,7 @@ class Buoys(Task):
         super(Buoys, self).__init__(name, self.execute_cb)
 
         # Load the YAML file.
-        with open(yaml.load(TASK_PATH + self.YAML)) as f:
-            self.data = yaml.load(f)
+        self.data = DATA["buoy"]
 
     def execute_cb(self, goal):
         current_task.task = TaskStatus.BUOYS
@@ -141,8 +144,7 @@ class Gate(Task):
         super(Gate, self).__init__(name, self.execute_cb)
 
         # Load the YAML file.
-        with open(yaml.load(TASK_PATH + self.YAML)) as f:
-            self.data = yaml.load(f)
+        self.data = DATA["gate"]
 
     def execute_cb(self, goal):
         current_task.task = TaskStatus.GATE
@@ -156,8 +158,7 @@ class Maneuver(Task):
         super(Maneuver, self).__init__(name, self.execute_cb)
 
         # Load the YAML file.
-        with open(yaml.load(TASK_PATH + self.YAML)) as f:
-            self.data = yaml.load(f)
+        self.data = DATA["maneuver"]
 
     def execute_cb(self, goal):
         current_task.task = TaskStatus.MANEUVER
@@ -171,8 +172,7 @@ class Octagon(Task):
         super(Octagon, self).__init__(name, self.execute_cb)
 
         # Load the YAML file.
-        with open(yaml.load(TASK_PATH + self.YAML)) as f:
-            self.data = yaml.load(f)
+        self.data = DATA["octagon"]
 
     def execute_cb(self, goal):
         current_task.task = TaskStatus.OCTAGON
@@ -186,8 +186,7 @@ class Torpedo(Task):
         super(Torpedo, self).__init__(name, self.execute_cb)
 
         # Load the YAML file.
-        with open(yaml.load(TASK_PATH + self.YAML)) as f:
-            self.data = yaml.load(f)
+        self.data = DATA["torpedo"]
 
     def execute_cb(self, goal):
         current_task.task = TaskStatus.TORPEDO
@@ -202,12 +201,109 @@ class Square(Task):
         super(Square, self).__init__(name, self.execute_cb)
 
         # Load the YAML file.
-        with open(yaml.load(TASK_PATH + self.YAML)) as f:
-            self.data = yaml.load(f)
+        self.data = DATA["square"]
 
     def execute_cb(self, goal):
         current_task.task = TaskStatus.SQUARE
         self.action_sequence(self.data)
+
+
+class Wait(object):
+
+    SLEEP_TIME = 20
+    MOVE_RATE = 10
+
+    def __init__(self):
+        self._action_name = "wait"
+        self._as = SimpleActionServer(
+            self._action_name, TaskAction,
+            execute_cb=self.execute_cb,
+            auto_start=False
+        )
+        self._as.start()
+
+    def execute_cb(self, goal):
+        start_time = rospy.Time.now()
+        rospy.loginfo("Sleeping for {} secs".format(self.SLEEP_TIME))
+
+        rate = rospy.Rate(self.MOVE_RATE)
+        feedback = TaskFeedback()
+
+        while (rospy.Time.now() - start_time) < rospy.Duration(self.SLEEP_TIME):
+            move_cmd = {"distance": 0,
+                        "depth": 1.2}
+            move_action = Move(move_cmd)
+            move_action.start(self._as, feedback)
+
+            if self._as.is_preempt_requested():
+                rospy.logerr("Wait preempted")
+                self._as.set_preempted()
+                return
+
+            rate.sleep()
+
+        rospy.loginfo("Done sleeping")
+
+        result = TaskResult()
+        result.success = True
+        self._as.set_succeeded(result)
+
+
+class ChooseTask(object):
+    """Choose which task to do based on hydrophones."""
+
+    WINDOW_GOAL = 1
+
+    def __init__(self):
+        self._action_name = "hydro_choose_task"
+        self._as = SimpleActionServer(
+            self._action_name, HydrophonesAction,
+            execute_cb=self.execute_cb,
+            auto_start=False
+        )
+        self._as.start()
+
+        self.goals = []
+
+        self.hydro_sub = rospy.Subscriber("hydrophones/heading", Float64, self.hydro_cb)
+
+    def execute_cb(self, goal):
+        self.goals = []
+
+        rospy.loginfo("Collecting data!")
+        while len(self.goals) < self.WINDOW_GOAL:
+            if self._as.is_preempt_requested():
+                rospy.logerr("Hydrophones preempted")
+                self._as.set_preempted()
+                return
+
+            feedback = HydrophonesFeedback()
+            feedback.hydro_heading = numpy.mean(self.goals) if self.goals else 0
+            self._as.publish_feedback(feedback)
+            move_cmd = {"distance": 0,
+                        "depth": 1.2}
+            move_action = Move(move_cmd)
+            move_action.start(self._as, feedback)
+
+        rospy.loginfo("Enough data has been collected.")
+
+        hydro_heading = numpy.mean(self.goals)
+
+        rospy.loginfo("Got heading {}".format(hydro_heading))
+
+        result = HydrophonesResult()
+
+        if hydro_heading > 0:  # Positive angle
+            rospy.loginfo("Hydrophones are to the right.")
+            result.quadrant = "right"
+        else:
+            rospy.loginfo("Hydrophones are to the left.")
+            result.quadrant = "left"
+
+        self._as.set_succeeded(result)
+
+    def hydro_cb(self, msg):
+        self.goals.append(msg.data)
 
 
 def publish_task(event):
@@ -221,6 +317,13 @@ if __name__ == '__main__':
     task_pub = rospy.Publisher("/task", TaskStatus, queue_size=1)
     rospy.Timer(rospy.Duration(0.2), publish_task)
 
+    TASK_PATH = rospy.get_param("taskr/task_file")
+
+    rospy.loginfo("YAML path: {}".format(TASK_PATH))
+
+    with open(yaml.load(TASK_PATH)) as f:
+        DATA = yaml.load(f)
+
     # Initialize tasks.
     Initialize("initialize_task")
     Bins("bin_task")
@@ -230,5 +333,7 @@ if __name__ == '__main__':
     Octagon("octagon_task")
     Torpedo("torpedo_task")
     Square("square_task")
+    ChooseTask()
+    Wait()
 
     rospy.spin()

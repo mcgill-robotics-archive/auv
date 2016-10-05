@@ -1,0 +1,9 @@
+<launch>
+  <arg name="frequency" default="30000" />
+
+  <node name="nucleo" pkg="nucleo" type="nucleo.py" output="screen">
+  </node>
+  <node name="hydrophones" pkg="hydrophones" type="tdoa.py" output="screen">
+    <param name="desired_freq" value="$(arg frequency)" />
+  </node>
+</launch>

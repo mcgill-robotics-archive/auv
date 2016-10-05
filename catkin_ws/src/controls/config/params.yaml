@@ -17,9 +17,9 @@ kd_yHydro: 0.0
 
 kp_depth: 150.0
 ki_depth: 4.0
-kd_depth: 50 #100 #50.0 # (vservo) # 10.0 (normal)
+kd_depth: 10 #100 #50.0 # (vservo) # 10.0 (normal)
 
-kp_pitch: 1.0
+kp_pitch: 5.0
 ki_pitch: 0.0
 kd_pitch: 0.0
 
@@ -39,4 +39,4 @@ sway_coeff: 5
 yaw_error_tol: 0.1  # radians
 x_error_tol: 0.1  # m
 y_error_tol: 0.1  # m
-depth_error_tol: 0.05  #m
+depth_error_tol: 0.08  #m

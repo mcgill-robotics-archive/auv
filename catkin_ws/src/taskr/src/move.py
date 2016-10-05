@@ -19,18 +19,18 @@ class Move(object):
 
     def __init__(self, point):
         """Constructor for the Move object."""
-        self.curr_yaw = 0
-        self.curr_depth = 0
+        self.curr_yaw = None
+        self.curr_depth = None
 
         self.depth_sub = rospy.Subscriber('state_estimation/depth', Float64, self.depth_callback)
         self.pose_sub = rospy.Subscriber('robot_state', Vector3Stamped, self.pose_callback)
 
         self.distance = point["distance"]
-        self.depth = point["depth"]
-        self.yaw = point["yaw"]        
 
-        self.maintain_yaw = (self.yaw == "same")
-        self.maintain_depth = (self.depth == "same")
+        self.sway = point["sway"] if "sway" in point else False
+
+        self.depth = point["depth"] if "depth" in point else None
+        self.yaw = point["yaw"] if "yaw" in point else None
 
         # Whether to move forward or backwards
         self.forward = (self.distance >= 0)
@@ -46,7 +46,7 @@ class Move(object):
 
         # Create velocity action client for controls server.
         self.vel_client = SimpleActionClient("controls_velocity", SetVelocityAction)
-        self.vel_client.wait_for_server()        
+        self.vel_client.wait_for_server()
 
     def start(self, server, feedback_msg):
         """Do the move action.
@@ -59,12 +59,20 @@ class Move(object):
 
         ctrl_goal = SetVelocityGoal()
 
-        if self.maintain_depth:
+        # If depth was not set, take the current depth.
+        if self.depth is None:
+            while not self.curr_depth:
+                pass
+
             ctrl_goal.cmd.depth = self.curr_depth
         else:
             ctrl_goal.cmd.depth = self.depth
 
-        if self.maintain_yaw:
+        # If yaw was not set, take the current yaw.
+        if self.yaw is None:
+            while not self.curr_yaw:
+                pass
+
             ctrl_goal.cmd.yaw = self.curr_yaw
         else:
             ctrl_goal.cmd.yaw = self.yaw
@@ -85,18 +93,24 @@ class Move(object):
 
         self.vel_client.wait_for_result()
 
-        ctrl_goal.cmd.surgeSpeed = self.VELOCITY * self.VEL_COEFFICIENT
+        if not self.sway:
+            ctrl_goal.cmd.surgeSpeed = self.VELOCITY * self.VEL_COEFFICIENT
+            rospy.loginfo("Surge command received!")
+        else:
+            ctrl_goal.cmd.swaySpeed = self.VELOCITY * self.VEL_COEFFICIENT
+            rospy.loginfo("Sway command received!")
 
         if not self.forward:
             ctrl_goal.cmd.surgeSpeed *= -1
+            ctrl_goal.cmd.swaySpeed *= -1
 
         start = rospy.Time.now()
 
         # Send surge commands.
-        # Should run RATE * TIME times. For exmaple, if we send cmds at
+        # Should run RATE * TIME times. For example, if we send cmds at
         # 10 cmd/s (Hz), for 5 seconds, we need to loop 50 times.
         for i in range(0, int(self.RATE * time)):
-            print "Sending Surge", float(i) / self.RATE, "s /", time, "s"
+            print "Sending cmd", float(i) / self.RATE, "s /", time, "s"
 
             # Only if feedback is being used, correct yaw.
             if self.feedback and self.sonar_correction != 0:

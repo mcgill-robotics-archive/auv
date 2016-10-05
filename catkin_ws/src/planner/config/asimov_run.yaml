@@ -1,6 +1,4 @@
 tasks:
-  - name: SQUARE
-    server: square_task
   - name:  INITIALIZE  # name of the state
     server: initialize_task  # name of the action server
   - name: GATE
@@ -9,9 +7,7 @@ tasks:
     server: buoy_task
   - name: MANEUVER
     server: maneuver_task
-  - name: BIN
-    server: bin_task
-  - name: TORPEDO
-    server: torpedo_task
   - name: OCTAGON
     server: octagon_task
+  - name: BIN
+    server: bin_task
