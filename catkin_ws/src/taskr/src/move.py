@@ -61,7 +61,7 @@ class Move(object):
 
         # If depth was not set, take the current depth.
         if self.depth is None:
-            while not self.curr_depth:
+            while self.curr_depth is None:
                 pass
 
             ctrl_goal.cmd.depth = self.curr_depth
@@ -70,7 +70,7 @@ class Move(object):
 
         # If yaw was not set, take the current yaw.
         if self.yaw is None:
-            while not self.curr_yaw:
+            while self.curr_yaw is None:
                 pass
 
             ctrl_goal.cmd.yaw = self.curr_yaw
