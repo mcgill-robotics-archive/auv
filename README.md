@@ -22,6 +22,7 @@ To update the submodules, do:
 
 ```bash
 git pull && git submodule update --init --recursive
+rosdep update
 ```
 
 ## How to Run the AUV
