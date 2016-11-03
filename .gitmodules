@@ -1,6 +1,9 @@
 [submodule "catkin_ws/src/tritech_micron"]
 	path = catkin_ws/src/tritech_micron
 	url = git@github.com:mcgill-robotics/ros-tritech-micron.git
+[submodule "catkin_ws/src/ros_opentld"]
+	path = catkin_ws/src/ros_opentld
+	url = git@github.com:mcgill-robotics/ros_opentld.git
 [submodule "catkin_ws/src/pointgrey_camera_driver"]
 	path = catkin_ws/src/pointgrey_camera_driver
 	url = https://github.com/ros-drivers/pointgrey_camera_driver.git
