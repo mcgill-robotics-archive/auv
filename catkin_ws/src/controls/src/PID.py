@@ -6,6 +6,8 @@ class PID:
     def __init__(self, P=2.0, I=0.0, D=1.0, Derivator=0, Integrator=0,
                  Integrator_max=500, Integrator_min=-500):
 
+        self.PID = 0
+
         self.Kp = P
         self.Ki = I
         self.Kd = D
@@ -21,6 +23,8 @@ class PID:
         """
         Calculate PID output value for given reference input and feedback
         """
+        if current_value is None:
+            return self.PID
 
         self.error = self.set_point - current_value
 
@@ -37,14 +41,15 @@ class PID:
 
         self.I_value = self.Integrator * self.Ki
 
-        PID = self.P_value + self.I_value + self.D_value
+        self.PID = self.P_value + self.I_value + self.D_value
 
-        return PID
+        return self.PID
 
     def setPoint(self, set_point):
         """
         Initilize the setpoint of PID
         """
-        self.set_point = set_point
-        self.Integrator = 0
-        self.Derivator = 0
+        if set_point is not None:
+            self.set_point = set_point
+            self.Integrator = 0
+            self.Derivator = 0
