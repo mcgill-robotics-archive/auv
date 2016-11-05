@@ -11,7 +11,7 @@ repository and follow the instructions in the README to set up your environment
 properly. In addition, manually install the following packages:
 
 ```bash
-sudo apt-get install ros-jade-rosserial ros-jade-rosserial-arduino ros-jade-pointgrey-camera-driver
+sudo apt-get install ros-jade-rosserial ros-jade-rosserial-arduino ros-jade-pointgrey-camera-driver ros-jade-teleop-twist-joy
 ```
 
 
@@ -22,6 +22,7 @@ To update the submodules, do:
 
 ```bash
 git pull && git submodule update --init --recursive
+rosdep update
 ```
 
 ## How to Run the AUV
