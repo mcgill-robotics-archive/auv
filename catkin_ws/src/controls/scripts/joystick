@@ -13,15 +13,13 @@ def joystick():
 
     rospy.init_node('joystick')
 
-    pub = rospy.Publisher('/controls/wrench', 
-            geometry_msgs.msg.Wrench, queue_size=1)
+    pub = rospy.Publisher('/controls/wrench', geometry_msgs.msg.Wrench, queue_size=1)
 
-    sub = rospy.Subscriber('/cmd_vel', 
-            geometry_msgs.msg.Twist, callback_function, queue_size = 1)
+    sub = rospy.Subscriber('/cmd_vel', geometry_msgs.msg.Twist, callback_function, queue_size=1)
 
     rate = rospy.Rate(10)
     while not rospy.is_shutdown():
-        rospy.loginfo(wrench_msg)
+        rospy.logdebug(wrench_msg)
         pub.publish(wrench_msg)
         rate.sleep()
     rospy.spin()
