@@ -1,4 +1,6 @@
 #!/usr/bin/env python
+
+
 import rospy
 from geometry_msgs.msg import Wrench, Vector3
 from tf import TransformListener
@@ -34,5 +36,4 @@ if __name__ == '__main__':
     rospy.init_node('maintain_depth')
     # TODO: figure out how to initialize the depth desired
     depth_maintainer = DepthMaintainer(1)
-    sub = rospy.Subscriber('robot_state', depth_maintainer.update)
     rospy.spin()
