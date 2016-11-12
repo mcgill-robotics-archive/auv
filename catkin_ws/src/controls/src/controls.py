@@ -9,7 +9,6 @@ class Controller:
         self.thrust_pub = rospy.Publisher(
                 'controls/wrench', Wrench, queue_size=10)
 
-        # TODO: Add gains from rosparams like in scripts/controls
         self.surge_pid = PID(
                 rospy.get_param("~kp_yPos"),
                 rospy.get_param("~ki_yPos"),
