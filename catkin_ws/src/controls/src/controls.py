@@ -18,29 +18,27 @@ class Controller:
         self.yaw_pid = PID()
 
     def update(self, data):
-        # TODO: check if this coordinate system is consistent
-        # with the rest of the robot
         force = Vector3()
-        force.x = self.surge_pid.update(data.force.x)
-        force.y = self.sway_pid.update(data.force.y)
+        force.x = self.sway_pid.update(data.force.x)
+        force.y = self.surge_pid.update(data.force.y)
         force.z = self.heave_pid.update(data.force.z)
 
         torque = Vector3()
-        torque.x = self.roll_pid.update(data.torque.x)
-        torque.y = self.pitch_pid.update(data.torque.y)
+        torque.x = self.pitch_pid.update(data.torque.x)
+        torque.y = self.roll_pid.update(data.torque.y)
         torque.z = self.yaw_pid.update(data.torque.z)
 
         self.thrust_pub.publish(Wrench(force, torque))
 
     def set_point(self, data):
         force = Vector3()
-        force.x = self.surge_pid.setPoint(data.force.x)
-        force.y = self.sway_pid.setPoint(data.force.y)
+        force.x = self.sway_pid.setPoint(data.force.x)
+        force.y = self.surge_pid.setPoint(data.force.y)
         force.z = self.heave_pid.setPoint(data.force.z)
 
         torque = Vector3()
-        torque.x = self.roll_pid.setPoint(data.torque.x)
-        torque.y = self.pitch_pid.setPoint(data.torque.y)
+        torque.x = self.pitch_pid.setPoint(data.torque.x)
+        torque.y = self.roll_pid.setPoint(data.torque.y)
         torque.z = self.yaw_pid.setPoint(data.torque.z)
 
 
