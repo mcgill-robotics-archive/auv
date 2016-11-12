@@ -6,7 +6,7 @@ from PID import PID
 
 class Controller:
     def __init__(self):
-        self.thrust_pub = rospy.Publisher('controls/wrench', Wrench)
+        self.thrust_pub = rospy.Publisher('controls/wrench', Wrench, queue_size=10)
 
         # TODO: Add gains from rosparams like in scripts/controls
         self.surge_pid = PID()
@@ -48,5 +48,5 @@ if __name__ == '__main__':
     update_sub = rospy.Subscriber(
             'controls/update', Wrench, controller.update)
     setpoint_sub = rospy.Subscriber(
-            'controls/set_point', Wrench, controller.setpoint)
+            'controls/set_point', Wrench, controller.set_point)
     rospy.spin()
