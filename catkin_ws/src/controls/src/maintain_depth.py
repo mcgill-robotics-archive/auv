@@ -7,7 +7,7 @@ from tf import TransformListener
 
 
 class DepthMaintainer():
-    def __init__(self, desired_depth):
+    def __init__(self, desired_depth=None):
         self.listener = TransformListener()
         self.thrust_pub = rospy.Publisher('controls/update', Wrench)
         self.desired_depth = desired_depth
@@ -16,8 +16,12 @@ class DepthMaintainer():
 
     def set_depth(self, depth):
         set_point_pub = rospy.Publisher('controls/set_point', Wrench)
-        translation = Vector3(None, depth, None)
+        translation = Vector3(None, None, depth)
         rotation = Vector3(None, None, None)
+        if depth is None:
+            trans, rot = self.listener.lookupTransform(
+                    '/floating_horizon', '/robot', rospy.Time())
+            translation.z = trans[2]
         set_wrench = Wrench(translation, rotation)
         set_point_pub.publish(set_wrench)
 
@@ -26,7 +30,7 @@ class DepthMaintainer():
                 '/floating_horizon', '/robot', rospy.Time())
         estimated_depth = trans[2]
         depth_error = self.desired_depth - estimated_depth
-        translation = Vector3(None, depth_error, None)
+        translation = Vector3(None, None, depth_error)
         rotation = Vector3(None, None, None)
         error_wrench = Wrench(translation, rotation)
         self.thrust_pub.publish(error_wrench)
@@ -34,6 +38,7 @@ class DepthMaintainer():
 
 if __name__ == '__main__':
     rospy.init_node('maintain_depth')
-    # TODO: figure out how to initialize the depth desired
-    depth_maintainer = DepthMaintainer(1)
+    depth_maintainer = DepthMaintainer()
+    timer = rospy.Timer(rospy.Duration(0.1), depth_maintainer.update)
+    rospy.on_shutdown(timer.shutdown)
     rospy.spin()
