@@ -58,3 +58,12 @@ cable directly to your computer.
 |:--------:|:-----------------------:|
 | `master` | [![master]][master url] |
 | `dev`    | [![dev]][dev url]       |
+
+## How to Run the Thruster Drytest
+
+To run the drytest, use rosrun from catkin_ws:
+```bash
+rosrun automate_drytest drytest_thruster.py
+```
+Before running the drytest, make sure to kill the planner, taskr and controls otherwise they will interfere
+The dry test will cycle through each thruster and wait for input from the user to ensure functionality
