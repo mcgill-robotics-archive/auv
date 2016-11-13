@@ -68,7 +68,7 @@ void spin() {
             gyro.z = ims.gyrZ;
             pub3.publish(gyro);
 
-  	 geometry_msgs::Vector3 mag = geometry_msgs::Vector3();
+            geometry_msgs::Vector3 mag = geometry_msgs::Vector3();
             mag.x = ims.magX;
             mag.y = ims.magY;
             mag.z = ims.magZ;
