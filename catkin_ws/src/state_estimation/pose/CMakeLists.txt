@@ -8,11 +8,11 @@ add_executable(XimuPublisher
     src/XimuReceiver.cpp
 )
 
-add_executable(doubleIntPose
+add_executable(double_int_pose
     src/doubleIntPose.cpp
 )
 
-target_link_libraries(doubleIntPose
+target_link_libraries(double_int_pose
     ${catkin_LIBRARIES}
 )
 
