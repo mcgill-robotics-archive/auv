@@ -8,10 +8,10 @@ at the TRANSDEC facility in San Diego.
 
 Before working on this repository, please clone the [CompSys](https://github.com/mcgill-robotics/compsys)
 repository and follow the instructions in the README to set up your environment
-properly. In addition, manually install the following packages:
+properly. If you have already installed and run `compsys` and you wish to manually update dependencies, do:
 
 ```bash
-sudo apt-get install ros-kinetic-rosserial ros-kinetic-rosserial-arduino ros-kinetic-pointgrey-camera-driver
+./setup.sh
 ```
 
 
