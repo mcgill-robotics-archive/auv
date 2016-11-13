@@ -8,6 +8,9 @@ from tf import TransformListener
 
 
 class DepthMaintainer():
+    '''
+    Controller that outputs error between desired depth and current depth
+    '''
     def __init__(self, desired_depth=None):
         self.listener = TransformListener()
         self.thrust_pub = rospy.Publisher(
@@ -17,6 +20,9 @@ class DepthMaintainer():
         self.set_depth(desired_depth)
 
     def get_current_depth(self):
+        '''
+        Handles the transform lookup to get the current depth
+        '''
         while not rospy.is_shutdown():
             try:
                 trans, rot = self.listener.lookupTransform(
@@ -28,6 +34,9 @@ class DepthMaintainer():
         raise rospy.ROSInterruptException()
 
     def set_depth(self, depth):
+        '''
+        Publishes the setpoint for the desired depth
+        '''
         set_point_pub = rospy.Publisher(
             'controls/set_point', Wrench, queue_size=10)
         translation = Vector3(None, None, depth)
@@ -39,6 +48,10 @@ class DepthMaintainer():
         set_point_pub.publish(set_wrench)
 
     def update(self, _):
+        '''
+        updates the PID controller with the current error
+        from the desired depth
+        '''
         estimated_depth = self.get_current_depth()
         depth_error = self.desired_depth - estimated_depth
         translation = Vector3(None, None, depth_error)
