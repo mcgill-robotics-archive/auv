@@ -13,6 +13,17 @@ from auv_msgs.msg import MotorCommands
 
 def drytest_thrusters():
     """Cycles through each thruster and asks for user confirmation"""
+
+    # Keeps track of which thrusters are functional, index matches that of thrusters
+    functional = ['N', 'N', 'N', 'N', 'N', 'N', 'N', 'N']
+    # Thruster names
+    thrusters = ['Port Bow Heave', 'Bow Sway', 'Starboard Bow Heave',
+                 'Starboard Surge', 'Starboard Stern Heave', 'Stern Sway',
+                 'Port Stern Heave', 'Port Surge']
+
+    freq = 10  # set the frequency
+    rate = rospy.Rate(freq)  # set the rate
+
     for i in range(0, len(thrusters)):
         # sets answer back to no for the new thruster
         answer = 'n'
@@ -32,6 +43,7 @@ def drytest_thrusters():
             else:
                 answer = raw_input('Press n to test again and y to move on '
                                    'to the next thruster ')
+    return functional, thrusters
 
 
 def create_command(thruster):
@@ -50,21 +62,13 @@ def create_command(thruster):
 
 if __name__ == "__main__":
     rospy.init_node("drytest_thruster")
-    freq = 10  # set the frequency
-    rate = rospy.Rate(freq)  # set the rate
 
     pub = Publisher("/electrical_interface/motor", MotorCommands, queue_size=5)
 
-    # Keeps track of which thrusters are functional, index matches that of thrusters
-    functional = ['N', 'N', 'N', 'N', 'N', 'N', 'N', 'N']
-    # Thruster names
-    thrusters = ['Port Bow Heave', 'Bow Sway', 'Starboard Bow Heave',
-                 'Starboard Surge', 'Starboard Stern Heave', 'Stern Sway',
-                 'Port Stern Heave', 'Port Surge']
-    drytest_thrusters()
+    functional, thrusters = drytest_thrusters()
 
     # prints a list of functional and non-functional thrusters
-    print 'Functional Thrusters are: '
+    print '\nFunctional Thrusters are: '
     for i in range(0, len(thrusters)):
         if functional[i] == 'Y':
             print "\t", thrusters[i]
