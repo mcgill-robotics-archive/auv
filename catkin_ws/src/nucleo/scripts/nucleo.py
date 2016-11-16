@@ -5,7 +5,7 @@
 
 import rospy
 import bitstring
-from serial import Serial
+from serial import Serial, SerialException
 from auv_msgs.msg import Signals
 
 __author__ = "Anass Al-Wohoush"
@@ -122,6 +122,21 @@ if __name__ == "__main__":
     # Get port name.
     port = str(rospy.get_param("~port", "/dev/nucleo"))
 
+    # Sleep time in seconds
+    sleeptime = 10.0
+    rate = rospy.Rate(1.0 / sleeptime)
+
+    while not rospy.is_shutdown():
+        try:
+            # Attempt to establish a serial connection to the hydrophones
+            with Serial(port, baudrate=baudrate) as ser:
+                rospy.loginfo("Hydrophones are connected. Serial connection successful.")
+            break
+        except SerialException:
+            rospy.logwarn("Hydrophones are disconnected on port {}".format(port))
+        # Sleep before attempting again
+        rate.sleep()
+
     with Serial(port, baudrate=baudrate) as ser:
         rospy.loginfo("Waiting for device...")
         while not ser.readable() and not rospy.is_shutdown():
@@ -167,3 +182,4 @@ if __name__ == "__main__":
                 pub.publish(signals)
                 rospy.loginfo("Received ping")
                 received = [0 for i in received]
+
