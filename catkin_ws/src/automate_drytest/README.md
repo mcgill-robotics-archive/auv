@@ -34,4 +34,24 @@ Every connection is tested within a finite time thanks to a timer. The value of 
 
 
 
-###*Motors Dry test*
+###*Thrusters Dry test*
+
+Before running the drytest, make sure to kill the planner, taskr and controls otherwise they will interfere
+The dry test will cycle through each thruster and wait for input from the user to ensure functionality.
+
+####*To Run*
+  >Start roscore on one terminal
+  
+  >Run the following command: 
+  
+```bash
+rosrun automate_drytest drytest_thruster.py
+``` 
+
+ >Use rostopic echo /electrical_interface/motor to view the progress of the dry test
+
+####*During the dry test:*
+
+ >You will need to press enter to run each thruster
+
+ >If a thruster is functional, you have the option to continue or test it again
