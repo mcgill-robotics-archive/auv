@@ -1,18 +1,11 @@
 cmake_minimum_required(VERSION 2.8.3)
-project(simulator)
+project(auv_simulation)
 
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
 find_package(catkin REQUIRED COMPONENTS
-  auv_msgs
-  gazebo_plugins
-  gazebo_ros
-  geometry_msgs
-  roscpp
-  rospy
-  std_msgs
-  tf
+  auv_gazebo
 )
 
 ## System dependencies are found with CMake's conventions
@@ -72,7 +65,7 @@ find_package(catkin REQUIRED COMPONENTS
 ## Generate added messages and services with any dependencies listed here
 # generate_messages(
 #   DEPENDENCIES
-#   auv_msgs#   geometry_msgs#   std_msgs
+#   std_msgs  # Or other packages containing msgs
 # )
 
 ################################################
@@ -106,8 +99,8 @@ find_package(catkin REQUIRED COMPONENTS
 ## DEPENDS: system dependencies of this project that dependent projects also need
 catkin_package(
 #  INCLUDE_DIRS include
-#  LIBRARIES simulator
-#  CATKIN_DEPENDS auv_msgs gazebo_plugins gazebo_ros geometry_msgs roscpp rospy std_msgs tf
+#  LIBRARIES auv_simulation
+#  CATKIN_DEPENDS auv_gazebo
 #  DEPENDS system_lib
 )
 
@@ -123,24 +116,24 @@ include_directories(
 )
 
 ## Declare a C++ library
-# add_library(simulator
-#   src/${PROJECT_NAME}/simulator.cpp
+# add_library(auv_simulation
+#   src/${PROJECT_NAME}/auv_simulation.cpp
 # )
 
 ## Add cmake target dependencies of the library
 ## as an example, code may need to be generated before libraries
 ## either from message generation or dynamic reconfigure
-# add_dependencies(simulator ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+# add_dependencies(auv_simulation ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
 ## Declare a C++ executable
-# add_executable(simulator_node src/simulator_node.cpp)
+# add_executable(auv_simulation_node src/auv_simulation_node.cpp)
 
 ## Add cmake target dependencies of the executable
 ## same as for the library above
-# add_dependencies(simulator_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+# add_dependencies(auv_simulation_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
 ## Specify libraries to link a library or executable target against
-# target_link_libraries(simulator_node
+# target_link_libraries(auv_simulation_node
 #   ${catkin_LIBRARIES}
 # )
 
@@ -159,7 +152,7 @@ include_directories(
 # )
 
 ## Mark executables and/or libraries for installation
-# install(TARGETS simulator simulator_node
+# install(TARGETS auv_simulation auv_simulation_node
 #   ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
 #   LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
 #   RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
@@ -184,7 +177,7 @@ include_directories(
 #############
 
 ## Add gtest based cpp test target and link libraries
-# catkin_add_gtest(${PROJECT_NAME}-test test/test_simulator.cpp)
+# catkin_add_gtest(${PROJECT_NAME}-test test/test_auv_simulation.cpp)
 # if(TARGET ${PROJECT_NAME}-test)
 #   target_link_libraries(${PROJECT_NAME}-test ${PROJECT_NAME})
 # endif()
