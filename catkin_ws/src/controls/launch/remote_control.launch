@@ -1,8 +1,0 @@
-<launch>
-    <!-- Launch both nodes -->
-    <include file="$(find arduino)/launch/radio.launch"/>
-    <node name="remote_control" pkg="controls" type="remote_control" respawn="false" output="screen"/>
-    <node name="thrust_mapper" pkg="controls" type="thrust_mapper" respawn="false" output="screen">
-      <remap from="thrust_cmds" to="electrical_interface/motor"/>
-    </node>
-</launch>
