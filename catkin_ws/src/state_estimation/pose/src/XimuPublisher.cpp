@@ -8,7 +8,6 @@
 
 #include "ros/ros.h"
 #include "geometry_msgs/Vector3.h"
-#include "geometry_msgs/Vector3Stamped.h"
 #include "geometry_msgs/Pose.h"
 #include "geometry_msgs/PoseStamped.h"
 #include "sensor_msgs/Imu.h"
@@ -57,11 +56,10 @@ void spin() {
 
         if (receiver.isInertialAndMagGetReady()) {
             InertialAndMagStruct ims = receiver.getInertialAndMag();
-            geometry_msgs::Vector3Stamped acc = geometry_msgs::Vector3Stamped();
-            acc.vector.x = ims.accX;
-            acc.vector.y = ims.accY;
-            acc.vector.z = ims.accZ;
-            acc.header.stamp = ros::Time::now();
+            geometry_msgs::Vector3 acc = geometry_msgs::Vector3();
+            acc.x = ims.accX;
+            acc.y = ims.accY;
+            acc.z = ims.accZ;
             pub2.publish(acc);
 
             geometry_msgs::Vector3 gyro = geometry_msgs::Vector3();
@@ -117,7 +115,7 @@ int main(int argc, char** argv) {
     ros::NodeHandle node;
 
     pub = node.advertise<geometry_msgs::PoseStamped>("state_estimation/pose", 100);
-    pub2 = node.advertise<geometry_msgs::Vector3Stamped>("state_estimation/acc", 100);
+    pub2 = node.advertise<geometry_msgs::Vector3>("state_estimation/acc", 100);
     pub3 = node.advertise<geometry_msgs::Vector3>("state_estimation/gyro", 100);
     pub4 = node.advertise<geometry_msgs::Vector3>("state_estimation/mag", 100);
     // Publish raw data

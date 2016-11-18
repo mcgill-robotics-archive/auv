@@ -14,34 +14,32 @@
 
 //Libraries etc. ---------------------------------------------------------------
 #include "ros/ros.h"
-#include "geometry_msgs/Vector3Stamped.h"
+#include "geometry_msgs/Vector3.h"
 #include "geometry_msgs/PoseStamped.h"
 #include "geometry_msgs/TwistStamped.h"
 
 //Definitions ------------------------------------------------------------------
-#define DELTA_TIME 0.01 //For debugging
-
 class acceleration {
     public:
-        float x;
-        float y;
-        float z;
-        float t;
+        double x;
+        double y;
+        double z;
+        unsigned long t;
 } accIn, accArr[3];
 
 class velocity {
     public:
-        float x;
-        float y;
-        float z;
-        float t;
+        double x;
+        double y;
+        double z;
+        unsigned long t;
 } velArr[2];
 
 
 class position {
     public:
-        float x;
-        float y;
+        double x;
+        double y;
         float z;
 } position;
 
@@ -50,66 +48,70 @@ ros::Publisher pub, pub2;
 ros::Subscriber sub;
 
 //Callback ---------------------------------------------------------------------
-void dataCallback(const geometry_msgs::Vector3Stamped::ConstPtr& data) {
-    accIn.x = data->vector.x;
-    accIn.y = data->vector.y;
-    accIn.z = data->vector.z;
-    accIn.t = (data->header.stamp).toSec();
+void dataCallback(const geometry_msgs::Vector3ConstPtr& data) {
+    accIn.x = data->x;
+    accIn.y = data->y;
+    accIn.z = data->z;
+    accIn.t = ros::Time::now().toNSec();
 }
 
 //Update Array -----------------------------------------------------------------
 void update(int i) {
-    accArr[i].x = accIn.x;
-    accArr[i].y = accIn.y;
-    accArr[i].z = accIn.z;
+    accArr[i].x = accIn.x * pow(10.0,-18);
+    accArr[i].y = accIn.y * pow(10.0,-18);
+    accArr[i].z = accIn.z * pow(10.0,-18);
     accArr[i].t = accIn.t;
 }
 
 //Take First Derivative --------------------------------------------------------
 void firstIntegral() {
-    velArr[0].x = (accArr[1].x - accArr[0].x) / (accArr[1].t - accArr[0].t);
-    velArr[0].y = (accArr[1].y - accArr[0].y) / (accArr[1].t - accArr[0].t);
-    velArr[0].z = (accArr[1].z - accArr[0].z) / (accArr[1].t - accArr[0].t);
+    velArr[0].x = (accArr[1].x - accArr[0].x) * (accArr[1].t - accArr[0].t);
+    velArr[0].y = (accArr[1].y - accArr[0].y) * (accArr[1].t - accArr[0].t);
+    velArr[0].z = (accArr[1].z - accArr[0].z) * (accArr[1].t - accArr[0].t);
     velArr[0].t = accArr[1].t;
 
-    velArr[1].x = (accArr[2].x - accArr[1].x) / (accArr[2].t - accArr[1].t);
-    velArr[1].y = (accArr[2].y - accArr[1].y) / (accArr[2].t - accArr[1].t);
-    velArr[1].z = (accArr[2].z - accArr[1].z) / (accArr[2].t - accArr[1].t);
+    velArr[1].x = (accArr[2].x - accArr[1].x) * (accArr[2].t - accArr[1].t);
+    velArr[1].y = (accArr[2].y - accArr[1].y) * (accArr[2].t - accArr[1].t);
+    velArr[1].z = (accArr[2].z - accArr[1].z) * (accArr[2].t - accArr[1].t);
     velArr[1].t = accArr[2].t;
 }
 //Take Second Derivative -------------------------------------------------------
 void secondIntegral() {
-    position.x += (velArr[1].x - velArr[0].x) / (velArr[1].t - velArr[0].t);
-    position.y += (velArr[1].y - velArr[0].y) / (velArr[1].t - velArr[0].t);
-    position.z += (velArr[1].z - velArr[0].z) / (velArr[1].t - velArr[0].t);
+    position.x += ((velArr[1].x - velArr[0].x) * (velArr[1].t - velArr[0].t)) / pow(10.0, -18);
+    position.y += ((velArr[1].y - velArr[0].y) * (velArr[1].t - velArr[0].t)) / pow(10.0, -18);
+    position.z += ((velArr[1].z - velArr[0].z) * (velArr[1].t - velArr[0].t)) / pow(10.0, -18);
 }
 
 //Publish Results --------------------------------------------------------------
 void publish() {
-    //Raw Data : For Debugging
-    ROS_INFO("Acceleration from IMU: %lf", accIn.x);
-    ROS_INFO("ROS Time: %lf", accIn.t);
-    ROS_INFO("Time difference sample: %lf", (accArr[1].t - accArr[0].t));
-
     //Velocity
-    ROS_INFO("Speed in x direction: %lf", velArr[1].x);
-    ROS_INFO("Speed in y direction: %lf", velArr[1].y);
-
     geometry_msgs::TwistStamped intVelocity = geometry_msgs::TwistStamped();
     intVelocity.twist.linear.x = velArr[1].x;
     intVelocity.twist.linear.y = velArr[1].y;
     intVelocity.twist.linear.z = velArr[1].z;
     pub.publish(intVelocity);
-
     //Position
-    ROS_INFO("Position in x direction: %f", position.x);
-    ROS_INFO("Position in y direction: %f\n", position.y);
-
     geometry_msgs::PoseStamped doubleIntPose = geometry_msgs::PoseStamped();
     doubleIntPose.pose.position.x = position.x;
     doubleIntPose.pose.position.y = position.y;
     doubleIntPose.pose.position.z = position.z;
     pub2.publish(doubleIntPose);
+}
+
+//Print Data -------------------------------------------------------------------
+void printData() {
+    //Raw Data
+    ROS_INFO("DEBUG: Acceleration from IMU: %lf", accIn.x);
+    ROS_INFO("DEBUG: ROS Time: %li", accIn.t);
+    ROS_INFO("DEBUG: %li", accArr[1].t);
+    ROS_INFO("DEBUG: %li", accArr[0].t);
+    ROS_INFO("DEBUG: Time difference sample: %li", (accArr[1].t - accArr[0].t));
+    //Velocity
+    ROS_INFO("Speed in x direction: %lf", velArr[1].x);
+    ROS_INFO("Speed in y direction: %lf", velArr[1].y);
+    //Position
+    ROS_INFO("Position in x direction: %lf", position.x);
+    ROS_INFO("Position in y direction: %lf\n", position.y);
 }
 
 //Shift Data -------------------------------------------------------------------
@@ -124,6 +126,8 @@ void dataShift() {
 
 //Main -------------------------------------------------------------------------
 int main (int argc, char **argv) {
+    unsigned int count = 0;
+
     ros::init(argc, argv, "double_int_pose");
     ros::NodeHandle node;
 
@@ -140,7 +144,7 @@ int main (int argc, char **argv) {
     ros::spinOnce();
     update(1);
 
-    //Continuous
+    ros::Rate r(10);
     while(ros::ok()) {
         //Updating Third Datapoint
         ros::spinOnce();
@@ -152,7 +156,10 @@ int main (int argc, char **argv) {
 
         //Publish Results and shift data
         publish();
+        printData();
         dataShift();
+
+        r.sleep();
     }
 
     return 0;
