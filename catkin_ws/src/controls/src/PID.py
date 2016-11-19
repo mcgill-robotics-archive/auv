@@ -19,23 +19,18 @@ class PID:
         self.Integrator_max = Integrator_max
         self.Integrator_min = Integrator_min
 
-        self.set_point = 0.0
-        self.error = 0.0
-
-    def update(self, current_value):
+    def update(self, error):
         """
-        Calculate PID output value for given reference input and feedback
+        Calculate PID output value for given error
         """
-        if current_value is None:
-            return self.PID
+        if error is None:
+            return PID
 
-        self.error = self.set_point - current_value
+        self.P_value = self.Kp * error
+        self.D_value = self.Kd * (error - self.Derivator)
+        self.Derivator = error
 
-        self.P_value = self.Kp * self.error
-        self.D_value = self.Kd * (self.error - self.Derivator)
-        self.Derivator = self.error
-
-        self.Integrator = self.Integrator + self.error
+        self.Integrator = self.Integrator + error
 
         if self.Integrator > self.Integrator_max:
             self.Integrator = self.Integrator_max
@@ -47,12 +42,3 @@ class PID:
         self.PID = self.P_value + self.I_value + self.D_value
 
         return self.PID
-
-    def setPoint(self, set_point):
-        """
-        Initilize the setpoint of PID
-        """
-        if set_point is not None:
-            self.set_point = set_point
-            self.Integrator = 0
-            self.Derivator = 0

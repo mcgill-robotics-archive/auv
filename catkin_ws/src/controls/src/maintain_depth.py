@@ -15,9 +15,7 @@ class DepthMaintainer():
         self.listener = TransformListener()
         self.thrust_pub = rospy.Publisher(
             'controls/update', Wrench, queue_size=10)
-        self.desired_depth = desired_depth
-
-        self.set_depth(desired_depth)
+        self.desired_depth = self.set_depth(desired_depth)
 
     def get_current_depth(self):
         '''
@@ -35,17 +33,9 @@ class DepthMaintainer():
 
     def set_depth(self, depth):
         '''
-        Publishes the setpoint for the desired depth
+        gets the set_depth
         '''
-        set_point_pub = rospy.Publisher(
-            'controls/set_point', Wrench, queue_size=10)
-        translation = Vector3(None, None, depth)
-        rotation = Vector3(None, None, None)
-        if depth is None:
-            translation.z = self.get_current_depth()
-            self.desired_depth = translation.z
-        set_wrench = Wrench(translation, rotation)
-        set_point_pub.publish(set_wrench)
+        return depth if depth is not None else self.get_current_depth()
 
     def update(self, _):
         '''
