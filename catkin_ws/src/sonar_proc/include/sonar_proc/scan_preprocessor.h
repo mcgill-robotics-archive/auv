@@ -35,20 +35,7 @@ private:
   ** FILTER TYPES **
   ******************/
 
-  /**.
-   * @param  cloud Unfiltered ROS PointCloud.
-   * @return       Filtered ROS PointCloud.
-   */
-  sensor_msgs::PointCloud voxelGrid(const sensor_msgs::PointCloud& cloud);
-
-  sensor_msgs::PointCloud statisticalOutlierRemoval(const sensor_msgs::PointCloud& cloud); 
-
-  sensor_msgs::PointCloud passThrough(const sensor_msgs::PointCloud& cloud);
-
-  sensor_msgs::PointCloud radiusOutlierRemoval(const sensor_msgs::PointCloud& cloud);
-
-
-  /**
+ /**
    * @brief Radius removal and intensity threshold filter.
    * Removes all points a given radius from the center of the cloud, which
    * removes representations of the diver, robot, noise, etc. Also removes all
@@ -58,7 +45,19 @@ private:
    * @param  cloud Unfiltered ROS PointCloud.
    * @return       Filtered ROS PointCloud.
    */
-sensor_msgs::PointCloud radiusThresholdFilter(const sensor_msgs::PointCloud& cloud);
+  sensor_msgs::PointCloud radiusThresholdFilter(const sensor_msgs::PointCloud &cloud);
+
+
+  /**.
+   * @param  cloud Unfiltered ROS PointCloud.
+   * @return       Filtered ROS PointCloud.
+   */
+  void voxelGrid(const pcl::PCLPointCloud2ConstPtr &cloud, pcl::PCLPointCloud2* ptr);
+
+  void radiusOutlierRemoval(const pcl::PCLPointCloud2ConstPtr &cloud, pcl::PCLPointCloud2* ptr);
+
+  //void PFHFeatures(const pcl::PCLPointCloud2ConstPtr &cloud, pcl::PCLPointCloud2* ptr );
+
 
 };
 
