@@ -1,10 +1,5 @@
 <launch>
     <node name="maintain_yaw" pkg="controls" type="maintain_yaw.py" respawn="false" output="screen">
     </node>
-    <node name="controls" pkg="controls" type="controls.py" respawn="false" output="screen">
-    	<rosparam command="load" file="$(find controls)/config/params.yaml" />
-    </node>
-    <node name="thrust_mapper" pkg="controls" type="thrust_mapper" respawn="false" output="screen">
-	<remap from="thrust_cmds" to="electrical_interface/motor"/>
-    </node>
+    <include file="$(find controls)/launch/controls.launch"/>
 </launch>
