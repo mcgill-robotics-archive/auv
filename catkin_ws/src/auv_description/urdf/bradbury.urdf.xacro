@@ -1,0 +1,43 @@
+<?xml version="1.0"?>
+<robot name="bradbury" xmlns:xacro="http://ros.org/wiki/xacro">
+
+  <link name="base_link">
+    <visual>
+      <origin rpy="1.5708 0 3.1416" xyz="0.41552 -0.1554 -0.2159"/>
+      <geometry>
+        <mesh filename="package://auv_description/meshes/frame.stl" scale="0.01 0.01 0.01"/>
+      </geometry>
+    </visual>
+  </link>
+
+  <link name="main_hull">
+    <visual>
+      <origin rpy="1.5708 0 1.5708" xyz="-0.2594 0 0"/>
+      <geometry>
+        <mesh filename="package://auv_description/meshes/main_hull.stl" scale="0.01 0.01 0.01"/>
+      </geometry>
+    </visual>
+  </link>
+
+  <link name="battery">
+    <visual>
+      <origin rpy="1.5708 0 0" xyz="0 0.1572 0"/>
+      <geometry>
+        <mesh filename="package://auv_description/meshes/battery.stl" scale="0.01 0.01 0.01"/>
+      </geometry>
+    </visual>
+  </link>
+
+  <joint name="base_to_main_hull" type="fixed">
+    <parent link="base_link"/>
+    <child link="main_hull"/>
+    <origin rpy="0 0 0" xyz="0 0 0.1547"/>
+  </joint>
+
+  <joint name="base_to_battery" type="fixed">
+    <parent link="base_link"/>
+    <child link="battery"/>
+    <origin rpy="0 0 0" xyz="0.2614 0 -0.1038"/>
+  </joint>
+
+</robot>

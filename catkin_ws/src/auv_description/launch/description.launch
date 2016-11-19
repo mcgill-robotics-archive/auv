@@ -1,0 +1,9 @@
+<launch>
+  <arg name="model" default="$(find auv_description)/urdf/bradbury.urdf.xacro"/>
+  <param name="robot_description" command="$(find xacro)/xacro $(arg model)" />
+  <arg name="rviz_config" default="$(find auv_description)/config/view_model.rviz" />
+
+  <node name="rviz" pkg="rviz" type="rviz" args="-d $(arg rviz_config)"/>
+  <node name="joint_state_publisher" pkg="joint_state_publisher" type="joint_state_publisher" />
+  <node name="robot_state_publisher" pkg="robot_state_publisher" type="state_publisher" />
+</launch>
