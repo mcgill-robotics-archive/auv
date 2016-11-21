@@ -28,6 +28,77 @@
     </visual>
   </link>
 
+  <link name="thruster1">
+    <visual>
+      <origin rpy ="0 0 0" xyz="0 0 0"/>
+      <geometry>
+        <mesh filename="package://auv_description/meshes/thruster.stl" scale="0.01 0.01 0.01"/>
+      </geometry>
+    </visual>
+  </link>
+
+  <link name="thruster2">
+    <visual>
+      <origin rpy ="0 0 0" xyz="0 0 0"/>
+      <geometry>
+        <mesh filename="package://auv_description/meshes/thruster.stl" scale="0.01 0.01 0.01"/>
+      </geometry>
+    </visual>
+  </link>
+
+  <link name="thruster3">
+    <visual>
+      <origin rpy ="0 0 0" xyz="0 0 0"/>
+      <geometry>
+        <mesh filename="package://auv_description/meshes/thruster.stl" scale="0.01 0.01 0.01"/>
+      </geometry>
+    </visual>
+  </link>
+<link name="thruster4">
+    <visual>
+      <origin rpy ="0 0 0" xyz="0 0 0"/>
+      <geometry>
+        <mesh filename="package://auv_description/meshes/thruster.stl" scale="0.01 0.01 0.01"/>
+      </geometry>
+    </visual>
+  </link>
+
+  <link name="thruster5">
+    <visual>
+      <origin rpy ="0 0 0" xyz="0 0 0"/>
+      <geometry>
+        <mesh filename="package://auv_description/meshes/thruster.stl" scale="0.01 0.01 0.01"/>
+      </geometry>
+    </visual>
+  </link>
+
+  <link name="thruster6">
+    <visual>
+      <origin rpy ="0 0 0" xyz="0 0 0"/>
+      <geometry>
+        <mesh filename="package://auv_description/meshes/thruster.stl" scale="0.01 0.01 0.01"/>
+      </geometry>
+    </visual>
+  </link>
+
+  <link name="thruster7">
+    <visual>
+      <origin rpy ="0 0 0" xyz="0 0 0"/>
+      <geometry>
+        <mesh filename="package://auv_description/meshes/thruster.stl" scale="0.01 0.01 0.01"/>
+      </geometry>
+    </visual>
+  </link>
+
+  <link name="thruster8">
+    <visual>
+      <origin rpy ="0 0 0" xyz="0 0 0"/>
+      <geometry>
+        <mesh filename="package://auv_description/meshes/thruster.stl" scale="0.01 0.01 0.01"/>
+      </geometry>
+    </visual>
+  </link>
+
   <joint name="base_to_main_hull" type="fixed">
     <parent link="base_link"/>
     <child link="main_hull"/>
@@ -38,6 +109,61 @@
     <parent link="base_link"/>
     <child link="battery"/>
     <origin rpy="0 0 0" xyz="0.2614 0 -0.1038"/>
+  </joint>
+
+  <joint name = "base_to_thruster1" type="fixed">
+    <parent link="base_link"/>
+    <child link="thruster1"/>
+    <origin rpy="-1.57 0 0" xyz="0.48 0 -0.05 "/>
+
+  </joint>
+  <joint name = "base_to_thruster2" type="fixed">
+    <parent link="base_link"/>
+    <child link="thruster2"/>
+    <origin rpy="1.57 0 0" xyz="-0.48 0 -0.05 "/>
+
+  </joint>
+
+  <joint name = "base_to_thruster3" type="fixed">
+    <parent link="base_link"/>
+    <child link="thruster3"/>
+    <origin rpy="0 -1.57 0" xyz="0 0.21 0 "/>
+
+  </joint>
+
+  <joint name = "base_to_thruster4" type="fixed">
+    <parent link="base_link"/>
+    <child link="thruster4"/>
+    <origin rpy="0 -1.57 0" xyz="0 -0.21 0 "/>
+
+  </joint>
+
+  <joint name = "base_to_thruster5" type="fixed">
+    <parent link="base_link"/>
+    <child link="thruster5"/>
+    <origin rpy="3.14 0 0" xyz="0.4 0.21 0 "/>
+
+  </joint>
+
+  <joint name = "base_to_thruster6" type="fixed">
+    <parent link="base_link"/>
+    <child link="thruster6"/>
+    <origin rpy="3.14 0 0" xyz="0.4 -0.21 0 "/>
+
+  </joint>
+
+  <joint name = "base_to_thruster7" type="fixed">
+    <parent link="base_link"/>
+    <child link="thruster7"/>
+    <origin rpy="3.14 0 0" xyz="-0.4 0.21 0 "/>
+
+  </joint>
+
+  <joint name = "base_to_thruster8" type="fixed">
+    <parent link="base_link"/>
+    <child link="thruster8"/>
+    <origin rpy="3.14 0 0" xyz="-0.4 -0.21 0 "/>
+
   </joint>
 
 </robot>
