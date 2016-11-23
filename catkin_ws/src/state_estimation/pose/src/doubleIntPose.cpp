@@ -18,8 +18,14 @@
  *==============================================================================
  */
 
-#define RATE 10         //In Hz
-#define DELTA_T 0.1     //Must be 1/RATE
+//For TEST NODE
+//Note: to test, make sure to change subscriber
+//#define RATE 10
+//#define DELTA_T 0.1
+
+//For IMU
+#define RATE 8.35               //In Hz
+#define DELTA_T 0.119760479     //Must be 1/RATE
 
 //Libraries etc. ---------------------------------------------------------------
 #include "doubleIntPose.h"
