@@ -11,7 +11,7 @@ import tf
 class YawMaintainer():
     def __init__(self, desired_yaw):
         self.listener = TransformListener()
-        self.thrust_pub = rospy.Publisher('controls/update', Wrench)
+        self.thrust_pub = rospy.Publisher('controls/update', Wrench, queue_size=1)
         self.desired_yaw = self.set_yaw(desired_yaw)
 
     def set_yaw(self, yaw):
@@ -19,7 +19,7 @@ class YawMaintainer():
             yaw = self.get_current_yaw()
         return yaw
 
-    def update(self):
+    def update(self, _):
         estimated_yaw = self.get_current_yaw()
         yaw_error = self.desired_yaw - estimated_yaw
         yaw_error = self.normalize_angle(yaw_error)
@@ -28,7 +28,7 @@ class YawMaintainer():
         error_wrench = Wrench(translation, rotation)
         self.thrust_pub.publish(error_wrench)
 
-    def normalize_angle(angle, max_angle=pi):
+    def normalize_angle(self, angle, max_angle=pi):
         # Returns angle between -max_angle and max_angle
         angle = angle % (2 * pi)
         if angle > pi:

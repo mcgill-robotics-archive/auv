@@ -1,0 +1,6 @@
+<launch>
+    <include file="pid_controls.launch" />
+    <node name="maintain_yaw" pkg="controls" type="maintain_yaw.py" respawn="false" output="screen">
+        <param name="desired_yaw" type="double" value="3.1" />
+    </node>
+</launch>
