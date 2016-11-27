@@ -4,9 +4,14 @@
  * @authors Jana Pavlasek, Paul Wu
  */
 
+
 #include <ros/ros.h>
 #include <sensor_msgs/Image.h>
 #include <auv_msgs/Lane.h>
+
+#include <cv_bridge/cv_bridge.h>
+#include <image_transport/image_transport.h>
+#include <sensor_msgs/image_encodings.h>
 
 class LaneDetector
 {
