@@ -7,7 +7,7 @@ from move import Move
 from shoot import Shoot
 from spinny import Spinny
 from initialize import Initializer
-from visual_servo import VisualServo
+# from visual_servo import VisualServo
 from acoustic_servo import AcousticServo
 from actionlib import SimpleActionServer
 from auv_msgs.msg import TaskStatus
@@ -60,10 +60,10 @@ class Task(object):
                     current_task.action = TaskStatus.SHOOT
                     shoot = Shoot(value)
                     shoot.start(self._as, self._feedback)
-                elif key == "visual_servo":
-                    current_task.action = TaskStatus.VISUAL_SERVO
-                    visual_servo = VisualServo(value)
-                    visual_servo.start(self._as, self._feedback)
+                # elif key == "visual_servo":
+                #     current_task.action = TaskStatus.VISUAL_SERVO
+                #     visual_servo = VisualServo(value)
+                #     visual_servo.start(self._as, self._feedback)
                 elif key == "acoustic_servo":
                     current_task.action = TaskStatus.ACOUSTIC_SERVO
                     acoustic_servo = AcousticServo(value)
