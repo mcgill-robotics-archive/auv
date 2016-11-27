@@ -3,7 +3,7 @@
   <name>auv_gazebo</name>
   <version>0.0.0</version>
   <description>The auv_gazebo package</description>
-  <maintainer email="yichiz@todo.todo">yichiz</maintainer>
+  <maintainer email="yichi.zhang@mail.mcgill.ca">Yichi Zhang</maintainer>
   <license>BSD</license>
 
   <buildtool_depend>catkin</buildtool_depend>
