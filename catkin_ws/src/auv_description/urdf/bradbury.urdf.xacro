@@ -4,7 +4,7 @@
   <!-- THRUSTER MACRO -->
   <xacro:property name="thruster_radius" value="0.055" />
   <xacro:property name="thruster_length" value="0.1" />
-  <xacro:property name="thruster_mass" value="0.5" />
+  <xacro:property name="thruster_mass" value="0.283" />
   <xacro:macro name="thruster" params="prefix x y z yaw pitch roll">
     <link name="${prefix}_thruster">
       <visual>
@@ -75,7 +75,7 @@
   <!-- Battery PV -->
   <xacro:property name="battery_radius" value="0.1" />
   <xacro:property name="battery_length" value="0.33" />
-  <xacro:property name="battery_mass" value="1" />
+  <xacro:property name="battery_mass" value="3.98" />
   <link name="battery">
     <visual>
       <origin rpy="${pi/2} 0 0" xyz="0 0.1572 0"/>
