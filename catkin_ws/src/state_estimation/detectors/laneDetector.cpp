@@ -54,6 +54,7 @@ Mat im2bw(Mat src, double grayThresh){
     return dst;
 
 }
+//Implementation of the function "image to binary image"
 
 
 void LaneDetector::imageCallback(const sensor_msgs::Image::ConstPtr& msg)
@@ -79,30 +80,32 @@ void LaneDetector::imageCallback(const sensor_msgs::Image::ConstPtr& msg)
           return;
       }
 
-  Mat RGB = cv_ptr->image;
+  Mat RGB = cv_ptr->image;                     // Converting from ROS image to openCV image
 
   if(! RGB.data )                              // Check for invalid input
     {
       return;
     }
 
-  Mat gray;cvtColor( RGB, gray, CV_RGB2GRAY );
+  Mat gray;cvtColor( RGB, gray, CV_RGB2GRAY ); // Converting to gray image
 
-  Mat bw = im2bw(gray, thresh);
+  Mat bw = im2bw(gray, thresh);                // Converting to binary image
 
   Mat bwfilt, cdst;
 
-  //median filtering
-
   medianBlur ( bw, bwfilt, 5 );
-
-  //canny detection
+  
+  // median filtering
 
   Canny(bwfilt, bw, 50, 150, 3);
+  
+  // canny detection
+  
+  
+  
+  //Hough transformation section
 
   cvtColor(bw, cdst, CV_GRAY2BGR);
-
-  //Hough transformation
 
   vector<Vec2f> lines;
   HoughLines(bw, lines, 1, CV_PI/180, 100, 0, 0 );
@@ -115,10 +118,11 @@ void LaneDetector::imageCallback(const sensor_msgs::Image::ConstPtr& msg)
     float rho;
     float theta;
   };
+  // Constrcting a struct to cluster detected lines
 
   int len = lines.size();
   cluster s[len];
-  //construct a struct array with length "len", equal to the size of "lines"
+  // construct a struct array with length "len", equal to the size of "lines"
 
   s[0].rho = lines[0][0];
   s[0].theta = lines[0][1];
@@ -127,18 +131,18 @@ void LaneDetector::imageCallback(const sensor_msgs::Image::ConstPtr& msg)
     s[i].rho = 0.0;
     s[i].theta = 0.0;
   }
-  //initializing the array
+  // initializing the array
 
   int numCluster = 1;
   int flag = 0;
-  //this variable takes the record of total number of length
+  // this variable takes the record of total number of length
   for(int i = 1; i < len; i++){
       flag = 0;
       for(int j = 0; j < numCluster; j++){
 
           if(abs(lines[i][0] - s[j].rho) < 45 && abs(lines[i][1] - s[j].theta) * 180 / CV_PI < 2){
               flag = -1;
-              //j=-1 means the line is added to a cluster
+              // j=-1 means the line is added to a cluster
               break;
           }
 
@@ -149,7 +153,7 @@ void LaneDetector::imageCallback(const sensor_msgs::Image::ConstPtr& msg)
           s[numCluster].theta = lines[i][1];
           numCluster++;
       }
-      //if the line is added as a new cluster, increase numCluster; otherwise increment
+      // if the line is added as a new cluster, increase numCluster
   }
 
   int found = 0;
@@ -169,47 +173,48 @@ void LaneDetector::imageCallback(const sensor_msgs::Image::ConstPtr& msg)
                 theta1 = theta1 - 180.0;
                 theta2 = theta2 - 180.0;
               }
-              //adjust the value of theta to proper range
+              // adjust the value of theta to proper range
 
               if(thetaLastTime != 500){
                   if(abs(thetaLastTime - theta1) < 10 && (s[i].rho + s[j].rho) / 2 - (rho1LastTime + rho2LastTime)/2 < 20){
-                    //if the difference between the current theta and the theta last time is with in 10
+                    // if the difference between the current theta and the theta last time is with in 10
                       lane.theta1 = theta1;
                       lane.theta2 = theta2;
                       lane.rho1 = s[i].rho;
                       lane.rho2 = s[j].rho;
-                      //printf("%f\n", theta);
+                      // printf("%f\n", theta);
                       found=1;
                       thetaLastTime = theta1;
                       rho1LastTime = s[i].rho;
                       rho2LastTime = s[j].rho;
                   }
-                  //publish data, and take record of the data published
+                  // publish data, and take record of the data published
                   else{
-                    //if something else happens, it could be some random error.
+                    // if something else happens, it could be some random error.
                     if(wrongTime<10){
                       lane.theta1 = thetaLastTime;
                       lane.theta2 = thetaLastTime;
                       lane.rho1 = rho1LastTime;
                       lane.rho2 = rho2LastTime;
-
+                      found = 1;
                       wrongTime++;
                     }
-                    //if so, we publish the data we got last time.
+                    // if so, we publish the data collected last time.
                     else{
                       lane.theta1 = theta1;
                       lane.theta2 = theta2;
                       lane.rho1 = s[i].rho;
                       lane.rho2 = s[j].rho;
+                      found = 1;
                       wrongTime=0;
                     }
-                    //It can also be that the data we obtained previously is inaccurate.
+                    // It can also be that the data we obtained previously is inaccurate.
                   }
 
               }
 
               else{
-              //if it's the first time searching for lane
+              // if it's the first time searching for lane
                     lane.theta1 = theta1;
                     lane.theta2 = theta2;
                     lane.rho1 = s[i].rho;
@@ -218,7 +223,7 @@ void LaneDetector::imageCallback(const sensor_msgs::Image::ConstPtr& msg)
                     thetaLastTime = theta1;
                     rho1LastTime = s[i].rho;
                     rho2LastTime = s[j].rho;
-                //publish data.
+                // publish the original data.
               }
 
           }
@@ -226,7 +231,7 @@ void LaneDetector::imageCallback(const sensor_msgs::Image::ConstPtr& msg)
   }
 
 
-    if(found==1){
+    if(found == 1){
         // When you're done, put your results in as the 4 corners of the lane message.
         lane_pub_.publish(lane);
     }
