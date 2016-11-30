@@ -10,23 +10,24 @@
  *          set of acceleration data-points, given by the IMU.
  *      - It makes use of the trapazoid rule to provide increased accuracy and
  *          in consideration of special cases.
+ *      - It also implements a rolling mean filter using the boost library. The
+ *          window size is set with a definition below.
  *
  * TODO:
  *      - Use the Euler Method instead of the trapazoid method.
- *      - Use timestamps instead of a fixed rate.
  *
  *==============================================================================
  */
 
 //For TEST NODE
 //Note: to test, make sure to change subscriber
-#define RATE 10
-#define DELTA_T 0.1
+//#define RATE 10
+//#define DELTA_T 0.1
 
 //For IMU
-//#define RATE 8.35               //In Hz
-//#define DELTA_T 0.119760479     //Must be 1/RATE
-#define USER_WINDOW_SIZE 4        //4-5 worked best with test node
+#define RATE 8.35               //In Hz
+#define DELTA_T 0.119760479     //Must be 1/RATE
+#define USER_WINDOW_SIZE 50     //4-5 worked best with test node
 
 //Libraries etc. ---------------------------------------------------------------
 #include <boost/accumulators/accumulators.hpp>
@@ -42,6 +43,7 @@
 //Definitions ------------------------------------------------------------------
 vector currAcc, lastAcc, currVel, lastVel, position;
 
+//Boost Mean Accumulator -------------------------------------------------------
 namespace ba = boost::accumulators;
 namespace bt = ba::tag;
 typedef ba::accumulator_set<double, ba::stats<bt::rolling_mean> > mean;
@@ -108,8 +110,8 @@ int main (int argc, char **argv) {
     ros::init(argc, argv, "double_int_pose");
     ros::NodeHandle node;
 
-    sub = node.subscribe("test/acc", 100, &dataCallback);
-    //sub = node.subscribe("/state_estimation/acc", 100, &dataCallback);
+    //sub = node.subscribe("test/acc", 100, &dataCallback);
+    sub = node.subscribe("/state_estimation/acc", 100, &dataCallback);
 
     pub = node.advertise<geometry_msgs::TwistStamped>("imu/vel", 100);
     pub2 = node.advertise<geometry_msgs::PoseStamped>("imu/pose", 100);
