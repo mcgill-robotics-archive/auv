@@ -11,13 +11,13 @@ class Controller:
 
         # initialize PIDs with gains from rosparams
         self.surge_pid = PID(
-                rospy.get_param("~kp_yPos"),
-                rospy.get_param("~ki_yPos"),
-                rospy.get_param("~kd_yPos"))
-        self.sway_pid = PID(
                 rospy.get_param("~kp_xPos"),
                 rospy.get_param("~ki_xPos"),
                 rospy.get_param("~kd_xPos"))
+        self.sway_pid = PID(
+                rospy.get_param("~kp_yPos"),
+                rospy.get_param("~ki_yPos"),
+                rospy.get_param("~kd_yPos"))
         self.heave_pid = PID(
                 rospy.get_param("~kp_depth"),
                 rospy.get_param("~ki_depth"),
