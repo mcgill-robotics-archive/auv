@@ -1,0 +1,10 @@
+<?xml version="1.0"?>
+
+<robot xmlns:xacro="http://ros.org/wiki/xacro">
+
+  <gazebo>
+    <plugin name="thruster_plugin" filename="libthruster_plugin.so">
+    </plugin>
+  </gazebo>
+
+</robot>
