@@ -4,10 +4,13 @@
 #include <ros/ros.h>
 #include <ros/callback_queue.h>
 #include <ros/subscribe_options.h>
+
 #include <gazebo/gazebo.hh>
 #include <gazebo/physics/physics.hh>
 #include <gazebo/common/common.hh>
-#include <auv_msgs/MotorCommands.h>
+
+#include <geometry_msgs/Wrench.h>
+#include <gazebo_msgs/ApplyBodyWrench.h>
 
 class ThrusterController : public gazebo::ModelPlugin
 {
@@ -17,17 +20,18 @@ public:
   void OnUpdate(const gazebo::common::UpdateInfo & info);
 
 private:
-  // ros::NodeHandle nh_;
   ros::Subscriber thrust_cmds_sub_;
 
-  void thrustCommandCallback(const auv_msgs::MotorCommands::ConstPtr& msg);
+  void thrustCommandCallback(const geometry_msgs::Wrench::ConstPtr& msg);
   void queueThread();
 
   gazebo::physics::ModelPtr model_;
   gazebo::event::ConnectionPtr updateConnection_;
   std::string robot_namespace_;
+  bool new_cmd_;
 
-  auv_msgs::MotorCommands current_commands_;
+  geometry_msgs::Wrench current_commands_;
+  ros::ServiceClient control_client_;
 
   /// \brief A node use for ROS transport
   std::unique_ptr<ros::NodeHandle> nh_;
@@ -39,17 +43,16 @@ private:
   std::thread rosQueueThread;
 };
 
-ThrusterController::ThrusterController()
+ThrusterController::ThrusterController() :
+  new_cmd_(false)
 {
-  auv_msgs::MotorCommands zeros;
+  geometry_msgs::Wrench zeros;
   current_commands_ = zeros;
-  ROS_INFO("Controller");
 }
 
 void ThrusterController::Load(gazebo::physics::ModelPtr _parent, sdf::ElementPtr _sdf)
 {
   model_ = _parent;
-  ROS_INFO("Loading");
 
   if (_sdf->HasElement("robotNamespace"))
   {
@@ -60,8 +63,6 @@ void ThrusterController::Load(gazebo::physics::ModelPtr _parent, sdf::ElementPtr
     ROS_INFO("AUV thruster plugin missing <robotNameSpace>, defaults to /bradbury");
     robot_namespace_ = "bradbury";
   }
-
-  // thrust_cmds_sub_ = nh_.subscribe<auv_msgs::MotorCommands>("electrical_interface/motor", 10, &ThrusterController::thrustCommandCallback, this);
 
   // Initialize ros, if it has not already been initialized.
   if (!ros::isInitialized())
@@ -76,12 +77,15 @@ void ThrusterController::Load(gazebo::physics::ModelPtr _parent, sdf::ElementPtr
 
   // Create a named topic, and subscribe to it.
   ros::SubscribeOptions so =
-    ros::SubscribeOptions::create<auv_msgs::MotorCommands>(
-        "/electrical_interface/motor",
+    ros::SubscribeOptions::create<geometry_msgs::Wrench>(
+        "/controls/wrench",
         1,
         boost::bind(&ThrusterController::thrustCommandCallback, this, _1),
         ros::VoidPtr(), &rosQueue);
   thrust_cmds_sub_ = nh_->subscribe(so);
+
+  control_client_ = nh_->serviceClient<gazebo_msgs::ApplyBodyWrench>("/gazebo/apply_body_wrench");
+  control_client_.waitForExistence();
 
   // Spin up the queue helper thread.
   rosQueueThread = std::thread(std::bind(&ThrusterController::queueThread, this));
@@ -89,26 +93,35 @@ void ThrusterController::Load(gazebo::physics::ModelPtr _parent, sdf::ElementPtr
   updateConnection_ = gazebo::event::Events::ConnectWorldUpdateBegin(boost::bind(&ThrusterController::OnUpdate, this, _1));
 }
 
-void ThrusterController::OnUpdate(const gazebo::common::UpdateInfo & info)
+void ThrusterController::OnUpdate(const gazebo::common::UpdateInfo& info)
 {
-  // ROS_INFO("A");
-  // starboard_surge
-  model_->GetLink("base_link")->AddForceAtRelativePosition(gazebo::math::Vector3(current_commands_.starboard_surge, 0, 0), gazebo::math::Vector3(0, 0, 0));
-  // ROS_INFO("B");
-  // model_->GetJoint("starboard_surge")->SetForce(0, (double)current_commands_.starboard_surge);
-  // model_->GetJoint("bow_sway")->SetForce(0, (double)current_commands_.bow_sway);
-  // model_->GetJoint("stern_sway")->SetForce(0, (double)current_commands_.stern_sway);
-  // model_->GetJoint("port_bow_heave")->SetForce(0, (double)current_commands_.port_bow_heave);
-  // model_->GetJoint("starboard_bow_heave")->SetForce(0, (double)current_commands_.starboard_bow_heave);
-  // model_->GetJoint("port_stern_heave")->SetForce(0, (double)current_commands_.port_stern_heave);
-  // model_->GetJoint("starboard_stern_heave")->SetForce(0, (double)current_commands_.starboard_stern_heave);
-  // ROS_INFO("C");
+  // Only send a new cmd if there's a new one.
+  if (new_cmd_)
+  {
+    gazebo_msgs::ApplyBodyWrench wrench;
+    wrench.request.body_name = "base_link";
+    wrench.request.reference_frame = "base_link";
+    wrench.request.duration = ros::Duration(0.2);
+
+    wrench.request.wrench = current_commands_;
+
+    if (!control_client_.call(wrench))
+    {
+      ROS_ERROR("Service call failed");
+    }
+
+    // Reset the commands to zero.
+    geometry_msgs::Wrench zeros;
+    current_commands_ = zeros;
+    new_cmd_ = false;
+  }
 }
 
-void ThrusterController::thrustCommandCallback(const auv_msgs::MotorCommands::ConstPtr& msg)
+void ThrusterController::thrustCommandCallback(const geometry_msgs::Wrench::ConstPtr& msg)
 {
+  // Save the published command and indicate that a new command has arrived.
   current_commands_ = *msg;
-  ROS_INFO("Received message yay");
+  new_cmd_ = true;
 }
 
 void ThrusterController::queueThread()
@@ -120,4 +133,5 @@ void ThrusterController::queueThread()
   }
 }
 
+// Necessary to register this as a Gazebo plugin.
 GZ_REGISTER_MODEL_PLUGIN(ThrusterController);
