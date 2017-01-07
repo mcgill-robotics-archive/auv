@@ -2,6 +2,7 @@
 #include <pcl/point_types.h>
 #include <pcl_ros/point_cloud.h>
 #include <pcl_conversions/pcl_conversions.h>
+#include <pcl/conversions.h>
 
 #include <pcl/filters/voxel_grid.h>
 #include <pcl/filters/statistical_outlier_removal.h>
@@ -37,8 +38,9 @@ ScanPreprocessor::ScanPreprocessor(ros::NodeHandle& nh)
 
   // ROS PUB/SUB
   full_scan_sub_ = nh.subscribe<sensor_msgs::PointCloud>("/full_scan", 10, &ScanPreprocessor::fullScanCallback, this);
-  filtered_scan_pub_ = nh.advertise<sensor_msgs::PointCloud2>("pcl_filtered", 10);
-}
+  //filtered_scan_pub_ = nh.advertise<sensor_msgs::PointCloud>("pcl_filtered", 10);
+  filtered_scan_pub_ = nh.advertise<sensor_msgs::PointCloud>("/filered_scan/pcl_filtered", 1);
+}  
 
 void ScanPreprocessor::fullScanCallback(const sensor_msgs::PointCloud::ConstPtr &msg)
 {
@@ -59,11 +61,13 @@ void ScanPreprocessor::fullScanCallback(const sensor_msgs::PointCloud::ConstPtr 
   //PFHFeatures(cloudPtr, cloud_pcl_filtered);
 
   // Convert to ROS msg for publishing purposes.
-  sensor_msgs::PointCloud2 output_pcl;
-  pcl_conversions::fromPCL(*cloud_pcl_filtered, output_pcl);
+  sensor_msgs::PointCloud2 output_pcl2;
+  sensor_msgs::PointCloud output_pcl1;
+  pcl_conversions::fromPCL(*cloud_pcl_filtered, output_pcl2);
+  sensor_msgs::convertPointCloud2ToPointCloud(output_pcl2, output_pcl1);
 
   // Publish the data.
-  filtered_scan_pub_.publish(output_pcl);
+  filtered_scan_pub_.publish(output_pcl1);
 }
 
 sensor_msgs::PointCloud ScanPreprocessor::radiusThresholdFilter(const sensor_msgs::PointCloud &cloud)
