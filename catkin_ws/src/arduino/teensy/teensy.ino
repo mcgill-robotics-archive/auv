@@ -63,14 +63,14 @@ void writeMotorT100 (uint8_t motorNumber, int motorCommandValue)
 void motorCb( const auv_msgs::MotorCommands& msg){
   if(mission_m.data){
     timeLastMotorCommand = millis();
-    writeMotorT100(MOTOR_PIN_PORT_SURGE, msg.stern_sway);
-    writeMotorT100(MOTOR_PIN_STARBOARD_SURGE, msg.bow_sway);
-    writeMotorT100(MOTOR_PIN_PORT_BOW_HEAVE, msg.starboard_bow_heave);
-    writeMotorT100(MOTOR_PIN_STARBOARD_BOW_HEAVE, msg.port_bow_heave);
-    writeMotorT100(MOTOR_PIN_PORT_STERN_HEAVE, msg.starboard_stern_heave);
-    writeMotorT100(MOTOR_PIN_STARBOARD_STERN_HEAVE, msg.port_stern_heave);
-    writeMotorT100(MOTOR_PIN_STARBOARD_SWAY, msg.port_surge);
-    writeMotorT100(MOTOR_PIN_PORT_SWAY, msg.starboard_surge);
+    writeMotorT100(MOTOR_PIN_STERN_SWAY, msg.stern_sway);
+    writeMotorT100(MOTOR_PIN_BOW_SWAY, msg.bow_sway);
+    writeMotorT100(MOTOR_PIN_STARBOARD_BOW_HEAVE, msg.starboard_bow_heave);
+    writeMotorT100(MOTOR_PIN_PORT_BOW_HEAVE, msg.port_bow_heave);
+    writeMotorT100(MOTOR_PIN_STARBOARD_STERN_HEAVE, msg.starboard_stern_heave);
+    writeMotorT100(MOTOR_PIN_PORT_STERN_HEAVE, msg.port_stern_heave);
+    writeMotorT100(MOTOR_PIN_PORT_SURGE, msg.port_surge);
+    writeMotorT100(MOTOR_PIN_STARBOARD_SURGE, msg.starboard_surge);
   } else {
     nh.logwarn("Motor commands received while mission off!! Commands IGNORED!!");
   }
@@ -119,14 +119,14 @@ ros::Subscriber<auv_msgs::MotorCommands> motorSub("~motor", &motorCb );
 void motorInit(){
 
   //Setup for T100, normal servo control
+  myservo[MOTOR_PIN_STERN_SWAY].attach(MOTOR_PIN_STERN_SWAY);
+  myservo[MOTOR_PIN_BOW_SWAY].attach(MOTOR_PIN_BOW_SWAY);
+  myservo[MOTOR_PIN_STARBOARD_BOW_HEAVE].attach(MOTOR_PIN_STARBOARD_BOW_HEAVE);
+  myservo[MOTOR_PIN_PORT_BOW_HEAVE].attach(MOTOR_PIN_PORT_BOW_HEAVE);
+  myservo[MOTOR_PIN_STARBOARD_STERN_HEAVE].attach(MOTOR_PIN_STARBOARD_STERN_HEAVE);
+  myservo[MOTOR_PIN_PORT_STERN_HEAVE].attach(MOTOR_PIN_PORT_STERN_HEAVE);
   myservo[MOTOR_PIN_PORT_SURGE].attach(MOTOR_PIN_PORT_SURGE);
   myservo[MOTOR_PIN_STARBOARD_SURGE].attach(MOTOR_PIN_STARBOARD_SURGE);
-  myservo[MOTOR_PIN_PORT_BOW_HEAVE].attach(MOTOR_PIN_PORT_BOW_HEAVE);
-  myservo[MOTOR_PIN_STARBOARD_BOW_HEAVE].attach(MOTOR_PIN_STARBOARD_BOW_HEAVE);
-  myservo[MOTOR_PIN_PORT_STERN_HEAVE].attach(MOTOR_PIN_PORT_STERN_HEAVE);
-  myservo[MOTOR_PIN_STARBOARD_STERN_HEAVE].attach(MOTOR_PIN_STARBOARD_STERN_HEAVE);
-  myservo[MOTOR_PIN_STARBOARD_SWAY].attach(MOTOR_PIN_STARBOARD_SWAY);
-  myservo[MOTOR_PIN_PORT_SWAY].attach(MOTOR_PIN_PORT_SWAY);
 
   resetMotor();
 }
