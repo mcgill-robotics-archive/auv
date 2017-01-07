@@ -16,30 +16,46 @@ class ThrusterController : public gazebo::ModelPlugin
 {
 public:
   ThrusterController();
+
+  /**
+   * Function from base class, which runs once when the plugin loads.
+   * @param _parent Parent model.
+   * @param _sdf    Robot description.
+   */
   void Load(gazebo::physics::ModelPtr _parent, sdf::ElementPtr _sdf);
+
+  /**
+   * Function from base class, which runs on every Gazebo update loop.
+   * @param info Update info.
+   */
   void OnUpdate(const gazebo::common::UpdateInfo & info);
 
 private:
   ros::Subscriber thrust_cmds_sub_;
 
+  /**
+   * Callback for the thrust command on the /controls/wrench topic. Applies the
+   * published wrench to the robot model.
+   * @param msg Wrench message.
+   */
   void thrustCommandCallback(const geometry_msgs::Wrench::ConstPtr& msg);
   void queueThread();
 
   gazebo::physics::ModelPtr model_;
   gazebo::event::ConnectionPtr updateConnection_;
   std::string robot_namespace_;
-  bool new_cmd_;
+  bool new_cmd_;  // True if a new command has been received.
 
   geometry_msgs::Wrench current_commands_;
   ros::ServiceClient control_client_;
 
-  /// \brief A node use for ROS transport
+  // A node use for ROS transport
   std::unique_ptr<ros::NodeHandle> nh_;
 
-/// \brief A ROS callbackqueue that helps process messages
+  // A ROS callbackqueue that helps process messages
   ros::CallbackQueue rosQueue;
 
-/// \brief A thread the keeps running the rosQueue
+  // A thread the keeps running the rosQueue
   std::thread rosQueueThread;
 };
 
@@ -95,7 +111,7 @@ void ThrusterController::Load(gazebo::physics::ModelPtr _parent, sdf::ElementPtr
 
 void ThrusterController::OnUpdate(const gazebo::common::UpdateInfo& info)
 {
-  // Only send a new cmd if there's a new one.
+  // Only send a cmd if there's a new one.
   if (new_cmd_)
   {
     gazebo_msgs::ApplyBodyWrench wrench;
@@ -105,6 +121,7 @@ void ThrusterController::OnUpdate(const gazebo::common::UpdateInfo& info)
 
     wrench.request.wrench = current_commands_;
 
+    // Call the apply wrench service.
     if (!control_client_.call(wrench))
     {
       ROS_ERROR("Service call failed");

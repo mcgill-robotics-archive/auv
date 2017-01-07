@@ -1,6 +1,6 @@
 <?xml version="1.0" ?>
 <sdf version="1.4">
-  <world name="aqua_world">
+  <world name="empty_pool_world">
     <include>
       <uri>model://ground_plane</uri>
       <pose>0.0 0.0 -6.0 0 0 0</pose>

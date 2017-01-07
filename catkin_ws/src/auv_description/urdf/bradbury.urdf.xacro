@@ -20,7 +20,7 @@
   <xacro:property name="main_hull_radius" value="0.125" />
   <xacro:property name="main_hull_length" value="0.52" />
   <!-- MADE UP VALUE -->
-  <xacro:property name="main_hull_mass" value="1.0" />
+  <xacro:property name="main_hull_mass" value="20.0" />
 
   <!-- Battery PV -->
   <xacro:property name="battery_radius" value="0.1" />
