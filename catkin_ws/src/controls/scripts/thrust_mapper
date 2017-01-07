@@ -32,10 +32,14 @@ l_6y = 0.372 # Brad: 14.631 # or 13.169 inches
 l_7y = 0.327 # Brad: 12.867 # or 6.331 inches
 l_8y = 0.327 # Brad: 12.867 # or 6.331 inches
 
-T1234_to_Fx_Fy_Mz = matrix([[1,1,0,0],[0,0,-1,-1],[l_1z,-l_2z,-l_3z,l_4z]])
-Fx_Fy_Mz_to_T1234 = pinv(T1234_to_Fx_Fy_Mz, rcond = 1e-15)
-T5678_to_Fz_Mx_My = matrix([[-1,-1,-1,-1],[l_5x,-l_6x,-l_7x,l_8x],[l_5y,l_6y,-l_7y,-l_8y]])
-Fz_Mx_My_to_T5678 = pinv(T5678_to_Fz_Mx_My, rcond= 1e-15)
+T1234_to_Fx_Fy_Mz = matrix([[1,1,0,0],[0,0,1,1],[l_1z,-l_2z,l_3z,-l_4z]])
+Fx_Fy_Mz_to_T1234 = pinv(T1234_to_Fx_Fy_Mz, rcond=1e-15)
+print(Fx_Fy_Mz_to_T1234)
+T5678_to_Fz_Mx_My = matrix(
+        [[1,1,1,1],
+         [-l_5x,l_6x,l_7x,-l_8x],
+         [-l_5y,-l_6y,l_7y,l_8y]])
+Fz_Mx_My_to_T5678 = pinv(T5678_to_Fz_Mx_My, rcond=1e-15)
 
 def Wrench_to_thrust_callback(data):
     # Calculations are decoupled into those using the four in-plane thrusters
@@ -43,7 +47,6 @@ def Wrench_to_thrust_callback(data):
     Fx_Fy_Mz = matrix([data.force.x, data.force.y, data.torque.z]).T
     Fz_Mx_My = matrix([data.force.z, data.torque.x, data.torque.y]).T
 
-    
     # TODO: Use seabotics calibration too
     T1234 = t100_pwm(Fx_Fy_Mz_to_T1234*Fx_Fy_Mz)
     T5678 = t100_pwm(Fz_Mx_My_to_T5678*Fz_Mx_My)
@@ -51,11 +54,7 @@ def Wrench_to_thrust_callback(data):
     cmds_msg = MotorCommands()
     cmds_msg.port_surge = T1234[0]
     cmds_msg.starboard_surge = T1234[1]
-    # Bow sway thruster wiring is reversed.
-    # All other thrusters have the same convention:
-    # positive motor command will make the thruster push water from
-    # the pointy end to the round end
-    cmds_msg.bow_sway = -T1234[2]
+    cmds_msg.bow_sway = T1234[2]
     cmds_msg.stern_sway = T1234[3]
     cmds_msg.port_bow_heave = T5678[0]
     cmds_msg.starboard_bow_heave = T5678[1]
@@ -85,7 +84,6 @@ def loadCharacterization(filename):
     return f
 
 if __name__ == '__main__':
-    global thrust_pub, t100_pwm 
     # TODO: Access resources in a better way
     filename = RosPack().get_path('controls') + \
             '/config/t100_characterization.csv'
