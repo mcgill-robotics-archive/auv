@@ -9,7 +9,7 @@ class PID:
     def __init__(self, P=2.0, I=0.0, D=1.0, Derivator=0, Integrator=0,
                  Integrator_max=500, Integrator_min=-500):
 
-        self.PID = 0
+        self.output = 0
 
         self.Kp = P
         self.Ki = I
@@ -24,7 +24,7 @@ class PID:
         Calculate PID output value for given error
         """
         if error is None:
-            return PID
+            return self.output 
 
         self.P_value = self.Kp * error
         self.D_value = self.Kd * (error - self.Derivator)
@@ -39,6 +39,6 @@ class PID:
 
         self.I_value = self.Integrator * self.Ki
 
-        self.PID = self.P_value + self.I_value + self.D_value
+        self.output = self.P_value + self.I_value + self.D_value
 
-        return self.PID
+        return self.output
