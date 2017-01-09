@@ -27,6 +27,7 @@ def joystick():
 
 def callback_function(twist_msg):
     wrench_msg.force = twist_msg.linear
+    twist_msg.angular.z = -twist_msg.angular.z
     wrench_msg.torque = twist_msg.angular
 
 
