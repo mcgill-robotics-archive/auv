@@ -37,9 +37,8 @@ ScanPreprocessor::ScanPreprocessor(ros::NodeHandle& nh)
   ros::param::param<double>("~min_neighbors_in_radius", MIN_NEIGHBORS_IN_RADIUS, 40.0);
 
   // ROS PUB/SUB
-  full_scan_sub_ = nh.subscribe<sensor_msgs::PointCloud>("/full_scan", 10, &ScanPreprocessor::fullScanCallback, this);
-  //filtered_scan_pub_ = nh.advertise<sensor_msgs::PointCloud>("pcl_filtered", 10);
-  filtered_scan_pub_ = nh.advertise<sensor_msgs::PointCloud>("/filered_scan/pcl_filtered", 1);
+  full_scan_sub_ = nh.subscribe<sensor_msgs::PointCloud>("sonar_proc/full_scan", 10, &ScanPreprocessor::fullScanCallback, this);
+  filtered_scan_pub_ = nh.advertise<sensor_msgs::PointCloud>("sonar_proc/pcl_filtered", 1);
 }  
 
 void ScanPreprocessor::fullScanCallback(const sensor_msgs::PointCloud::ConstPtr &msg)
@@ -166,7 +165,7 @@ void ScanPreprocessor::PFHFeatures(const pcl::PCLPointCloud2ConstPtr &cloud, pcl
 int main(int argc, char **argv)
 {
     ros::init(argc, argv, "scan_preprocessor");
-    ros::NodeHandle nh("filtered_scan");
+    ros::NodeHandle nh;
     ScanPreprocessor process(nh);
 
     ros::spin();
