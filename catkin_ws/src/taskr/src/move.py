@@ -61,8 +61,8 @@ class Move(object):
 
         # If depth was not set, take the current depth.
         if self.depth is None:
-            while self.curr_depth is None:
-                pass
+            while self.curr_depth is None and not rospy.is_shutdown():
+                rate.sleep()
 
             ctrl_goal.cmd.depth = self.curr_depth
         else:
@@ -70,8 +70,8 @@ class Move(object):
 
         # If yaw was not set, take the current yaw.
         if self.yaw is None:
-            while self.curr_yaw is None:
-                pass
+            while self.curr_yaw is None and not rospy.is_shutdown():
+                rate.sleep()
 
             ctrl_goal.cmd.yaw = self.curr_yaw
         else:
@@ -124,7 +124,7 @@ class Move(object):
             self.vel_client.send_goal(ctrl_goal)
 
             # Check if we received preempt request from Planner
-            if server.is_preempt_requested():
+            if server.is_preempt_requested() or rospy.is_shutdown():
                 rospy.logerr("Taskr preempted")
                 # Send preempt request to Controls
                 self.vel_client.cancel_goal()
