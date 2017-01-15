@@ -5,6 +5,7 @@ import rospy
 from math import pi
 from geometry_msgs.msg import Wrench, Vector3
 from tf import TransformListener
+from tf.transformations import euler_from_quaternion
 import tf
 
 
@@ -40,7 +41,8 @@ class YawMaintainer():
             try:
                 trans, rot = self.listener.lookupTransform(
                     'initial_horizon', 'robot', rospy.Time())
-                return rot[2]
+                (roll, pitch, yaw) = euler_from_quaternion(rot)
+                return yaw
             except (tf.LookupException, tf.ConnectivityException,
                     tf.ExtrapolationException):
                 continue
