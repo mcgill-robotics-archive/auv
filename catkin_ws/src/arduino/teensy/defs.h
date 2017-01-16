@@ -1,13 +1,13 @@
 //define header for AUV Teensy code
 
-#define MOTOR_PIN_PORT_SURGE                0 //T100_1 : bow_surge
-#define MOTOR_PIN_STARBOARD_SURGE           1 //T100_2 : stern_surge
-#define MOTOR_PIN_PORT_BOW_HEAVE            2 //T100_3 : port_bow_heave
-#define MOTOR_PIN_STARBOARD_BOW_HEAVE       3 //T100_4 : starboard_bow_heave
-#define MOTOR_PIN_PORT_STERN_HEAVE          4 //T100_5 : port_stern_heave
-#define MOTOR_PIN_STARBOARD_STERN_HEAVE     5 //T100_6 : starboard_stern_heave
-#define MOTOR_PIN_STARBOARD_SWAY            6 //SeabotimotorCommandValue_1 : port_surge
-#define MOTOR_PIN_PORT_SWAY                 7 //SeabotimotorCommandValue_2 : starboard_surge
+#define MOTOR_PIN_STERN_SWAY                0 //T100_4
+#define MOTOR_PIN_BOW_SWAY                  1 //T100_3
+#define MOTOR_PIN_STARBOARD_BOW_HEAVE       2 //T100_6
+#define MOTOR_PIN_PORT_BOW_HEAVE            3 //T100_5
+#define MOTOR_PIN_STARBOARD_STERN_HEAVE     4 //T100_7
+#define MOTOR_PIN_PORT_STERN_HEAVE          5 //T100_8
+#define MOTOR_PIN_PORT_SURGE                6 //T100_1
+#define MOTOR_PIN_STARBOARD_SURGE           7 //T100_2
 
 #define MOTOR_T100_RST_VALUE                1500 // Reset value for T100 & T200
 #define THRESHOLD_MOTOR                     50 // Incremental Threshold to limit surge current
@@ -15,11 +15,11 @@
 
 //SOLENOID, one used pin for (Pin_33)
 #define SOLENOID_PIN_STARBOARD_DROPPER      28 //*
-#define SOLENOID_PIN_PORT_DROPPER           12 //* 
+#define SOLENOID_PIN_PORT_DROPPER           12 //*
 #define SOLENOID_PIN_STARBOARD_GRABBER      27 //*
 #define SOLENOID_PIN_PORT_GRABBER           24
 #define SOLENOID_PIN_STARBOARD_TORPEDO      25
-#define SOLENOID_PIN_PORT_TORPEDO           26 //* 
+#define SOLENOID_PIN_PORT_TORPEDO           26 //*
 #define SOLENOID_PIN_EXTRA                  33
 
 //ON BOARD LED PIN
