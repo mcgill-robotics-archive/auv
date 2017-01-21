@@ -6,7 +6,7 @@ import tf
 from geometry_msgs.msg import Vector3
 from controls.msg import EulerPose
 from tf import TransformListener
-
+import sys
 
 class DepthMaintainer():
     '''
