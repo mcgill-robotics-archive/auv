@@ -55,10 +55,9 @@ class DepthMaintainer():
 if __name__ == '__main__':
     rospy.init_node('maintain_depth')
 
-    desired_depth = None
-    if rospy.has_param('~desired_depth'):
-        desired_depth = rospy.get_param('~desired_depth')
-    depth_maintainer = DepthMaintainer(desired_depth)
+    #change param to args
+    test_depth_maintainer = sys.argv[1]
+    maintain_depth(test_depth_maintainer)
 
     timer = rospy.Timer(rospy.Duration(0.1), depth_maintainer.update)
     rospy.on_shutdown(timer.shutdown)

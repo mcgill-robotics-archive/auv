@@ -55,10 +55,9 @@ if __name__ == '__main__':
     rospy.init_node('maintain_yaw')
     # TODO: investigate actionLib server
 
-    desired_yaw = None
-    if rospy.has_param('~desired_yaw'):
-        desired_yaw = rospy.get_param('~desired_yaw')
-    yaw_maintainer = YawMaintainer(desired_yaw)
+    #change params to args
+    test_yaw_maintainer = sys.argv[1]
+    maintain_yaw(test_yaw_maintainer)
 
     timer = rospy.Timer(rospy.Duration(0.1), yaw_maintainer.update)
     rospy.on_shutdown(timer.shutdown)
