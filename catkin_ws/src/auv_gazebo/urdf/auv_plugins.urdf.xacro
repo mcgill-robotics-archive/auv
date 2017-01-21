@@ -6,6 +6,11 @@
     <plugin name="thruster_plugin" filename="libthruster_plugin.so">
     </plugin>
   </gazebo>
+   
+   <gazebo>
+    <plugin name="depth_plugin" filename="libdepth_plugin.so">
+    </plugin>
+  </gazebo>
 
   <gazebo>
     <plugin name="lifting_surface" filename="libLiftDragPlugin.so">
