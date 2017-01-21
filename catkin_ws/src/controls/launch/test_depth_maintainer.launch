@@ -1,6 +1,6 @@
 <launch>
     <include file="pid_controls.launch" />
     <node name="maintain_depth" pkg="controls" type="maintain_depth.py" respawn="false" output="screen">
-        <param name="desired_depth" type="double" value="5" />
+        <arg name="desired_depth" default="5" />
     </node>
 </launch>
