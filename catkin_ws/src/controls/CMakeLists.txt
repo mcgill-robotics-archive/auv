@@ -11,7 +11,7 @@ find_package(catkin REQUIRED COMPONENTS
 
 add_message_files(
     FILES
-    Pose.msg
+    EulerPose.msg
 )
 
 generate_messages(DEPENDENCIES

@@ -4,7 +4,7 @@
 import rospy
 import tf
 from geometry_msgs.msg import Vector3
-from controls.msg import Pose
+from controls.msg import EulerPose
 from tf import TransformListener
 
 
@@ -16,7 +16,7 @@ class DepthMaintainer():
     def __init__(self, desired_depth=None):
         self.listener = TransformListener()
         self.thrust_pub = rospy.Publisher(
-            'controls/pose_error', Pose, queue_size=10)
+            'controls/pose_error', EulerPose, queue_size=10)
         self.desired_depth = self._set_depth(desired_depth)
 
     def _get_current_depth(self):
@@ -48,7 +48,7 @@ class DepthMaintainer():
         depth_error = self.desired_depth - estimated_depth
         translation = Vector3(None, None, depth_error)
         rotation = Vector3(None, None, None)
-        error = Pose(translation, rotation)
+        error = EulerPose(translation, rotation)
         self.thrust_pub.publish(error)
 
 

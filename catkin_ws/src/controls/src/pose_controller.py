@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 import rospy
 from geometry_msgs.msg import Wrench, Vector3
-from controls.msg import Pose
+from controls.msg import EulerPose
 from PID import PID
 
 
@@ -51,12 +51,12 @@ class PoseController:
         rot.y = self.pitch_pid.update(data.rotation.y)
         rot.z = self.yaw_pid.update(data.rotation.z)
 
-        self.thrust_pub.publish(Pose(trans, rot))
+        self.thrust_pub.publish(EulerPose(trans, rot))
 
 
 if __name__ == '__main__':
     rospy.init_node('controls')
     pose_controller = PoseController()
     update_sub = rospy.Subscriber(
-            'controls/pose_error', Pose, pose_controller.update)
+            'controls/pose_error', EulerPose, pose_controller.update)
     rospy.spin()
