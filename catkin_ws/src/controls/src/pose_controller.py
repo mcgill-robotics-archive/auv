@@ -5,7 +5,7 @@ from controls.msg import Pose
 from PID import PID
 
 
-class Controller:
+class PoseController:
     def __init__(self):
         self.thrust_pub = rospy.Publisher(
                 'controls/wrench', Wrench, queue_size=10)
@@ -56,7 +56,7 @@ class Controller:
 
 if __name__ == '__main__':
     rospy.init_node('controls')
-    controller = Controller()
+    pose_controller = PoseController()
     update_sub = rospy.Subscriber(
-            'controls/error', Pose, controller.update)
+            'controls/pose_error', Pose, pose_controller.update)
     rospy.spin()

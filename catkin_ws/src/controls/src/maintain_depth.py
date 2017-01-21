@@ -16,7 +16,7 @@ class DepthMaintainer():
     def __init__(self, desired_depth=None):
         self.listener = TransformListener()
         self.thrust_pub = rospy.Publisher(
-            'controls/error', Pose, queue_size=10)
+            'controls/pose_error', Pose, queue_size=10)
         self.desired_depth = self._set_depth(desired_depth)
 
     def _get_current_depth(self):

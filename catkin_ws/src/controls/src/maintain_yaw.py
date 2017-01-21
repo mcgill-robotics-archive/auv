@@ -13,7 +13,7 @@ import tf
 class YawMaintainer():
     def __init__(self, desired_yaw):
         self.listener = TransformListener()
-        self.thrust_pub = rospy.Publisher('controls/error', Pose, queue_size=1)
+        self.thrust_pub = rospy.Publisher('controls/pose_error', Pose, queue_size=1)
         self.desired_yaw = self.set_yaw(desired_yaw)
 
     def set_yaw(self, yaw):
