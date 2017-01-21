@@ -3,7 +3,8 @@
 
 import rospy
 import tf
-from geometry_msgs.msg import Wrench, Vector3
+from geometry_msgs.msg import Vector3
+from controls.msg import Pose
 from tf import TransformListener
 
 
@@ -15,7 +16,7 @@ class DepthMaintainer():
     def __init__(self, desired_depth=None):
         self.listener = TransformListener()
         self.thrust_pub = rospy.Publisher(
-            'controls/update', Wrench, queue_size=10)
+            'controls/error', Pose, queue_size=10)
         self.desired_depth = self._set_depth(desired_depth)
 
     def _get_current_depth(self):
@@ -47,8 +48,8 @@ class DepthMaintainer():
         depth_error = self.desired_depth - estimated_depth
         translation = Vector3(None, None, depth_error)
         rotation = Vector3(None, None, None)
-        error_wrench = Wrench(translation, rotation)
-        self.thrust_pub.publish(error_wrench)
+        error = Pose(translation, rotation)
+        self.thrust_pub.publish(error)
 
 
 if __name__ == '__main__':

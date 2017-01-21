@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 import rospy
 from geometry_msgs.msg import Wrench, Vector3
+from controls.msg import Pose
 from PID import PID
 
 
@@ -40,22 +41,22 @@ class Controller:
         """
         Update each DoF when new data is given
         """
-        force = Vector3()
-        force.x = self.surge_pid.update(data.force.x)
-        force.y = self.sway_pid.update(data.force.y)
-        force.z = self.heave_pid.update(data.force.z)
+        trans = Vector3()
+        trans.x = self.surge_pid.update(data.translation.x)
+        trans.y = self.sway_pid.update(data.translation.y)
+        trans.z = self.heave_pid.update(data.translation.z)
 
-        torque = Vector3()
-        torque.x = self.roll_pid.update(data.torque.x)
-        torque.y = self.pitch_pid.update(data.torque.y)
-        torque.z = self.yaw_pid.update(data.torque.z)
+        rot = Vector3()
+        rot.x = self.roll_pid.update(data.rotation.x)
+        rot.y = self.pitch_pid.update(data.rotation.y)
+        rot.z = self.yaw_pid.update(data.rotation.z)
 
-        self.thrust_pub.publish(Wrench(force, torque))
+        self.thrust_pub.publish(Pose(trans, rot))
 
 
 if __name__ == '__main__':
     rospy.init_node('controls')
     controller = Controller()
     update_sub = rospy.Subscriber(
-            'controls/update', Wrench, controller.update)
+            'controls/error', Pose, controller.update)
     rospy.spin()

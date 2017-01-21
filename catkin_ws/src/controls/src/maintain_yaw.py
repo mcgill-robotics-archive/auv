@@ -3,7 +3,8 @@
 
 import rospy
 from math import pi
-from geometry_msgs.msg import Wrench, Vector3
+from geometry_msgs.msg import Vector3
+from controls.msg import Pose
 from tf import TransformListener
 from tf.transformations import euler_from_quaternion
 import tf
@@ -12,7 +13,7 @@ import tf
 class YawMaintainer():
     def __init__(self, desired_yaw):
         self.listener = TransformListener()
-        self.thrust_pub = rospy.Publisher('controls/update', Wrench, queue_size=1)
+        self.thrust_pub = rospy.Publisher('controls/error', Pose, queue_size=1)
         self.desired_yaw = self.set_yaw(desired_yaw)
 
     def set_yaw(self, yaw):
@@ -26,8 +27,8 @@ class YawMaintainer():
         yaw_error = self.normalize_angle(yaw_error)
         translation = Vector3(None, None, None)
         rotation = Vector3(None, None, yaw_error)
-        error_wrench = Wrench(translation, rotation)
-        self.thrust_pub.publish(error_wrench)
+        error = Pose(translation, rotation)
+        self.thrust_pub.publish(error)
 
     def normalize_angle(self, angle, max_angle=pi):
         # Returns angle between -max_angle and max_angle
