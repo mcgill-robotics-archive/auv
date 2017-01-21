@@ -51,7 +51,7 @@ class PoseController:
         rot.y = self.pitch_pid.update(data.rotation.y)
         rot.z = self.yaw_pid.update(data.rotation.z)
 
-        self.thrust_pub.publish(EulerPose(trans, rot))
+        self.thrust_pub.publish(Wrench(trans, rot))
 
 
 if __name__ == '__main__':
