@@ -12,7 +12,7 @@
 #include <std_msgs/Float64.h>
 #include <gazebo_msgs/GetModelState.h>
 
-class DepthPlugin : public gazebo :: ModelPlugin
+class DepthPlugin : public gazebo::ModelPlugin
 {
 public:
     DepthPlugin();
@@ -41,10 +41,14 @@ private:
 
     ros::ServiceClient depth_client_;
 
+    int count;
+
 };//close class DepthPlugin
 
-DepthPlugin::DepthPlugin()
-    {}
+DepthPlugin::DepthPlugin() :
+  count(1)
+{
+}
 
 void DepthPlugin::Load(gazebo::physics::ModelPtr _parent, sdf::ElementPtr _sdf)
 {
@@ -87,18 +91,25 @@ void DepthPlugin::Load(gazebo::physics::ModelPtr _parent, sdf::ElementPtr _sdf)
 
 void DepthPlugin::OnUpdate(const gazebo::common::UpdateInfo & info)
 {
-    gazebo_msgs::GetModelState state;
-    state.request.model_name = "bradbury";
+  count++;
 
-    if(!depth_client_.call(state))
-    {
-        ROS_ERROR("Service call failed");
-    }
+  if (count % 5 != 0)
+  {
+    return;
+  }
 
-    std_msgs::Float64 depth;
-    depth.data = state.response.pose.position.z;
+  gazebo_msgs::GetModelState state;
+  state.request.model_name = "bradbury";
 
-    depth_pub_.publish(depth);
+  if(!depth_client_.call(state))
+  {
+      ROS_ERROR("Service call failed");
+  }
+
+  std_msgs::Float64 depth;
+  depth.data = state.response.pose.position.z * -1;
+
+  depth_pub_.publish(depth);
 }
 
 void DepthPlugin::queueThread()
