@@ -1,0 +1,6 @@
+<?xml version="1.0"?>
+
+<robot xmlns:xacro="http://ros.org/wiki/xacro" name="bradbury">
+   <xacro:include filename="$(find auv_description)/urdf/bradbury.urdf.xacro"/>
+   <xacro:include filename="$(find auv_gazebo)/urdf/auv_plugins.urdf.xacro"/>
+</robot>

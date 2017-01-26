@@ -1,0 +1,23 @@
+<?xml version="1.0"?>
+<package>
+  <name>auv_description</name>
+  <version>0.0.0</version>
+  <description>The auv_description package</description>
+  <maintainer email="yichi.zhang@mail.mcgill.ca">Yichi Zhang</maintainer>
+  <license>BSD</license>
+
+  <buildtool_depend>catkin</buildtool_depend>
+  <build_depend>auv_msgs</build_depend>
+  <build_depend>rospy</build_depend>
+  <build_depend>std_msgs</build_depend>
+  <build_depend>urdf</build_depend>
+  <build_depend>xacro</build_depend>
+  <run_depend>auv_msgs</run_depend>
+  <run_depend>rospy</run_depend>
+  <run_depend>std_msgs</run_depend>
+  <run_depend>urdf</run_depend>
+  <run_depend>xacro</run_depend>
+
+  <export>
+  </export>
+</package>
