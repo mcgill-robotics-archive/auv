@@ -9,7 +9,7 @@ add_executable(XimuPublisher
 )
 
 add_executable(double_int_pose_test
-    src/test.cpp
+    test/test_double_integration.cpp
 )
 
 add_executable(double_int_pose

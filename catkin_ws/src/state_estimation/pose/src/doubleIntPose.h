@@ -2,8 +2,8 @@
  *==============================================================================
  * Name: Double Integration Pose Header
  * Creator: Jeremy Mallette
- * Last Updated: 30/10/2016
- * Updated By:
+ * Last Updated: 01/26/2017
+ * Updated By: Jeremy Mallette
  *
  * "For use with doubleIntPose.cpp"
  *
@@ -16,37 +16,37 @@ using std::abs;
 #ifndef DOUBLEINTPOSE_H
 #define DOUBLEINTPOSE_H
 
-class vector {
+class Integrator {
     private:
         double x;
         double y;
         double z;
 
     public:
-        vector() {
+        Integrator() {
              x = 0.0;
              y = 0.0;
              z = 0.0;
         }
-        vector(double xIn, double yIn, double zIn) {
+        Integrator(double xIn, double yIn, double zIn) {
             x = xIn;
             y = yIn;
             z = zIn;
         }
-        void operator = (const vector &V ) {
+        void operator = (const Integrator &V ) {
             x = V.x;
             y = V.y;
             z = V.z;
         }
 
         void setVector(float xIn, float yIn, float zIn);
-        void integrate(vector curr, vector last, float deltaT);
+        void integrate(Integrator curr, Integrator last, float deltaT);
         float getX();
         float getY();
         float getZ();
 };
 
-void vector::setVector(float xIn, float yIn, float zIn) {
+void Integrator::setVector(float xIn, float yIn, float zIn) {
         x = xIn;
         y = yIn;
         z = zIn;
@@ -73,7 +73,7 @@ float calcCrossArea(float point_1, float point_2, float time) {
     return crossArea;
 }
 
-void vector::integrate(vector curr, vector last, float deltaT) {
+void Integrator::integrate(Integrator curr, Integrator last, float deltaT) {
     if((curr.x >= 0.0) && (last.x >= 0.0)) {
         x += calcAbsArea(curr.x, last.x, deltaT);
     } else if((curr.x <= 0.0) && (last.x <= 0.0)) {
@@ -99,13 +99,13 @@ void vector::integrate(vector curr, vector last, float deltaT) {
     }
 }
 
-float vector::getX() {
+float Integrator::getX() {
     return x;
 }
-float vector::getY() {
+float Integrator::getY() {
     return y;
 }
-float vector::getZ() {
+float Integrator::getZ() {
     return z;
 }
 
