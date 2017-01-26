@@ -17,4 +17,4 @@ scale_angular:
     yaw: 20
 
 enable_button: 0  # Trigger
-ensjsjsable_turbo_button: 1  # Button 2 aka thumb button
+enable_turbo_button: 1  # Button 2 aka thumb button
