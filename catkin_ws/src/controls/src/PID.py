@@ -24,7 +24,7 @@ class PID:
         Calculate PID output value for given error
         """
         if error is None:
-            return self.output 
+            return self.output
 
         self.P_value = self.Kp * error
         self.D_value = self.Kd * (error - self.Derivator)

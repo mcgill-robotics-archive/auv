@@ -1,5 +1,11 @@
 <launch>
-    <node name="maintain_depth" pkg="controls" type="maintain_depth.py" respawn="false" output="screen">
+    <node
+        name="maintain_depth"
+        pkg="controls"
+        type="maintain_depth.py"
+        respawn="false"
+        output="screen">
+            <arg name="depth_desired" value="2.1"/>
     </node>
     <include file="$(find controls)/launch/controls.launch"/>
 </launch>
