@@ -9,6 +9,7 @@
    
    <gazebo>
     <plugin name="depth_plugin" filename="libdepth_plugin.so">
+       <depthNoise>0.01</depthNoise>
     </plugin>
   </gazebo>
 
