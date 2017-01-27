@@ -9,6 +9,7 @@ find_package(catkin REQUIRED COMPONENTS
   geometry_msgs
   pcl_ros
   pcl_conversions
+  pcl_msgs
   message_generation
 )
 
@@ -36,6 +37,8 @@ catkin_package(
     std_msgs
     sensor_msgs
     geometry_msgs
+    pcl_conversions
+    pcl_msgs
     message_generation
 )
 
@@ -46,6 +49,7 @@ catkin_package(
 include_directories(
   include
   ${catkin_INCLUDE_DIRS}
+  ${PCL_INCLUDE_DIRS}
 )
 
 ## Declare a C++ executable
@@ -55,7 +59,7 @@ add_executable(pcl_scan_preprocessor
 
 add_dependencies(pcl_scan_preprocessor ${catkin_EXPORTED_TARGETS} ${${PROJECT_NAME}_EXPORTED_TARGETS})
 
-target_link_libraries(pcl_scan_preprocessor ${catkin_LIBRARIES})
+target_link_libraries(pcl_scan_preprocessor ${catkin_LIBRARIES} ${PCL_LIBRARIES})
 
 #############
 ## Install ##
