@@ -25,8 +25,6 @@ class DepthPlugin : public gazebo::ModelPlugin
 {
 public:
     DepthPlugin();
-    
-    double depth_noise;
 
     //gaussian_noise = std::normal_distribution<>(0, depth_noise);
 
@@ -53,10 +51,12 @@ private:
     gazebo::physics::ModelPtr model_;
     gazebo::event::ConnectionPtr updateConnection_;
     std::string robot_namespace_;
+    std::normal_distribution<> gaussian_noise;
 
     ros::ServiceClient depth_client_;
 
     int count;
+    double depth_noise;
 
 };//close class DepthPlugin
 
@@ -87,7 +87,7 @@ void DepthPlugin::Load(gazebo::physics::ModelPtr _parent, sdf::ElementPtr _sdf)
     //name of node: depth_gazebo_client
     ros::init(argc, argv, "depth_gazebo_client", ros::init_options::NoSigintHandler);
   }
-    
+
   if(_sdf->HasElement("depthNoise"))
   {
     depth_noise = _sdf->Get<double>("depthNoise");
@@ -101,7 +101,7 @@ void DepthPlugin::Load(gazebo::physics::ModelPtr _parent, sdf::ElementPtr _sdf)
   gaussian_noise = std::normal_distribution<>(0,depth_noise);
   //std::normal_distribution<> (0,depth_noise);
   // std::normal_distribution<> gaussian_noise(0, depth_noise);
-    
+
   // Create ROS node.
   nh_.reset(new ros::NodeHandle("depth_gazebo_client"));
 
@@ -139,7 +139,7 @@ void DepthPlugin::OnUpdate(const gazebo::common::UpdateInfo & info)
   depth.data = state.response.pose.position.z * -1;
   //add noise
   depth.data = depth.data + gaussian_noise(gen); //don't think this addition works
-    
+
   depth_pub_.publish(depth);
 }
 
