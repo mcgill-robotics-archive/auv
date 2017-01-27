@@ -12,10 +12,25 @@
 #include <std_msgs/Float64.h>
 #include <gazebo_msgs/GetModelState.h>
 
+#include <iostream>
+#include <iomanip>
+#include <map>
+#include <random>
+#include <cmath>
+
+std::random_device rd;
+std::mt19937 gen(rd());
+
 class DepthPlugin : public gazebo::ModelPlugin
 {
 public:
     DepthPlugin();
+    
+    double depth_noise;
+
+    //gaussian_noise = std::normal_distribution<>(0, depth_noise);
+
+    //std::normal_distribution<> gaussian_noise(std::mt19937&);
 
     void Load(gazebo::physics::ModelPtr _parent, sdf::ElementPtr _sdf);
 
@@ -72,7 +87,21 @@ void DepthPlugin::Load(gazebo::physics::ModelPtr _parent, sdf::ElementPtr _sdf)
     //name of node: depth_gazebo_client
     ros::init(argc, argv, "depth_gazebo_client", ros::init_options::NoSigintHandler);
   }
+    
+  if(_sdf->HasElement("depthNoise"))
+  {
+    depth_noise = _sdf->Get<double>("depthNoise");
+  }
+  else
+  {
+    depth_noise = 0.0;
+    ROS_INFO("depth plugin missing <depthNoise>, defaults to %f", depth_noise);
+  }
 
+  gaussian_noise = std::normal_distribution<>(0,depth_noise);
+  //std::normal_distribution<> (0,depth_noise);
+  // std::normal_distribution<> gaussian_noise(0, depth_noise);
+    
   // Create ROS node.
   nh_.reset(new ros::NodeHandle("depth_gazebo_client"));
 
@@ -108,7 +137,9 @@ void DepthPlugin::OnUpdate(const gazebo::common::UpdateInfo & info)
 
   std_msgs::Float64 depth;
   depth.data = state.response.pose.position.z * -1;
-
+  //add noise
+  depth.data = depth.data + gaussian_noise(gen); //don't think this addition works
+    
   depth_pub_.publish(depth);
 }
 
