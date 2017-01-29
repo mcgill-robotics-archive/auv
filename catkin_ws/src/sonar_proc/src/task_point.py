@@ -45,7 +45,7 @@ DIRECT_APPROACH = [TaskStatus.GATE, TaskStatus.BUOYS, TaskStatus.OCTAGON, TaskSt
 
 # TODO: This has been commented out for testing purposes.
 MANEUVER_DISTANCE = rospy.get_param("sonar_proc/manuever_distance", default=5)
-#MANEUVER_DISTANCE = 2
+
 
 def update_state(data):
     global state
@@ -62,7 +62,6 @@ def centroid_distance(c1, c2):
 
 def task_point(data):
 
-    # TODO: This has been commented out for testing purposes.
     if not state:
         return
 
@@ -82,38 +81,34 @@ def task_point(data):
     taskArr = TaskPointsArray()
     dummyPoint = Point(0, 0, 0)
 
-    # TODO: This has been commented out for testing purposes.
     if state.task in DIRECT_APPROACH:
-    #if 1 == 1:
         for i, cluster in enumerate(data.clusters):
             if not yaxis_index or get_distance(cluster.centroid.y, 0) < yaxis_index[1]:
                 yaxis_index = (i, get_distance(cluster.centroid.y, 0))
-	significant_cluster = data.clusters[yaxis_index[0]]
-	point = Point(significant_cluster.centroid.x, significant_cluster.centroid.y, 0)
-	marker.points = [point]
-	marker.color = ColorRGBA(1, 0, 0, 1)
+        significant_cluster = data.clusters[yaxis_index[0]]
+        point = Point(significant_cluster.centroid.x, significant_cluster.centroid.y, 0)
+        marker.points = [point]
+        marker.color = ColorRGBA(1, 0, 0, 1)
         taskArr.task = point
-	taskArr.pole1 = dummyPoint
+        taskArr.pole1 = dummyPoint
         taskArr.pole2 = dummyPoint
 
-    # TODO: This has been commented out for testing purposes.
     elif state.task == TaskStatus.MANEUVER:
-    #elif 1 == 1:
-	for i, cluster in enumerate(data.clusters):
-	    if i == (len(data.clusters))-1:
-		continue
-            for c in data.clusters[(i+1):]:
+        for i, cluster in enumerate(data.clusters):
+            if i == (len(data.clusters)) - 1:
+                continue
+            for c in data.clusters[(i + 1):]:
                 if not distance or get_distance(centroid_distance(cluster, c), MANEUVER_DISTANCE) < distance[1]:
                     distance = (i, get_distance(centroid_distance(cluster, c), MANEUVER_DISTANCE), c)
-	clusterOne = data.clusters[distance[0]].centroid
-	clusterTwo = distance[2].centroid
-	point = Point(((clusterOne.x + clusterTwo.x)/2), ((clusterOne.y + clusterTwo.y)/2), 0)
-	pointc1 = Point(clusterOne.x, clusterOne.y, 0)
-	pointc2 = Point(clusterTwo.x, clusterTwo.y, 0)
-	marker.points = [pointc1, point, pointc2]
+        clusterOne = data.clusters[distance[0]].centroid
+        clusterTwo = distance[2].centroid
+        point = Point(((clusterOne.x + clusterTwo.x) / 2), ((clusterOne.y + clusterTwo.y) / 2), 0)
+        pointc1 = Point(clusterOne.x, clusterOne.y, 0)
+        pointc2 = Point(clusterTwo.x, clusterTwo.y, 0)
+        marker.points = [pointc1, point, pointc2]
         marker.color = ColorRGBA(0, 1, 0, 1)
         taskArr.task = point
-	taskArr.pole1 = pointc1
+        taskArr.pole1 = pointc1
         taskArr.pole2 = pointc2
 
     else:
@@ -122,6 +117,7 @@ def task_point(data):
     rospy.loginfo(point)
     marker_task.publish(marker)
     pub_goal.publish(taskArr)
+
 
 if __name__ == '__main__':
     rospy.init_node("task_point")
