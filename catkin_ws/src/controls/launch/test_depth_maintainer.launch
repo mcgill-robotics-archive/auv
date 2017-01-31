@@ -1,6 +1,12 @@
 <launch>
-    <include file="pid_controls.launch" />
-    <node name="maintain_depth" pkg="controls" type="maintain_depth.py" respawn="false" output="screen">
-        <arg name="desired_depth" default="5" />
+    <arg name="desired_depth" default="2.1"/>
+    <node
+        name="maintain_depth"
+        pkg="controls"
+        type="maintain_depth.py"
+        respawn="false"
+        output="screen">
+        <param name="desired_depth" value="$(arg desired_depth)"/>
     </node>
+    <include file="$(find controls)/launch/controls.launch"/>
 </launch>
