@@ -55,7 +55,7 @@ if __name__ == '__main__':
     if rospy.has_param('~desired_yaw'):
         desired_yaw = rospy.get_param('~desired_yaw')
     yaw_maintainer = YawMaintainer(desired_yaw * pi / 180)
-
+    rospy.loginfo("The desired yaw is: %s",desired_yaw * pi / 180)
     timer = rospy.Timer(rospy.Duration(0.1), yaw_maintainer.update)
     rospy.on_shutdown(timer.shutdown)
     rospy.spin()

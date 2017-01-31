@@ -54,7 +54,7 @@ if __name__ == '__main__':
     if rospy.has_param('~desired_depth'):
         desired_depth = rospy.get_param('~desired_depth')
     depth_maintainer = DepthMaintainer(desired_depth)
-
+    rospy.loginfo("The desired depth is: %s",desired_depth)
     timer = rospy.Timer(rospy.Duration(0.1), depth_maintainer.update)
     rospy.on_shutdown(timer.shutdown)
     rospy.spin()
