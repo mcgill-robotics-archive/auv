@@ -5,7 +5,6 @@ import rospy
 import tf
 from std_msgs.msg import Float64
 from tf import TransformListener
-import sys
 
 
 class DepthMaintainer():
@@ -56,8 +55,6 @@ if __name__ == '__main__':
         desired_depth = rospy.get_param('~desired_depth')
     depth_maintainer = DepthMaintainer(desired_depth)
 
-    rospy.Subscriber(
-            "state_estimation/depth",
-            Float64,
-            depth_maintainer.update)
+    timer = rospy.Timer(rospy.Duration(0.1), depth_maintainer.update)
+    rospy.on_shutdown(timer.shutdown)
     rospy.spin()

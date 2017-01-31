@@ -7,7 +7,6 @@ from std_msgs.msg import Float64
 from tf import TransformListener
 from tf.transformations import euler_from_quaternion
 import tf
-import sys
 
 
 class YawMaintainer():
