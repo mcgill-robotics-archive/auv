@@ -12,6 +12,7 @@ tf::Vector3 zero(0,0,0);
 tf::Quaternion imuMountToRobotFrame;
 tf::Quaternion imuInternalHorizonToMountPoint;
 tf::Quaternion rawHorizonToRobot;
+tf::Quaternion rotationCorrection;
 
 void imuCallBack(const geometry_msgs::PoseStamped::ConstPtr& msg) {
   ros::Time time(ros::Time::now());
@@ -26,7 +27,9 @@ void imuCallBack(const geometry_msgs::PoseStamped::ConstPtr& msg) {
 
   rawHorizonToRobot = imuMountToRobotFrame.inverse()
                     * imuInternalHorizonToMountPoint.inverse()
-                    * orientation.inverse()*imuMountToRobotFrame;
+                    * orientation.inverse()
+                    * rotationCorrection.inverse()
+                    * imuMountToRobotFrame;
 
   broadcaster.sendTransform(
     tf::StampedTransform(
@@ -55,6 +58,9 @@ int main(int argc, char** argv) {
   ros::NodeHandle node;
   imuMountToRobotFrame.setRPY(0, 0, 0);
   imuInternalHorizonToMountPoint.setRPY(PI, 0, 0);
+  // TODO: try to only use the 2 rotations above
+  // Correction from /robot frame to axes on IMU:
+  rotationCorrection.setRPY(0, 0, -PI/2);
 
   // TODO: Figure out why nothing gets broadcast without this line
   tf::TransformBroadcaster broadcaster;

@@ -11,12 +11,16 @@ import time
 from std_msgs.msg import Float32
 from blinky.msg import *
 from blinky.srv import *
+from auv_msgs.msg import MotorCommands 
 
 import BlinkyTape as bt
+
+import math
 
 # number of leds per blinky segment
 NUM_LED_PER_SIDE = 75
 NUM_LED_PER_STRIP = 25
+NUM_LED_STRIP = 7
 
 # COLORS
 BLACK = RGB(0, 0, 0)
@@ -31,7 +35,8 @@ LIGHT_GREEN = RGB(0, 127, 0)
 # blinky tape class handle (accesses 2 segments)
 # change first argument with usb serial port
 # where the tape is found
-blt = bt.BlinkyTape("/dev/blinky", 2 * NUM_LED_PER_SIDE)
+blt = bt.BlinkyTape("/dev/blinky", NUM_LED_STRIP * NUM_LED_PER_STRIP, 
+        buffered = False)
 
 # Color to separate subsections in the planner segment
 separation_color = RGB(0,0,0)
@@ -51,6 +56,10 @@ warning_freq = 0.0
 
 # Flags indicating whether to display a warning
 warning_on = False
+
+# Speed animation for the middle strip
+animation_index = 0.0
+surge_cmd = 0
 
 # set all leds to (0,0,0)
 def initialize_blinkies():
@@ -148,16 +157,28 @@ def warn_lights(req):
 
     return WarningLightsResponse(0)
 
+def motorcommands(cmd):
+    global surge_cmd
+
+    lock = threading.Lock()
+
+    with lock:
+        surge_cmd = cmd.port_surge + cmd.starboard_surge
 
 def BlinkyTapeServer():
+    global animation_index
+    global surge_cmd
+
     initialize_blinkies()
     time.sleep(0.01)
     rospy.init_node('blinky')
+    
     upl = rospy.Service('update_planner_lights', UpdatePlannerLights, update_planner)
     ub1l = rospy.Service('update_motor_battery_lights', UpdateMotorBatteryLights, update_motor_battery)
     ub2l = rospy.Service('update_computer_battery_lights', UpdateComputerBatteryLights, update_computer_battery)
     wl = rospy.Service('warning_lights', WarningLights, warn_lights)
-
+    rospy.Subscriber('/electrical_interface/motor', MotorCommands, motorcommands, queue_size = 1)
+    
     lock = threading.Lock()
     edge_time = time.time()
     state = 0   # alternates between 0 (normal display) and 1 (warning display)
@@ -176,12 +197,30 @@ def BlinkyTapeServer():
         for m in range(NUM_LED_PER_SIDE):
             rgb = colorList[m]
             blt.sendPixel(rgb.r, rgb.g, rgb.b)
-        for n in range(NUM_LED_PER_SIDE):
-            rgb = colorList[74 - n]
+
+
+        for n in range(NUM_LED_PER_STRIP):
+            rgb = colorList[74-n]
             blt.sendPixel(rgb.r, rgb.g, rgb.b)
+
+
+        for n in range(NUM_LED_PER_STRIP):
+            rgb = colorList[50+n]
+            blt.sendPixel(rgb.r, rgb.g, rgb.b)
+
+
+        for n in range(NUM_LED_PER_STRIP):
+            rgb = colorList[25+n]
+            blt.sendPixel(rgb.r, rgb.g, rgb.b)
+
+
+        for n in range(NUM_LED_PER_STRIP):
+            rgb = colorList[n]
+            blt.sendPixel(rgb.r, rgb.g, rgb.b)
+
         # actually print the led colors on the tape
         blt.show()
-        time.sleep(0.005)
+        time.sleep(0.01)
 
 if __name__ == "__main__":
     BlinkyTapeServer()

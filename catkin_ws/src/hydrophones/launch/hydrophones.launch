@@ -1,7 +1,9 @@
 <launch>
-    <node name="tdoa" type="tdoa.py" pkg="hydrophones" output="screen" respawn="true"/>
-    <node name="nucleo" type="nucleo.py" pkg="nucleo" output="screen" respawn="true">
-      <param name="twelve_bit_mode" value="true"/>
-      <param name="buffersize" value="1024"/>
-    </node>
+  <arg name="frequency" default="30000" />
+
+  <node name="nucleo" pkg="nucleo" type="nucleo.py" output="screen">
+  </node>
+  <node name="hydrophones" pkg="hydrophones" type="tdoa.py" output="screen">
+    <param name="desired_freq" value="$(arg frequency)" />
+  </node>
 </launch>

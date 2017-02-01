@@ -12,7 +12,7 @@
 
 ros::NodeHandle nh;
 
-Servo myservo[6];
+Servo myservo[8];
 
 unsigned long externalTempSchedule = 0;
 unsigned long powerMonitorSchedule = 0;
@@ -37,8 +37,6 @@ ros::Publisher motorCurrentPub("~motor_current", &motorCurrent_m);
 
 ros::Publisher missionPub("/mission",&mission_m);
 
-
-
 int boundCheck(int motorCommandValue){
   if(motorCommandValue> 500 || motorCommandValue< -500){
     char msg[80];
@@ -62,64 +60,26 @@ void writeMotorT100 (uint8_t motorNumber, int motorCommandValue)
   myservo[motorNumber].writeMicroseconds(MOTOR_T100_RST_VALUE + lastMotorCommands[motorNumber]);
 }
 
-void writeMotorSeabotix (uint8_t motorPin, uint8_t enablePin, int motorCommandValue)
-{
-  int difference = motorCommandValue-lastMotorCommands[enablePin];
-  if(abs(difference) < THRESHOLD_MOTOR)
-    lastMotorCommands[enablePin] = boundCheck(motorCommandValue);
-
-  else if (difference > 0)
-    lastMotorCommands[enablePin] = boundCheck(lastMotorCommands[enablePin] + THRESHOLD_MOTOR);
-  else
-    lastMotorCommands[enablePin] = boundCheck(lastMotorCommands[enablePin] - THRESHOLD_MOTOR);
-
-  if(abs(lastMotorCommands[enablePin]) > MOTOR_SEABOTICX_DEADBAND)
-    digitalWrite(enablePin,HIGH);
-  else
-    digitalWrite(enablePin,LOW);
-
-  analogWrite(motorPin, MOTOR_SEABOTIX_RST_VALUE + lastMotorCommands[enablePin]);
-}
-
 void motorCb( const auv_msgs::MotorCommands& msg){
   if(mission_m.data){
     timeLastMotorCommand = millis();
-    writeMotorT100(MOTOR_PIN_PORT_SURGE,
-                   msg.stern_sway);
-    writeMotorT100(MOTOR_PIN_STARBOARD_SURGE,
-                   msg.bow_sway);
-    writeMotorT100(MOTOR_PIN_PORT_BOW_HEAVE,
-                   msg.starboard_bow_heave);
-    writeMotorT100(MOTOR_PIN_STARBOARD_BOW_HEAVE,
-                   msg.port_bow_heave);
-    writeMotorT100(MOTOR_PIN_PORT_STERN_HEAVE,
-                   msg.starboard_stern_heave);
-    writeMotorT100(MOTOR_PIN_STARBOARD_STERN_HEAVE,
-                   msg.port_stern_heave);
-    writeMotorSeabotix(MOTOR_PIN_STARBOARD_SWAY,
-                       MOTOR_ENABLE_PIN_STARBOARD_SWAY,
-                       msg.port_surge);
-    writeMotorSeabotix(MOTOR_PIN_PORT_SWAY,
-                       MOTOR_ENABLE_PIN_PORT_SWAY,
-                       msg.starboard_surge);
+    writeMotorT100(MOTOR_PIN_STERN_SWAY, msg.stern_sway);
+    writeMotorT100(MOTOR_PIN_BOW_SWAY, msg.bow_sway);
+    writeMotorT100(MOTOR_PIN_STARBOARD_BOW_HEAVE, msg.starboard_bow_heave);
+    writeMotorT100(MOTOR_PIN_PORT_BOW_HEAVE, msg.port_bow_heave);
+    writeMotorT100(MOTOR_PIN_STARBOARD_STERN_HEAVE, msg.starboard_stern_heave);
+    writeMotorT100(MOTOR_PIN_PORT_STERN_HEAVE, msg.port_stern_heave);
+    writeMotorT100(MOTOR_PIN_PORT_SURGE, msg.port_surge);
+    writeMotorT100(MOTOR_PIN_STARBOARD_SURGE, msg.starboard_surge);
   } else {
     nh.logwarn("Motor commands received while mission off!! Commands IGNORED!!");
   }
 }
 
 void resetMotor(){
-  myservo[0].writeMicroseconds(MOTOR_T100_RST_VALUE);
-  myservo[1].writeMicroseconds(MOTOR_T100_RST_VALUE);
-  myservo[2].writeMicroseconds(MOTOR_T100_RST_VALUE);
-  myservo[3].writeMicroseconds(MOTOR_T100_RST_VALUE);
-  myservo[4].writeMicroseconds(MOTOR_T100_RST_VALUE);
-  myservo[5].writeMicroseconds(MOTOR_T100_RST_VALUE);
-  analogWrite(MOTOR_PIN_STARBOARD_SWAY, MOTOR_SEABOTIX_RST_VALUE);
-  analogWrite(MOTOR_PIN_PORT_SWAY, MOTOR_SEABOTIX_RST_VALUE);
-  digitalWrite(MOTOR_ENABLE_PIN_STARBOARD_SWAY, LOW);
-  digitalWrite(MOTOR_ENABLE_PIN_PORT_SWAY, LOW);
   for(int i = 0; i < 8; i++){
-  lastMotorCommands[i] = 0;
+    lastMotorCommands[i] = 0;
+    myservo[i].writeMicroseconds(MOTOR_T100_RST_VALUE);
   }
   nh.loginfo("Motors got reset!");
 }
@@ -159,27 +119,14 @@ ros::Subscriber<auv_msgs::MotorCommands> motorSub("~motor", &motorCb );
 void motorInit(){
 
   //Setup for T100, normal servo control
+  myservo[MOTOR_PIN_STERN_SWAY].attach(MOTOR_PIN_STERN_SWAY);
+  myservo[MOTOR_PIN_BOW_SWAY].attach(MOTOR_PIN_BOW_SWAY);
+  myservo[MOTOR_PIN_STARBOARD_BOW_HEAVE].attach(MOTOR_PIN_STARBOARD_BOW_HEAVE);
+  myservo[MOTOR_PIN_PORT_BOW_HEAVE].attach(MOTOR_PIN_PORT_BOW_HEAVE);
+  myservo[MOTOR_PIN_STARBOARD_STERN_HEAVE].attach(MOTOR_PIN_STARBOARD_STERN_HEAVE);
+  myservo[MOTOR_PIN_PORT_STERN_HEAVE].attach(MOTOR_PIN_PORT_STERN_HEAVE);
   myservo[MOTOR_PIN_PORT_SURGE].attach(MOTOR_PIN_PORT_SURGE);
   myservo[MOTOR_PIN_STARBOARD_SURGE].attach(MOTOR_PIN_STARBOARD_SURGE);
-  myservo[MOTOR_PIN_PORT_BOW_HEAVE].attach(MOTOR_PIN_PORT_BOW_HEAVE);
-  myservo[MOTOR_PIN_STARBOARD_BOW_HEAVE].attach(MOTOR_PIN_STARBOARD_BOW_HEAVE);
-  myservo[MOTOR_PIN_PORT_STERN_HEAVE].attach(MOTOR_PIN_PORT_STERN_HEAVE);
-  myservo[MOTOR_PIN_STARBOARD_STERN_HEAVE].attach(MOTOR_PIN_STARBOARD_STERN_HEAVE);
-
-  //Setup for Seabotix, PWM with highier frequency
-  //Calling frequency change will affect both pin
-  analogWriteFrequency(MOTOR_PIN_STARBOARD_SWAY,PWM_FREQUENCY);
-
-  // Change the resolution to 0 - 1023
-  analogWriteResolution(10);
-
-  //Enable status pins
-  pinMode(STATUS_PIN_FAULT, INPUT);
-  pinMode(STATUS_PIN_OTW, INPUT);
-
-  //Enable enable pins
-  pinMode(MOTOR_ENABLE_PIN_STARBOARD_SWAY, OUTPUT);
-  pinMode(MOTOR_ENABLE_PIN_PORT_SWAY, OUTPUT);
 
   resetMotor();
 }
@@ -257,20 +204,6 @@ void loop(){
   if(MissionSchedule < currentTime){
     missionPub.publish(&mission_m);
     MissionSchedule += MISSION_INTERVAL;
-    toggleLed();
-  }
-
-
-  if(MotorStatusSchedule < currentTime){
-    if(mission_m.data){
-      if(!digitalRead(STATUS_PIN_FAULT)){
-        nh.logerror("Seabotix fault rrror!");
-      }
-      if(!digitalRead(STATUS_PIN_OTW)){
-        nh.logerror("Seabotix OTW error!");
-      }
-    }
-    MotorStatusSchedule += MOTOR_STATUS_INTERVAL;
     toggleLed();
   }
 

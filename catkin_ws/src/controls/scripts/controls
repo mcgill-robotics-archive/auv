@@ -1,24 +1,28 @@
 #!/usr/bin/env python
 from math import pi
+from math import fabs
 import numpy as np
 import rospy
 from geometry_msgs.msg import Wrench
 from auv_msgs.msg import (
-    SetVelocityAction, SetVelocityFeedback, SetVelocityResult, SetPositionAction,
-    SetPositionFeedback, TDOAs, AcousticServoAction, AcousticServoFeedback)
+    SetVelocityAction, SetVelocityFeedback, SetVelocityResult,
+    SetPositionAction, SetPositionFeedback,
+    VisualServoAction, VisualServoFeedback, VisualServoResult)
 import tf
-from tf.transformations import euler_from_quaternion, euler_matrix
+from tf.transformations import euler_from_quaternion
 from actionlib import SimpleActionServer
 from std_msgs.msg import Bool
 
 # flake8 wants these declared up here
 pos_server = None
 vel_server = None
-hydro_server = None
+vservo_server = None
 
 depth_desired = 0.0
 depth_estimated = 0.0
+depth_vservo_no_target = 0.0
 angles_desired = np.zeros(3)
+angles_estimated = np.zeros(3)
 proportional_error = np.zeros(4)
 integral_error = np.zeros(4)
 
@@ -28,37 +32,34 @@ pos_desired = np.zeros(2)
 pos_integral_error = np.zeros(2)
 pos_proportional_error = np.zeros(2)
 
-# Acoustic servoing
-tdoas = np.zeros(2)
-tdoas_integral = np.zeros(2)
-tdoas = np.zeros(2)
-
 # Absolute value
 surge_speed = 0.0
 sway_speed = 0.0
 
+# Error tolerances
+yaw_error_tol = 0.1
+x_error_tol = 0.05
+y_error_tol = 0.05
+depth_error_tol = 0.05
+
 server = None
 listener = None
-wrenchPublisher = None
+wrench_publisher = None
 mission = False
-
-# For testing
-# angles_estimated = [0,0,0]
-#depth_estimated = 10
 
 
 def normalize_angle(angle, max_angle=pi):
     # Returns angle between -max_angle and max_angle
     angle = angle % (2 * pi)
     if angle > pi:
-        angle -= 2*pi
+        angle -= 2 * pi
     return angle
 
 
 def set_velocity_callback():
     global angles_desired, surge_speed, sway_speed, depth_desired, last_heading
     set_position_preempt()
-    acoustic_servo_preempt()
+    visual_servo_preempt()
     cmd = vel_server.accept_new_goal().cmd
     angles_desired[0] = cmd.roll
     angles_desired[1] = cmd.pitch
@@ -67,13 +68,13 @@ def set_velocity_callback():
     sway_speed = cmd.swaySpeed
     depth_desired = cmd.depth
     last_heading = cmd.yaw
-    print 'Received New Goal'
-    print cmd
+    rospy.loginfo('Received New Goal: {}'.format(cmd))
+
 
 def set_position_callback():
     global angles_desired, pos_desired, depth_desired, target_frame_id
     set_velocity_preempt()
-    acoustic_servo_preempt()
+    visual_servo_preempt()
     cmd = pos_server.accept_new_goal().cmd
     target_frame_id = cmd.target_frame_id
     angles_desired[0] = cmd.roll
@@ -84,15 +85,17 @@ def set_position_callback():
     depth_desired = cmd.depth
 
 
-def acoustic_servo_callback():
-    global angles_desired, depth_desired
-    set_position_preempt()
+def visual_servo_callback():
+    global angles_desired, angles_estimated, target_frame_id, depth_estimated
+    global depth_vservo_no_target
     set_velocity_preempt()
-    cmd = hydro_server.accept_new_goal().cmd
+    set_position_preempt()
+    cmd = vservo_server.accept_new_goal().cmd
+    target_frame_id = cmd.target_frame_id
     angles_desired[0] = cmd.roll
     angles_desired[1] = cmd.pitch
     angles_desired[2] = cmd.yaw
-    depth_desired = cmd.depth
+    depth_vservo_no_target = depth_estimated
 
 
 def set_velocity_preempt():
@@ -105,9 +108,9 @@ def set_position_preempt():
         pos_server.set_preempted()
 
 
-def acoustic_servo_preempt():
-    if hydro_server.is_active():
-        hydro_server.set_preempted()
+def visual_servo_preempt():
+    if vservo_server.is_active():
+        vservo_server.set_preempted()
 
 
 def get_transform(origin_frame, target_frame):
@@ -129,51 +132,43 @@ def mission_cb(msg):
     mission = msg.data
 
 
-def hydro_cb(msg):
-    global tdoas
-    tdoas = np.array([
-        (msg.port_bow_port_stern +
-         (msg.port_bow_starboard_stern - msg.port_bow_starboard_bow))/2.0,
-        (msg.port_bow_starboard_bow +
-         (msg.port_bow_starboard_stern - msg.port_bow_port_stern))/2.0])
-
-
-def rosInit():
-    global wrenchPublisher, listener, pos_server, vel_server
-    global mission_sub, hydro_sub, hydro_server
+def ros_init():
+    global wrench_publisher, listener, pos_server, vel_server, vservo_server
+    global mission_sub
 
     rospy.init_node('controls')
 
     mission_sub = rospy.Subscriber('mission', Bool, mission_cb)
-    hydro_sub = rospy.Subscriber('hydrophones', TDOAs, hydro_cb)
+
     listener = tf.TransformListener()
-    vel_server = SimpleActionServer(
-        'controls_velocity',
-        SetVelocityAction,
-        auto_start=False)
+
+    vel_server = SimpleActionServer('controls_velocity',
+                                    SetVelocityAction,
+                                    auto_start=False)
     vel_server.register_goal_callback(set_velocity_callback)
     vel_server.register_preempt_callback(set_velocity_preempt)
     vel_server.start()
-    pos_server = SimpleActionServer(
-        'controls_position',
-        SetPositionAction,
-        auto_start=False)
+
+    pos_server = SimpleActionServer('controls_position',
+                                    SetPositionAction,
+                                    auto_start=False)
     pos_server.register_goal_callback(set_position_callback)
     pos_server.register_preempt_callback(set_position_preempt)
     pos_server.start()
-    hydro_server = SimpleActionServer(
-        'controls_hydro',
-        AcousticServoAction,
-        auto_start=False)
-    hydro_server.register_goal_callback(acoustic_servo_callback)
-    hydro_server.register_preempt_callback(acoustic_servo_preempt)
-    hydro_server.start()
-    wrenchPublisher = rospy.Publisher(
-        'controls/wrench',
-        Wrench,
-        queue_size=100)
+
+    vservo_server = SimpleActionServer('controls_vservo',
+                                       VisualServoAction,
+                                       auto_start=False)
+    vservo_server.register_goal_callback(visual_servo_callback)
+    vservo_server.register_preempt_callback(visual_servo_preempt)
+    vservo_server.start()
+
+    wrench_publisher = rospy.Publisher('controls/wrench',
+                                       Wrench,
+                                       queue_size=100)
     # Maybe we can use rospy.wait_for_message instead of this?
     t = rospy.Time.now() + rospy.Duration.from_sec(1)
+
     while rospy.Time.now() < t:
         try:
             get_transform("initial_horizon", "robot")
@@ -185,48 +180,63 @@ def rosInit():
 
 def loop(event):
     global pos_proportional_error, pos_integral_error, proportional_error
-    global integral_error, tdoas_prev, tdoas_integral
-    global angles_estimated, depth_estimated, surge_speed
+    global integral_error
+    global angles_estimated, depth_estimated, depth_desired, surge_speed
+    global depth_vservo_no_target
 
     if not mission:
         return
-    if not (pos_server.is_active() or vel_server.is_active()
-            or hydro_server.is_active()):
+    if not (pos_server.is_active() or
+            vel_server.is_active() or
+            vservo_server.is_active()):
+        rospy.logwarn("No actionlib server is active")
         return
 
     try:
         # Velocity control is open-loop
-        fx = surge_coeff*surge_speed
-        fy = sway_coeff*sway_speed
+        fx = surge_coeff * surge_speed
+        fy = sway_coeff * sway_speed
 
         # TODO: Use one get_transform
         (trans, rot) = get_transform("/initial_horizon", "/robot")
-        angles_estimated = list(euler_from_quaternion(rot))
+        # Use static frame, RPY
+        angles_estimated = list(euler_from_quaternion(rot, axes='sxyz'))
         (trans, rot) = get_transform('/floating_horizon', '/robot')
         depth_estimated = trans[2]
-        # angles_estimated[2] += 0.05
+        # For Testing: angles_estimated[2] += 0.05
 
         if pos_server.is_active():
-            (x_err, y_err, _), quaternion = \
-                get_transform(target_frame_id, '/horizon')
+            (x_err, y_err, _), quaternion = get_transform(target_frame_id,
+                                                          '/horizon')
             yaw_err = euler_from_quaternion(quaternion)[2]
             pos_proportional_error_prev = pos_proportional_error
             pos_proportional_error = pos_desired - np.array([x_err, y_err])
             pos_integral_error += pos_proportional_error * dt
-            pos_derivative_error = (pos_proportional_error
-                                    - pos_proportional_error_prev)/dt
-            fx, fy = (pos_integral_error * pos_integral_gains
-                      + pos_proportional_error * pos_proportional_gains
-        
-                      + pos_derivative_error * pos_derivative_gains)
+            pos_derivative_error = (pos_proportional_error -
+                                    pos_proportional_error_prev) / dt
+            fx, fy = (pos_integral_error * pos_integral_gains +
+                      pos_proportional_error * pos_proportional_gains +
+                      pos_derivative_error * pos_derivative_gains)
             angles_estimated[2] = yaw_err
-        elif hydro_server.is_active():
-            tdoas_prev = tdoas
-            tdoas_integral += tdoas * dt
-            tdoas_derivative = (tdoas - tdoas_prev)/dt
-            fx, fy = (tdoas_integral * hydro_integral_gains
-                      + tdoas * hydro_proportional_gains
-                      + tdoas_derivative * tdoas_derivative)
+        elif vservo_server.is_active():
+            rospy.loginfo("Visual Servo Server Active")
+            (x_err, y_err, z_err), quaternion = get_transform('/robot',
+                                                              target_frame_id)
+            pos_proportional_error_prev = pos_proportional_error
+            pos_proportional_error = np.array([x_err, y_err])
+            pos_integral_error += pos_proportional_error * dt
+            pos_derivative_error = (pos_proportional_error -
+                                    pos_proportional_error_prev) / dt
+            fx, fy = (pos_integral_error * pos_integral_gains +
+                      pos_proportional_error * pos_proportional_gains +
+                      pos_derivative_error * pos_derivative_gains)
+
+            if z_err == 0:  # keep latest depth before vservo lost target
+                depth_desired = depth_vservo_no_target
+                rospy.logwarn("Not seeing target, setting depth_desired to depth_vservo_no_target: %f", depth_vservo_no_target)
+            else:
+                depth_desired = depth_estimated + z_err
+                depth_vservo_no_target = depth_desired
 
         proportional_error_prev = proportional_error.copy()
         proportional_error[0:3] = angles_desired - angles_estimated
@@ -234,21 +244,10 @@ def loop(event):
         integral_error += proportional_error * dt
         derivative_error = (proportional_error - proportional_error_prev) / dt
 
-        print 'angles_estimated'
-        print angles_estimated
-        print 'angles_desired'
-        print angles_desired
-
-        print 'depth_estimated'
-        print depth_estimated
-        print 'depth_desired'
-        print depth_desired
-
-        print "surge speed"
-        print surge_speed
-
-        print "fx: "
-        print fx
+        rospy.logdebug('angles_estimated: {}'.format(angles_estimated))
+        rospy.logdebug('angles_desired: {}'.format(angles_desired))
+        rospy.logdebug('depth_estimated: {}'.format(depth_estimated))
+        rospy.logdebug('depth_desired: {}'.format(depth_desired))
 
         # Correct yaw angle error for wrap around. The other angles are
         # not corrected only small roll and pitch are supported.
@@ -261,7 +260,9 @@ def loop(event):
             feedback.yaw_error = proportional_error[2]
             feedback.depth_error = proportional_error[3]
             vel_server.publish_feedback(feedback)
-            if feedback.yaw_error < 0.1:
+            rospy.logdebug("feedback.depth_error: %f", feedback.depth_error)
+            if (fabs(feedback.yaw_error) < yaw_error_tol and
+               fabs(feedback.depth_error) < depth_error_tol):
                 # Close enough, tell client we're done turning
                 result = SetVelocityResult()
                 result.success = True
@@ -273,41 +274,58 @@ def loop(event):
             feedback.x_error = pos_proportional_error[0]
             feedback.y_error = pos_proportional_error[1]
             pos_server.publish_feedback(feedback)
-        elif hydro_server.is_active():
-            feedback = AcousticServoFeedback()
-            feedback.yaw_error = proportional_error[2]
-            feedback.depth_error = proportional_error[3]
+        elif vservo_server.is_active():
+            feedback = VisualServoFeedback()
             feedback.x_error = pos_proportional_error[0]
             feedback.y_error = pos_proportional_error[1]
-            pos_server.publish_feedback(feedback)
+            feedback.depth_error = proportional_error[3]
+            vservo_server.publish_feedback(feedback)
 
-        output = (integral_error * integral_gains
-                  + proportional_error * proportional_gains
-                  + derivative_error * derivative_gains)
+            # Must be greater than exact zero to make sure
+            # we don't return success when object is lost:
+            if (0 < fabs(feedback.y_error) < 0.1 and
+               0 < fabs(feedback.depth_error) < 0.1):
+                result = VisualServoResult()
+                result.success = True
+                vservo_server.set_succeeded(result)
 
-        rospy.loginfo("Integral Error {}".format(integral_error))
+        output = (integral_error * integral_gains +
+                  proportional_error * proportional_gains +
+                  derivative_error * derivative_gains)
+
+        rospy.logdebug("Proportional Error: {}".format(proportional_error))
+        rospy.logdebug("Integral Error {}".format(integral_error))
+        rospy.logdebug("Derivative Error {}".format(derivative_error))
 
         # Need to transform the desired force into the body frame
         # for thrustmapper.
-        matrix = euler_matrix(angles_estimated[0], angles_estimated[1], 0).T
-        # force = np.dot(matrix, [fx, fy, output[3] + 8, 1])[:3]
-        force = np.dot(matrix, [fx, fy, output[3], 1])[:3]
+        # Use the following lines to add force correction based on angle erros:
+        # matrix = euler_matrix(angles_estimated[0], angles_estimated[1], 0).T
+        # force = np.dot(matrix, [fx, fy, output[3], 1])[:3]
+        # Use the line below to ignore the effects of angle errors
+        # on translation (to avoid unexpected sway):
+        force = [fx, fy, output[3]]
 
-        wrenchMsg = Wrench()
-        wrenchMsg.force.x = force[0]
-        wrenchMsg.force.y = force[1]
-        wrenchMsg.force.z = force[2]
-        wrenchMsg.torque.x = output[0]
-        wrenchMsg.torque.y = output[1]
-        wrenchMsg.torque.z = output[2]
-        wrenchPublisher.publish(wrenchMsg)
+        # Remove negative z forces to account for the robot's buoyancy
+        if force[2] < 0:
+            rospy.loginfo("Negative z force being corrected to 0")
+            force[2] = 0
+
+        wrench_msg = Wrench()
+        wrench_msg.force.x = force[0]
+        wrench_msg.force.y = force[1]
+        wrench_msg.force.z = force[2]
+        wrench_msg.torque.x = output[0]
+        wrench_msg.torque.y = output[1]
+        wrench_msg.torque.z = output[2]
+        wrench_publisher.publish(wrench_msg)
     except tf.Exception as e:
         rospy.logerr(e)
 
 
 if __name__ == '__main__':
     global integral_gains, proportional_gains, derivative_gains, dt
-    rosInit()
+    ros_init()
     integral_gains = np.array([
         rospy.get_param("~ki_roll"),
         rospy.get_param("~ki_pitch"),
@@ -332,18 +350,14 @@ if __name__ == '__main__':
     pos_derivative_gains = np.array([
         rospy.get_param('~kd_xPos'),
         rospy.get_param('~kd_yPos')])
-    hydro_integral_gains = np.array([
-        rospy.get_param('~ki_xHydro'),
-        rospy.get_param('~ki_yHydro')])
-    hydro_proportional_gains = np.array([
-        rospy.get_param('~kp_xHydro'),
-        rospy.get_param('~kp_yHydro')])
-    hydro_derivative_gains = np.array([
-        rospy.get_param('~kd_xHydro'),
-        rospy.get_param('~kd_yHydro')])
 
     surge_coeff = rospy.get_param("~surge_coeff")
     sway_coeff = rospy.get_param("~sway_coeff")
+
+    yaw_error_tol = rospy.get_param("~yaw_error_tol")
+    x_error_tol = rospy.get_param("~x_error_tol")
+    y_error_tol = rospy.get_param("~y_error_tol")
+    depth_error_tol = rospy.get_param("~depth_error_tol")
 
     dt = 0.1
     timer = rospy.Timer(rospy.Duration(dt), loop)

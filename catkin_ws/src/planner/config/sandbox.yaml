@@ -1,0 +1,7 @@
+tasks:
+  - name:  INITIALIZE  # name of the state     
+    server: initialize_task  # name of the action server
+  - name: BUOY
+    server: buoy_task
+  - name: MANEUVER
+    server: maneuver_task

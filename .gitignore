@@ -1,6 +1,8 @@
 # ROS
 catkin_ws/build
 catkin_ws/devel
+catkin_ws/logs
+.catkin_tools/
 
 # Python
 *.py[cod]
@@ -13,3 +15,13 @@ catkin_ws/devel
 *.swo
 *.swp
 .DS_Store
+
+# Compiled files
+*.o
+*.d
+*.bin
+*.map
+*.elf
+
+# pycharm
+.idea/

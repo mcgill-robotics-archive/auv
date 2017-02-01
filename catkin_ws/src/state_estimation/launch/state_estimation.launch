@@ -13,13 +13,20 @@
 	/>
 
 	<node
-		name="initialize_horizon"
-		type="initialize_horizon"
+		name="target_broadcaster"
+		type="target_broadcaster"
 		pkg="state_estimation"
 	/>
 
-    <node name="depth" type="depth" pkg="state_estimation">
-        <param name="offset" value="0.00" />
-        <param name="window" value="10" />
-    </node>
+	<node name="initialize_horizon" type="initialize_horizon" pkg="state_estimation">
+    <param name="yaw_drift_tolerance" value="1" />  <!-- in rad/sec -->
+  </node>
+
+  <node name="depth" type="depth" pkg="state_estimation">
+    <param name="offset" value="0.00" />
+    <param name="window" value="10" />
+  </node>
+
+  <node name="state_publisher" type="state_publisher" pkg="state_estimation">
+  </node>
 </launch>
