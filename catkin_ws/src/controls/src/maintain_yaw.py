@@ -49,13 +49,17 @@ class YawMaintainer():
 
 if __name__ == '__main__':
     rospy.init_node('maintain_yaw')
-    # TODO: investigate actionLib server
 
     desired_yaw = None
     if rospy.has_param('~desired_yaw'):
         desired_yaw = rospy.get_param('~desired_yaw')
+        print(desired_yaw)
+        rospy.loginfo("The desired yaw is: %s degrees", desired_yaw)
+    else:
+        rospy.loginfo("Maintaining yaw")
+
     yaw_maintainer = YawMaintainer(desired_yaw * pi / 180)
-    rospy.loginfo("The desired yaw is: %s",desired_yaw * pi / 180)
+
     timer = rospy.Timer(rospy.Duration(0.1), yaw_maintainer.update)
     rospy.on_shutdown(timer.shutdown)
     rospy.spin()
