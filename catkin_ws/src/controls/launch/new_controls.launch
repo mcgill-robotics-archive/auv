@@ -1,6 +1,6 @@
 <launch>
     <!-- Launch both nodes -->
-    <node name="controls" pkg="controls" type="pose_controls.py" respawn="false" output="screen">
+    <node name="controls" pkg="controls" type="pose_controller.py" respawn="false" output="screen">
     	<rosparam command="load" file="$(find controls)/config/params.yaml" />
     </node>
     <node name="thrust_mapper" pkg="controls" type="thrust_mapper" respawn="false" output="screen">
