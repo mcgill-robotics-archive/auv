@@ -37,3 +37,7 @@ list(APPEND CMAKE_CXX_FLAGS "${GAZEBO_CXX_FLAGS}")
 add_library(thruster_plugin src/thruster_plugin.cpp)
 target_link_libraries(thruster_plugin ${catkin_LIBRARIES} ${GAZEBO_LIBRARIES} ${Boost_LIBRARIES})
 add_dependencies(thruster_plugin ${catkin_EXPORTED_TARGETS} ${${PROJECT_NAME}_EXPORTED_TARGETS})
+
+add_library(depth_plugin src/depth_plugin.cpp)
+target_link_libraries(depth_plugin ${catkin_LIBRARIES} ${GAZEBO_LIBRARIES} ${Boost_LIBRARIES})
+add_dependencies(depth_plugin ${catkin_EXPORTED_TARGETS} ${${PROJECT_NAME}_EXPORTED_TARGETS})
