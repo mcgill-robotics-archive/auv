@@ -34,17 +34,13 @@ from std_msgs.msg._ColorRGBA import ColorRGBA
 from auv_msgs.msg import TaskPointsArray
 
 state = None
-# TODO: refactor this list into a config file
-
-# TODO: This has been commented out for testing purposes.
 DIRECT_APPROACH = [TaskStatus.GATE, TaskStatus.BUOYS, TaskStatus.OCTAGON, TaskStatus.SQUARE, TaskStatus.TORPEDO]
 
 # TODO: this is a completely made-up value
 # needs adjusting to the real thing
 # this is the distance between the "manuever centroids"
 
-# TODO: This has been commented out for testing purposes.
-MANEUVER_DISTANCE = rospy.get_param("sonar_proc/manuever_distance", default=5)
+MANEUVER_LENGTH = rospy.get_param("~manuever_length", default=5)
 
 
 def update_state(data):
@@ -98,8 +94,8 @@ def task_point(data):
             if i == (len(data.clusters)) - 1:
                 continue
             for c in data.clusters[(i + 1):]:
-                if not distance or get_distance(centroid_distance(cluster, c), MANEUVER_DISTANCE) < distance[1]:
-                    distance = (i, get_distance(centroid_distance(cluster, c), MANEUVER_DISTANCE), c)
+                if not distance or get_distance(centroid_distance(cluster, c), MANEUVER_LENGTH) < distance[1]:
+                    distance = (i, get_distance(centroid_distance(cluster, c), MANEUVER_LENGTH), c)
         clusterOne = data.clusters[distance[0]].centroid
         clusterTwo = distance[2].centroid
         point = Point(((clusterOne.x + clusterTwo.x) / 2), ((clusterOne.y + clusterTwo.y) / 2), 0)
@@ -122,7 +118,6 @@ def task_point(data):
 if __name__ == '__main__':
     rospy.init_node("task_point")
     rospy.Subscriber("sonar_proc/cluster_data", ClusterArray, task_point, queue_size=1)
-    # TODO: This has been commented out for testing purposes.
     rospy.Subscriber("/task", TaskStatus, update_state, queue_size=1)
     marker_task = rospy.Publisher("sonar_proc/task_viz", Marker, queue_size=1)
     pub_goal = rospy.Publisher("sonar_proc/task_point", TaskPointsArray, queue_size=1)
