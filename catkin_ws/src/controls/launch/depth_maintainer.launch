@@ -8,5 +8,5 @@
         output="screen">
         <param name="desired_depth" value="$(arg desired_depth)"/>
     </node>
-    <include file="$(find controls)/launch/controls.launch"/>
+    <include file="$(find controls)/launch/new_controls.launch"/>
 </launch>
