@@ -82,6 +82,7 @@ void spin() {
             imu.linear_acceleration.x = ims.accX;
             imu.linear_acceleration.y = ims.accY;
             imu.linear_acceleration.z = ims.accZ;
+            imu.header.stamp = ros::Time::now();
             rawPub.publish(imu);
         }
 

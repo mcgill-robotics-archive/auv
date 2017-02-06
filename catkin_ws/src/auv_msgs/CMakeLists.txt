@@ -34,6 +34,10 @@ add_message_files(
 
   # Added by Taskr
   TaskStatus.msg
+
+  # Added by Sonar
+  TaskPointsArray.msg
+
 )
 
 add_service_files(FILES

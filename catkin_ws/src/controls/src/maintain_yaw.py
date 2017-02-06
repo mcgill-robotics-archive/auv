@@ -13,7 +13,7 @@ class YawMaintainer():
     def __init__(self, desired_yaw):
         self.listener = TransformListener()
         self.yaw_error_pub = rospy.Publisher(
-                'controls/error/yaw', Float64, queue_size=1)
+            'controls/error/yaw', Float64, queue_size=1)
         self.desired_yaw = self.set_yaw(desired_yaw)
 
     def set_yaw(self, yaw):
