@@ -10,5 +10,7 @@
     <param name="min_neighbors_in_radius" value="50.0" />
   </node>
   <node name="mean_shift" pkg="sonar_proc" type="mean_shift.py" output="screen"></node>
-  <node name="task_point" pkg="sonar_proc" type="task_point.py" output="screen"></node>
+  <node name="task_point" pkg="sonar_proc" type="task_point.py" output="screen">
+    <param name="manuever_length" value="5.0" />
+  </node>
 </launch>
