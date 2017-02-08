@@ -34,13 +34,16 @@ from std_msgs.msg._ColorRGBA import ColorRGBA
 from auv_msgs.msg import TaskPointsArray
 
 state = None
-DIRECT_APPROACH = [TaskStatus.GATE, TaskStatus.BUOYS, TaskStatus.OCTAGON, TaskStatus.SQUARE, TaskStatus.TORPEDO]
+DIRECT_APPROACH = [TaskStatus.OCTAGON, TaskStatus.SQUARE, TaskStatus.TORPEDO]
+GATE_APPROACH = [TaskStatus.GATE, TaskStatus.MANEUVER]
+BUOY_APPROACH = [TaskStatus.BUOYS]
 
 # TODO: this is a completely made-up value
 # needs adjusting to the real thing
 # this is the distance between the "manuever centroids"
 
 MANEUVER_LENGTH = rospy.get_param("~manuever_length", default=5)
+BUOY_SIZE = rospy.get_param("~buoy_size", default=2)
 
 
 def update_state(data):
@@ -56,6 +59,10 @@ def centroid_distance(c1, c2):
     return math.sqrt(abs(c1.centroid.x - c2.centroid.x)**2 + abs(c1.centroid.y - c2.centroid.y)**2)
 
 
+def get_size_error(test_size, perf_size):
+    return abs(perf_size - test_size)
+
+
 def task_point(data):
 
     if not state:
@@ -64,6 +71,7 @@ def task_point(data):
     yaxis_index = None
     distance = None
     significant_cluster = None
+    size_error = None
 
     marker = Marker()
     marker.header.frame_id = "robot"
@@ -89,7 +97,7 @@ def task_point(data):
         taskArr.pole1 = dummyPoint
         taskArr.pole2 = dummyPoint
 
-    elif state.task == TaskStatus.MANEUVER:
+    elif state.task in GATE_APPROACH:
         for i, cluster in enumerate(data.clusters):
             if i == (len(data.clusters)) - 1:
                 continue
@@ -106,6 +114,22 @@ def task_point(data):
         taskArr.task = point
         taskArr.pole1 = pointc1
         taskArr.pole2 = pointc2
+
+    elif state.task in BUOY_APPROACH:
+        for i, cluster in enumerate(data.clusters):
+            # TODO: This behemoth conditional looks ugly AF (but works).
+            if (
+                    (not yaxis_index) or
+                    ((get_distance(cluster.centroid.y, 0) < yaxis_index[1]) and
+                        (not size_error or get_size_error(cluster.size, BUOY_SIZE) <= size_error))):
+                yaxis_index = (i, get_distance(cluster.centroid.y, 0))
+        significant_cluster = data.clusters[yaxis_index[0]]
+        point = Point(significant_cluster.centroid.x, significant_cluster.centroid.y, 0)
+        marker.points = [point]
+        marker.color = ColorRGBA(0, 0, 1, 1)
+        taskArr.task = point
+        taskArr.pole1 = dummyPoint
+        taskArr.pole2 = dummyPoint
 
     else:
         return
