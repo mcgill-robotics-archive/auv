@@ -7,49 +7,48 @@ from PID import PID
 
 class PoseController:
     def __init__(self):
-        self.thrust_pub = rospy.Publisher(
-                'controls/wrench', Wrench, queue_size=10)
+        self.thrust_pub = rospy.Publisher('controls/wrench', Wrench, queue_size=10)
 
         # initialize PIDs with gains from rosparams & add subscribers
         # translation
         self.surge_pid = PID(
-                rospy.get_param("~kp_xPos"),
-                rospy.get_param("~ki_xPos"),
-                rospy.get_param("~kd_xPos"))
+            rospy.get_param("~kp_xPos"),
+            rospy.get_param("~ki_xPos"),
+            rospy.get_param("~kd_xPos"))
         rospy.Subscriber("controls/error/surge", Float64,
-                         lambda data: self.surge_pid.update(data))
+                         lambda data: self.surge_pid.update(data.data))
         self.sway_pid = PID(
-                rospy.get_param("~kp_yPos"),
-                rospy.get_param("~ki_yPos"),
-                rospy.get_param("~kd_yPos"))
+            rospy.get_param("~kp_yPos"),
+            rospy.get_param("~ki_yPos"),
+            rospy.get_param("~kd_yPos"))
         rospy.Subscriber("controls/error/sway", Float64,
-                         lambda data: self.sway_pid.update(data))
+                         lambda data: self.sway_pid.update(data.data))
         self.heave_pid = PID(
-                rospy.get_param("~kp_depth"),
-                rospy.get_param("~ki_depth"),
-                rospy.get_param("~kd_depth"))
+            rospy.get_param("~kp_depth"),
+            rospy.get_param("~ki_depth"),
+            rospy.get_param("~kd_depth"))
         rospy.Subscriber("controls/error/heave", Float64,
-                         lambda data: self.heave_pid.update(data))
+                         lambda data: self.heave_pid.update(data.data))
 
         # rotation
         self.roll_pid = PID(
-                rospy.get_param("~kp_roll"),
-                rospy.get_param("~ki_roll"),
-                rospy.get_param("~kd_roll"))
+            rospy.get_param("~kp_roll"),
+            rospy.get_param("~ki_roll"),
+            rospy.get_param("~kd_roll"))
         rospy.Subscriber("controls/error/roll", Float64,
-                         lambda data: self.roll_pid.update(data))
+                         lambda data: self.roll_pid.update(data.data))
         self.pitch_pid = PID(
-                rospy.get_param("~kp_pitch"),
-                rospy.get_param("~ki_pitch"),
-                rospy.get_param("~kd_pitch"))
+            rospy.get_param("~kp_pitch"),
+            rospy.get_param("~ki_pitch"),
+            rospy.get_param("~kd_pitch"))
         rospy.Subscriber("controls/error/pitch", Float64,
-                         lambda data: self.pitch_pid.update(data))
+                         lambda data: self.pitch_pid.update(data.data))
         self.yaw_pid = PID(
-                rospy.get_param("~kp_yaw"),
-                rospy.get_param("~ki_yaw"),
-                rospy.get_param("~kd_yaw"))
+            rospy.get_param("~kp_yaw"),
+            rospy.get_param("~ki_yaw"),
+            rospy.get_param("~kd_yaw"))
         rospy.Subscriber("controls/error/yaw", Float64,
-                         lambda data: self.yaw_pid.update(data))
+                         lambda data: self.yaw_pid.update(data.data))
 
     def update(self, _):
         force = Vector3()

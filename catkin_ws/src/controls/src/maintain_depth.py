@@ -25,7 +25,7 @@ class DepthMaintainer():
         while not rospy.is_shutdown():
             try:
                 trans, rot = self.listener.lookupTransform(
-                        '/floating_horizon', '/robot', rospy.Time())
+                    '/floating_horizon', '/robot', rospy.Time())
                 return trans[2]
             except (tf.LookupException, tf.ConnectivityException,
                     tf.ExtrapolationException):
@@ -46,6 +46,7 @@ class DepthMaintainer():
         estimated_depth = self._get_current_depth()
         depth_error = self.desired_depth - estimated_depth
         self.heave_error_pub.publish(depth_error)
+
 
 if __name__ == '__main__':
     rospy.init_node('maintain_depth')
