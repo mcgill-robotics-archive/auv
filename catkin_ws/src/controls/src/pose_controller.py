@@ -7,7 +7,8 @@ from PID import PID
 
 class PoseController:
     def __init__(self):
-        self.thrust_pub = rospy.Publisher('controls/wrench', Wrench, queue_size=10)
+        self.thrust_pub = rospy.Publisher(
+            'controls/wrench', Wrench, queue_size=10)
 
         # initialize PIDs with gains from rosparams & add subscribers
         # translation
