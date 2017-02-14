@@ -1,3 +1,4 @@
+#define USE_USBCON
 #include <ros.h>
 #include <std_msgs/Float32.h>
 
