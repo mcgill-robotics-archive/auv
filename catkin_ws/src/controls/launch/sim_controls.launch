@@ -1,5 +1,0 @@
-<launch>
-    <node name="controls" pkg="controls" type="controls" respawn="false">
-    	<rosparam command="load" file="$(find controls)/config/sim_gains.yaml" />
-    </node>
-</launch>

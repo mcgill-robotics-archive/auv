@@ -121,6 +121,12 @@ void ThrusterController::OnUpdate(const gazebo::common::UpdateInfo& info)
 
     wrench.request.wrench = current_commands_;
 
+    // Our coordinate system inverts z, y, yaw and pitch.
+    wrench.request.wrench.force.z *= -1;
+    wrench.request.wrench.force.y *= -1;
+    wrench.request.wrench.torque.z *= -1;
+    wrench.request.wrench.torque.y *= -1;
+
     // Call the apply wrench service.
     if (!control_client_.call(wrench))
     {
