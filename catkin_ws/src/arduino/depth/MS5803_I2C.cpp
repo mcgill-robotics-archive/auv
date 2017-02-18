@@ -27,13 +27,13 @@ local pub, and you've found our code helpful, please buy us a round!
 Distributed as-is; no warranty is given.
 ******************************************************************************/
 
-#include <i2c_t3.h> // Wire library is used for I2C
+#include <Wire.h>
 #include "MS5803_I2C.h"
 
 MS5803::MS5803(ms5803_addr address)
 // Base library type I2C
 {
-	//Wire.begin(); // Arduino Wire library initializer
+	Wire.begin(); // Arduino Wire library initializer
 	_address = address; //set interface used for communication
 }
 
@@ -50,9 +50,9 @@ uint8_t MS5803::begin(void)
          uint8_t i;
 	for(i = 0; i <= 7; i++){
 		sendCommand(CMD_PROM + (i * 2));
-		Wire1.requestFrom( _address, 2);
-		uint8_t highByte = Wire1.read(); 
-		uint8_t lowByte = Wire1.read();
+		Wire.requestFrom( _address, 2);
+		uint8_t highByte = Wire.read(); 
+		uint8_t lowByte = Wire.read();
 		coefficient[i] = (highByte << 8)|lowByte;
 	// Uncomment below for debugging output.
 	//	Serial.print("C");
@@ -129,37 +129,36 @@ void MS5803::getMeasurements(precision _precision)
 	// If temp_calc is below 20.0C
 	{	
 		T2 = 3 * (((int64_t)dT * dT) >> 33);
-		OFF2 = 3 * ((temp_calc - 2000) * (temp_calc - 2000)) / 2;
-		SENS2 = 5 * ((temp_calc - 2000) * (temp_calc - 2000)) / 8;
+		OFF2 = 3 * ((temp_calc - 2000) * (temp_calc - 2000)) / 8;
+		SENS2 = 7 * ((temp_calc - 2000) * (temp_calc - 2000)) / 8;
 		
 		if(temp_calc < -1500)
 		// If temp_calc is below -15.0C 
 		{
-			OFF2 = OFF2 + 7 * ((temp_calc + 1500) * (temp_calc + 1500));
-			SENS2 = SENS2 + 4 * ((temp_calc + 1500) * (temp_calc + 1500));
+			SENS2 = SENS2 + 3 * ((temp_calc + 1500) * (temp_calc + 1500));
 		}
     } 
 	else
 	// If temp_calc is above 20.0C
 	{ 
-		T2 = 7 * ((uint64_t)dT * dT)/pow(2,37);
-		OFF2 = ((temp_calc - 2000) * (temp_calc - 2000)) / 16;
+		T2 = 0;
+		OFF2 = 0;
 		SENS2 = 0;
 	}
-	
+
+  
 	// Now bring it all together to apply offsets 
 	
-	OFF = ((int64_t)coefficient[2] << 16) + (((coefficient[4] * (int64_t)dT)) >> 7);
-	SENS = ((int64_t)coefficient[1] << 15) + (((coefficient[3] * (int64_t)dT)) >> 8);
+	OFF = ((int64_t)coefficient[2] << 18) + (((coefficient[4] * (int64_t)dT)) >> 5);
+	SENS = ((int64_t)coefficient[1] << 17) + (((coefficient[3] * (int64_t)dT)) >> 7);
 	
 	temp_calc = temp_calc - T2;
 	OFF = OFF - OFF2;
 	SENS = SENS - SENS2;
 
 	// Now lets calculate the pressure
-	
 
-	pressure_calc = (((SENS * _pressure_raw) / 2097152 ) - OFF) / 32768;
+	pressure_calc = (((SENS * _pressure_raw) >> 21) - OFF) >> 15;
 	
 	_temperature_actual = temp_calc ;
 	_pressure_actual = pressure_calc ; // 10;// pressure_calc;
@@ -187,13 +186,13 @@ uint32_t MS5803::getADCconversion(measurement _measurement, precision _precision
 	}	
 	
 	sendCommand(CMD_ADC_READ);
-	Wire1.requestFrom(_address, 3);
+	Wire.requestFrom(_address, 3);
 	
-	while(Wire1.available())    
+	while(Wire.available())    
 	{ 
-		highByte = Wire1.read();
-		midByte = Wire1.read();
-		lowByte = Wire1.read();	
+		highByte = Wire.read();
+		midByte = Wire.read();
+		lowByte = Wire.read();	
 	}
 	
 	result = ((uint32_t)highByte << 16) + ((uint32_t)midByte << 8) + lowByte;
@@ -208,9 +207,9 @@ int8_t MS5803::getSensorStatus()
 
 void MS5803::sendCommand(uint8_t command)
 {	
-	Wire1.beginTransmission( _address);
-	Wire1.write(command);
-	_sensor_status = Wire1.endTransmission();
+	Wire.beginTransmission( _address);
+	Wire.write(command);
+	_sensor_status = Wire.endTransmission();
 	
 }
 
@@ -219,5 +218,4 @@ void MS5803::sensorWait(uint8_t time)
 {
 	delay(time);
 };
-
 

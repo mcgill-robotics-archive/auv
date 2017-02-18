@@ -1,13 +1,9 @@
-//define header for AUV Teensy code
+//define header for AUV atmega32u4 code
 
 //Software Reset
 #define CPU_RESET_ADDR                     (uint32_t *) 0xE000ED0C
 #define CPU_RESET_VAL                      0x5FA0004
 #define CPU_RESET                          ( *CPU_RESET_ADDR = CPU_RESET_VAL)
-
-
-//ON BOARD LED PIN
-#define LED_PIN                             13
 
 
 //Depth Sensor
@@ -19,4 +15,3 @@
 #define DEPTH_INTERVAL                     25    //amount of delay between each depth read
 #define DEPTH_DISCONNECT_INTERVAL          5000
 #define EXTERNAL_TEMP_INTERVAL             1000
-
