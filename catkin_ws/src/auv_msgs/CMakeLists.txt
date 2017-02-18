@@ -22,6 +22,7 @@ add_message_files(
   RangeBearingElevation.msg
   SlamEstimate.msg
   Lane.msg
+  TorpedoTarget.msg
 
   # Added by CV
   CVTarget.msg
