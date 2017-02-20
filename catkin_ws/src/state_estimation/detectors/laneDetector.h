@@ -26,23 +26,8 @@ private:
   ros::Subscriber image_sub_;
   ros::Publisher lane_pub_;
   ros::ServiceServer toggle_;
-  ros::NodeHandle nh;
 
-  float bwThresh;
-  float thetaDiffThresh;
-  float thetaLastTime;
-  float rho1LastTime;
-  float rho2LastTime;
-  //These 3 variables take record of the current data and performs as a feedback of the next call
-  int wrongTime;
-  bool foundLastTime;
   bool detect_;
-
-  struct Cluster
-  {
-    float rho;
-    float theta;
-  };
 
   /**
    * @brief Callback for the image topic.
@@ -51,20 +36,21 @@ private:
    */
   void imageCallback(const sensor_msgs::Image::ConstPtr& msg);
 
+  /**
+   * @brief Callback for the set state service.
+   * Turns detection on or off to save computational power when the lane
+   * detector is not being used.
+   * @param  req Request object.
+   * @param  res Response object.
+   */
   bool setStateCallback(std_srvs::SetBool::Request &req, std_srvs::SetBool::Response &res);
 
   /**
-   * Resets a bunch of paramaters.
+   * @brief Finds the lane from a list of contours.
+   * @param  contours List of contours found in the image.
+   * @param  img_size Size of image, for display purposes only.
+   * @return          Lane message to publish.
    */
-  void init();
-
-  /**
-   * Creates some matrix of some image or something.
-   * @param  src        [description]
-   * @param  grayThresh [description]
-   * @return            [description]
-   */
-  Mat imageToBinary(Mat src, double grayThresh);
-
-  auv_msgs::Lane findLane(vector<Vec2f> lines, Mat bw);
+  auv_msgs::Lane findLane(vector<vector<Point> > contours, int img_size)
+;
 };

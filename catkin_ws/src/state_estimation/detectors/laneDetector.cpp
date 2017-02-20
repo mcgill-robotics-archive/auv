@@ -19,22 +19,14 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
-
-namespace enc = sensor_msgs::image_encodings;
+#include <geometry_msgs/Point.h>
 
 
 LaneDetector::LaneDetector(ros::NodeHandle& nh) :
-  bwThresh(0.9),
-  thetaDiffThresh(1.5),
-  thetaLastTime(500),
-  rho1LastTime(0),
-  rho2LastTime(0),
-  wrongTime(0),
-  foundLastTime(0),
   detect_(false)
 {
   // ROS PUB/SUB
-  image_sub_ = nh.subscribe<sensor_msgs::Image>("camera_down/image_color", 10, &LaneDetector::imageCallback, this);
+  image_sub_ = nh.subscribe<sensor_msgs::Image>("camera_down/image_color", 1, &LaneDetector::imageCallback, this);
   lane_pub_ = nh.advertise<auv_msgs::Lane>("state_estimation/lane", 10);
   toggle_ = nh.advertiseService("lane_detector/set_state", &LaneDetector::setStateCallback, this);
 }
@@ -56,25 +48,6 @@ bool LaneDetector::setStateCallback(std_srvs::SetBool::Request &req, std_srvs::S
   return true;
 }
 
-// Implementation of the function "image to binary image".
-Mat LaneDetector::imageToBinary(Mat src, double grayThresh){
-
-  Mat dst;
-
-  threshold(src, dst, 255*grayThresh, 255, CV_THRESH_BINARY);
-
-  return dst;
-}
-
-void LaneDetector::init()
-{
-  thetaLastTime = 500;
-  wrongTime = 0;
-  rho1LastTime = 0;
-  rho2LastTime = 0;
-  foundLastTime = 0;
-}
-
 void LaneDetector::imageCallback(const sensor_msgs::Image::ConstPtr& msg)
 {
   // Do not do any detection unless it is turned on.
@@ -85,9 +58,10 @@ void LaneDetector::imageCallback(const sensor_msgs::Image::ConstPtr& msg)
 
   cv_bridge::CvImageConstPtr cv_ptr;
 
+  // Convert from ROS image to openCV image.
   try
   {
-    cv_ptr = cv_bridge::toCvShare(msg, enc::BGR8);
+    cv_ptr = cv_bridge::toCvShare(msg, sensor_msgs::image_encodings::BGR8);
   }
   catch (cv_bridge::Exception& e)
   {
@@ -95,241 +69,100 @@ void LaneDetector::imageCallback(const sensor_msgs::Image::ConstPtr& msg)
     return;
   }
 
-  // Convert from ROS image to openCV image.
-  Mat RGB = cv_ptr->image;
+  Mat bgr_image = cv_ptr->image;
 
-  // Check for invalid input
-  if(! RGB.data )
+  // Check for invalid input.
+  if(! bgr_image.data )
   {
-    ROS_ERROR("No data.\n");
+    ROS_ERROR("No data was received.");
     return;
   }
 
-  ROS_INFO("wrongTime = %d\n", wrongTime);
+  // Remove the blue channel.
+  Mat BGRChannels[3];
+  split(bgr_image, BGRChannels); // split the BGR channesl
+  BGRChannels[0] = Mat::zeros(bgr_image.rows, bgr_image.cols, CV_8UC1);// removing blue channel
+  merge(BGRChannels, 3, bgr_image); // pack the image
 
-  // Create a window to show the image.
-  namedWindow("MyWindow", WINDOW_NORMAL);
+  // Convert input image to HSV.
+  Mat hsv_image;
+  cvtColor(bgr_image, hsv_image, COLOR_BGR2HSV);
 
-  Mat gray;
+  // Threshold the HSV image, keep only the orange pixels.
+  Mat orange_filter;
+  inRange(hsv_image, Scalar(0, 40, 40), Scalar(27, 255, 255), orange_filter);
 
-  // Converting to gray image
-  cvtColor(RGB, gray, CV_RGB2GRAY);
+  // Blur to remove black spots.
+  medianBlur(orange_filter, orange_filter, 5);
 
-  // Converting to binary image
-  Mat bw = imageToBinary(gray, bwThresh);
+  vector<vector<Point> > contours;
+  vector<Vec4i> hierarchy;
 
-  Mat bw_filter, cdst;
+  /// Find contours
+  findContours(orange_filter, contours, hierarchy, CV_RETR_TREE, CV_CHAIN_APPROX_SIMPLE, Point(0, 0));
 
-  medianBlur(bw, bw_filter, 5);
-
-  // Median filtering
-  Canny(bw_filter, bw, 50, 150, 3);
-
-  // Show debug window.
-  imshow("MyWindow", bw);
-
-  waitKey(10);
-
-  // Hough transformation.
-  cvtColor(bw, cdst, CV_GRAY2BGR);
-
-  vector<Vec2f> lines;
-  HoughLines(bw, lines, 1, CV_PI/180, 100, 0, 0);
-
-  lane_pub_.publish(findLane(lines, bw));
+  lane_pub_.publish(findLane(contours, orange_filter.size()));
 }
 
-auv_msgs::Lane LaneDetector::findLane(vector<Vec2f> lines, Mat bw)
+auv_msgs::Lane LaneDetector::findLane(vector<vector<Point> > contours, int img_size)
 {
   auv_msgs::Lane lane;
 
-  if (lines.size() == 0)
+  std::vector<geometry_msgs::Point> pts;
+
+  lane.header.stamp = ros::Time::now();
+  lane.header.frame_id = "down_cam";
+
+  // If there are no contours, return an empty message.
+  if (contours.size() == 0)
   {
-    if(wrongTime >= 3){
-      init();
-    }
-    ROS_WARN("No lines were detected.");
     return lane;
   }
 
-  // Constrcting a struct to cluster detected lines
+  // Assume that the lane is the object with the largest area.
+  float max_area = 0.0;
+  int max_idx = 0;
 
-  int len = lines.size();
-  Cluster s[len];
-  // construct a struct array with length "len", equal to the size of "lines"
-
-  s[0].rho = lines[0][0];
-  s[0].theta = lines[0][1];
-
-  for(int i = 1; i < len; i++)
+  for(int i = 0; i < contours.size(); i++)
   {
-    s[i].rho = 0.0;
-    s[i].theta = 0.0;
-  }
-  // Initializing the array
-
-  int numCluster = 1;
-  int flag = 0;
-
-  for(int i = 1; i < len; i++)
-  {
-    flag = 0;
-    for(int j = 0; j < numCluster; j++)
+    float current_area = contourArea(contours[i]);
+    if (current_area > max_area)
     {
-      if(abs(lines[i][0] - s[j].rho) < 45 && abs(lines[i][1] - s[j].theta) * 180 / CV_PI < 2){
-        flag = -1;
-        // j=-1 means the line is added to a cluster
-        break;
-      }
-    }
-
-    if(flag != -1)
-    {
-      s[numCluster].rho = lines[i][0];
-      s[numCluster].theta = lines[i][1];
-      numCluster++;
-    }
-    // if the line is added as a new cluster, increase numCluster
-  }
-
-  Mat cdst1;
-
-  cvtColor(bw, cdst1, CV_GRAY2BGR);
-
-  for(int i = 0; i < numCluster; i++)
-  {
-    float rho = s[i].rho, theta = s[i].theta;
-    Point pt1, pt2;
-    double a = cos(theta), b = sin(theta);
-    double x0 = a*rho, y0 = b*rho;
-    pt1.x = cvRound(x0 + 1000*(-b));
-    pt1.y = cvRound(y0 + 1000*(a));
-    pt2.x = cvRound(x0 - 1000*(-b));
-    pt2.y = cvRound(y0 - 1000*(a));
-    line(cdst1, pt1, pt2, Scalar(0,0,255), 3, CV_AA);
-
-    imshow("MyWindow", cdst1);
-    waitKey(10);
-    theta = theta * 180 / CV_PI;
-
-    if(theta > 90.0)
-    {
-      theta = theta - 180.0;
+      max_area = current_area;
+      max_idx = i;
     }
   }
 
-  bool found = false;
+  // Find the rectangle of best fit to the lane contour.
+  RotatedRect lane_rect;
 
-  for(int i = 0; i < numCluster - 1; i++)
+  lane_rect = minAreaRect(Mat(contours[max_idx]));
+
+  // Get the points of the rectangle.
+  Point2f rect_points[4];
+  lane_rect.points(rect_points);
+
+  // Draw contours and get the points as geometry_msgs/Point.
+  Mat drawing = Mat::zeros(img_size, CV_8UC3);
+  Scalar color = Scalar(0, 150, 255);
+
+  for(int i = 0; i < 4; i++)
   {
-    for(int j = i + 1; j < numCluster; j++)
-    {
-        float rhoDiff = abs( s[i].rho - s[j].rho );
-        float thetaDiff = abs( s[i].theta - s[j].theta ) * 180 / CV_PI;
+    line(drawing, rect_points[i], rect_points[(i + 1) % 4], color, 5, 8);
 
-        if( thetaDiff < thetaDiffThresh && rhoDiff > 50 && rhoDiff < 100)
-        {
-          //if the parallel pair of line is found, do the following thing:
-
-          float theta1 = s[i].theta * 180 /CV_PI;
-          float theta2 = s[j].theta * 180 /CV_PI;
-          //take record of the current theta values
-
-          if(theta1 > 90.0 || theta2 > 90.0)
-          {
-            theta1 = theta1 - 180.0;
-            theta2 = theta2 - 180.0;
-          }
-          // adjust the value of theta to proper range
-
-          // if(thetaLastTime != 500){
-          if(foundLastTime == 1)
-          {
-            if(abs(thetaLastTime - theta1) < 10)
-            {
-              // if the difference between the current theta and the theta last time is with in 10
-              ROS_INFO("Not the first time.\n");
-              ROS_INFO("theta difference with last time: %f\n", abs(thetaLastTime - theta1));
-              ROS_INFO("rho difference with last time: %f\n", abs((s[i].rho + s[j].rho) / 2 - (rho1LastTime + rho2LastTime)/2));
-              wrongTime = 0;
-              lane.theta1 = theta1;
-              lane.theta2 = theta2;
-              lane.rho1 = s[i].rho;
-              lane.rho2 = s[j].rho;
-
-              found = true;
-              foundLastTime = 1;
-              ROS_INFO("rhoDIff = %f\n", rhoDiff);
-              ROS_INFO("thetaDiff = %f\n", thetaDiff);
-              thetaLastTime = theta1;
-              rho1LastTime = s[i].rho;
-              rho2LastTime = s[j].rho;
-            }
-            // publish data, and take record of the data published
-            else
-            {
-              found = false;
-            }
-          }
-          else
-          {
-            // if it's the first time searching for lane
-            // if the lane found is reliable with 3 times found
-            ROS_INFO("First time found!\n");
-            lane.theta1 = theta1;
-            lane.theta2 = theta2;
-            lane.rho1 = s[i].rho;
-            lane.rho2 = s[j].rho;
-            found = true;
-            foundLastTime = 1;
-            ROS_INFO("rhoDIff = %f\n", rhoDiff);
-            ROS_INFO("thetaDiff = %f\n", thetaDiff);
-            thetaLastTime = theta1;
-            rho1LastTime = s[i].rho;
-            rho2LastTime = s[j].rho;
-            // publish the original data.
-          }
-        }
-    }
-      if(found)
-      {
-        break;
-      }
+    geometry_msgs::Point pt;
+    pt.x = rect_points[i].x;
+    pt.y = rect_points[i].y;
+    pts.push_back(pt);
   }
 
-    if(found)
-    {
-      ROS_INFO("Lane found.\n");
-      ROS_INFO("Lane message: %f %f %f %f\n", lane.theta1,lane.theta2, lane.rho1, lane.rho2);
-      return lane;
-    }
+  namedWindow("Lane!!", WINDOW_NORMAL);
+  imshow("Lane!!", drawing);
+  waitKey(10);
 
-    else
-    {
-      if(wrongTime <= 3)
-      {
-        ROS_INFO("Lane not found but there is at least 1 line detected OR it could be random error OR quitting.\n");
-        lane.theta1 = thetaLastTime;
-        lane.theta2 = thetaLastTime;
-        lane.rho1 = rho1LastTime;
-        lane.rho2 = rho2LastTime;
-        wrongTime++;
-
-        if(foundLastTime == 1)
-        {
-          ROS_INFO("Message published.\n");
-          ROS_INFO("Lane message: %f %f %f %f\n", lane.theta1, lane.theta2, lane.rho1, lane.rho2);
-          return lane;
-        }
-      }
-      else
-      {
-        init();
-      }
-    }
+  lane.pts = pts;
 
   return lane;
-
 }
 
 int main(int argc, char **argv)
