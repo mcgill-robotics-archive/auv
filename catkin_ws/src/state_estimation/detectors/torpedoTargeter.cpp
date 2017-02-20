@@ -13,7 +13,7 @@ RNG rng(12345);
 TorpedoTargeter::TorpedoTargeter(ros::NodeHandle& nh) {
   image_sub_ = nh.subscribe<sensor_msgs::Image>(
     "camera_front/image_color", 1, &TorpedoTargeter::imageCallback, this);
-  lane_pub_ = nh.advertise<auv_msgs::TorpedoTarget>("state_estimation/torpedo_target", 10);
+  torpedo_pub_ = nh.advertise<auv_msgs::TorpedoTarget>("state_estimation/torpedo_target", 10);
 }
 
 
@@ -96,6 +96,40 @@ void TorpedoTargeter::imageCallback(const sensor_msgs::Image::ConstPtr& msg) {
   drawContours(mask_image, contours, largest_contour_index, Scalar(255), CV_FILLED);
   gray.copyTo(cropped, mask_image);
 
+
+  vector<vector<Point> > inner_contours;
+  vector<Vec4i> inner_hierarchy;
+  // extract contours of inside target
+  findContours(cropped, inner_contours, inner_hierarchy, CV_RETR_TREE, CV_CHAIN_APPROX_SIMPLE, Point(0, 0));
+
+  // sort contours by area
+  vector<pair<double, int> > contour_areas;
+
+  for (int i = 0; i < inner_contours.size(); i++) {
+    double a = contourArea(inner_contours[i], false);
+    contour_areas.push_back(make_pair(a, i));
+  }
+
+  if (contour_areas.size() < 2) {
+    ROS_WARN("No hole detected!");
+    return;
+  }
+
+  sort(contour_areas.rbegin(), contour_areas.rend());
+  int target_ind = contour_areas[1].second;
+
+  rect = minAreaRect(Mat(inner_contours[target_ind]));
+  // TODO check that min area rect is similar to contour area
+
+  Moments M = moments(inner_contours[target_ind], false);
+  int cx = M.m10 / M.m00;
+  int cy = M.m01 / M.m00;
+
+  circle(small_img, Point(cx, cy), 7, Scalar(0, 0, 255), 7);
+
+  torpedoTarget.x_hole = cx;
+  torpedoTarget.y_hole = cy;
+
   // Point2f rect_points[4];
   // rect.points(rect_points);
   // Scalar color = Scalar(0, 0, 255);
@@ -106,8 +140,10 @@ void TorpedoTargeter::imageCallback(const sensor_msgs::Image::ConstPtr& msg) {
   // drawContours(filtered, contours, largest_contour_index, color, 2, 8, hierarchy, 0, Point());
 
   namedWindow("Torpedo", WINDOW_NORMAL);
-  imshow("Torpedo", cropped);
+  imshow("Torpedo", small_img);
   waitKey(10);
+
+  torpedo_pub_.publish(torpedoTarget);
 }
 
 int main(int argc, char **argv) {

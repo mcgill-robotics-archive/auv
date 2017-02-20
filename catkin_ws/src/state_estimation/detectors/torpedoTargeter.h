@@ -38,7 +38,7 @@ public:
 
 private:
   ros::Subscriber image_sub_;
-  ros::Publisher lane_pub_;
+  ros::Publisher torpedo_pub_;
 
   void imageCallback(const sensor_msgs::Image::ConstPtr& msg);
 };
