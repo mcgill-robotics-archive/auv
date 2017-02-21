@@ -1,0 +1,7 @@
+<launch>
+    <arg name="visualize" default="false" />
+
+    <node name="lane_detector" type="lane_detector" pkg="state_estimation">
+        <param name="visualize_lane" value="$(arg visualize)" />
+    </node>
+</launch>

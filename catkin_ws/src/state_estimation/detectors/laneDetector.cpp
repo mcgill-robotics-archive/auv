@@ -4,7 +4,7 @@
  * @authors Jana Pavlasek, Paul Wu
  */
 
-#include <laneDetector.h>
+#include "laneDetector.h"
 
 #include <vector>
 #include <opencv2/core/core.hpp>
@@ -25,7 +25,9 @@
 LaneDetector::LaneDetector(ros::NodeHandle& nh) :
   detect_(false)
 {
-  // ROS PUB/SUB
+  // PARAMS
+  ros::param::param<bool>("~visualize_lane", visualize_, false);
+  // PUBLISHERS & SUBSCRIBERS
   image_sub_ = nh.subscribe<sensor_msgs::Image>("camera_down/image_color", 1, &LaneDetector::imageCallback, this);
   lane_pub_ = nh.advertise<auv_msgs::Lane>("state_estimation/lane", 10);
   toggle_ = nh.advertiseService("lane_detector/set_state", &LaneDetector::setStateCallback, this);
@@ -104,7 +106,7 @@ void LaneDetector::imageCallback(const sensor_msgs::Image::ConstPtr& msg)
   lane_pub_.publish(findLane(contours, orange_filter.size()));
 }
 
-auv_msgs::Lane LaneDetector::findLane(vector<vector<Point> > contours, int img_size)
+auv_msgs::Lane LaneDetector::findLane(vector<vector<Point> > contours, Size img_size)
 {
   auv_msgs::Lane lane;
 
@@ -156,9 +158,13 @@ auv_msgs::Lane LaneDetector::findLane(vector<vector<Point> > contours, int img_s
     pts.push_back(pt);
   }
 
-  namedWindow("Lane!!", WINDOW_NORMAL);
-  imshow("Lane!!", drawing);
-  waitKey(10);
+  // Only visualize if requested.
+  if (visualize_)
+  {
+    namedWindow("Lane!!", WINDOW_NORMAL);
+    imshow("Lane!!", drawing);
+    waitKey(10);
+  }
 
   lane.pts = pts;
 
