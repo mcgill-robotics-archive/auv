@@ -4,12 +4,10 @@
 """Acoustic servo action."""
 
 import rospy
+from move import Move
 from math import fabs
 from std_msgs.msg import Float64
 from geometry_msgs.msg import Vector3Stamped
-
-# from utils import get_yaw_and_depth
-from move import Move
 
 __author__ = "Malcolm Watt and Wei-Di Chang"
 
@@ -21,19 +19,18 @@ class AcousticServo(object):
     the Hydrophones determined heading. It then attempts to move towards
     the pinger.
     """
-    DEPTH = 1.2
     SURGE_STEP = 0.7
     PREEMPT_CHECK_FREQUENCY = 1  # Hz
     MAX_AGE = 6  # Seconds
     TIMEOUT = 300  # Seconds = 5 min
 
-    def __init__(self, topic):
+    def __init__(self, config):
         """Constructor for the AcousticServo action.
 
         Args:
             topic:  the topic name for the action
         """
-        self.topic = topic
+        self.depth = config["depth"] if "depth" in config else None
 
         # Keep track of current IMU and last 10 Hydrophones heading
         self.robot_heading = None
@@ -60,6 +57,7 @@ class AcousticServo(object):
 
         rospy.Subscriber("hydrophones/heading", Float64, self.proc_estim_head)
         self.pose_sub = rospy.Subscriber('robot_state', Vector3Stamped, self.state_cb)
+        self.depth_sub = rospy.Subscriber('state_estimation/depth', Float64, self.depth_callback)
 
     def start(self, server, feedback_msg):
         """Servo toward the pinger.
@@ -75,7 +73,11 @@ class AcousticServo(object):
 
         rate = rospy.Rate(self.PREEMPT_CHECK_FREQUENCY)
 
-        while True:
+        while self.depth is None:
+            rospy.loginfo("AS: No depth was provided, waiting for current depth.")
+            rate.sleep()
+
+        while not rospy.is_shutdown():
             # Check for preempt
             if server.is_preempt_requested():
                 rospy.loginfo("AcousticServo preempted")
@@ -86,14 +88,14 @@ class AcousticServo(object):
             if self.heading is None:
                 rospy.loginfo("No pinger command. Staying still and waiting.")
                 move_cmd = {"distance": 0,
-                            "depth": self.DEPTH}
+                            "depth": self.depth}
                 move_action = Move(move_cmd)
                 move_action.start(self.server, self.feedback_msg)
                 continue
 
             move_cmd = {"distance": self.SURGE_STEP,
                         "yaw": self.heading,
-                        "depth": self.DEPTH}
+                        "depth": self.depth}
 
             # If we don't have a last heading, we can't determine if done.
             if self.last_heading is not None:
@@ -109,7 +111,7 @@ class AcousticServo(object):
             else:
                 rospy.loginfo("Pinger message is too old. Sending command {}".format(move_cmd))
                 move_cmd = {"distance": 0,
-                            "depth": self.DEPTH}
+                            "depth": self.depth}
                 move_action = Move(move_cmd)
                 move_action.start(self.server, self.feedback_msg)
 
@@ -147,3 +149,6 @@ class AcousticServo(object):
 
         self.heading = self.robot_heading + self.pinger_heading
         self.heading_error = self.robot_heading - self.pinger_heading
+
+    def depth_callback(self, msg):
+        self.depth = msg.data

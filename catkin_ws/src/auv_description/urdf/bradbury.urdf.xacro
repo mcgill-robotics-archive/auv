@@ -1,0 +1,190 @@
+<?xml version="1.0"?>
+<robot name="bradbury" xmlns:xacro="http://ros.org/wiki/xacro">
+
+  <!-- Thrusters -->
+  <xacro:property name="thruster_radius" value="0.055" />
+  <xacro:property name="thruster_length" value="0.1" />
+  <xacro:property name="thruster_mass" value="0.283" />
+  <!-- Thruster offsets -->
+  <xacro:property name="heave_depth" value="-0.038" />
+  <xacro:property name="sway_depth" value="-0.055" />
+
+  <!-- Frame -->
+  <xacro:property name="frame_length" value="0.91" />
+  <xacro:property name="frame_width" value="0.31" />
+  <xacro:property name="frame_height" value="0.27" />
+  <!-- MADE UP VALUE -->
+  <xacro:property name="frame_mass" value="1" />
+
+  <!-- Main Hull -->
+  <xacro:property name="main_hull_radius" value="0.125" />
+  <xacro:property name="main_hull_length" value="0.52" />
+  <!-- MADE UP VALUE -->
+  <xacro:property name="main_hull_mass" value="20.0" />
+
+  <!-- Battery PV -->
+  <xacro:property name="battery_radius" value="0.1" />
+  <xacro:property name="battery_length" value="0.33" />
+  <xacro:property name="battery_mass" value="3.98" />
+
+  <!-- THRUSTER MACRO -->
+  <xacro:macro name="thruster" params="prefix x y z yaw pitch roll">
+    <link name="${prefix}_thruster">
+      <visual>
+        <origin rpy ="0 ${pi/2} 0" xyz="0 0 0"/>
+        <geometry>
+          <mesh filename="package://auv_description/meshes/thruster.stl" scale="0.01 0.01 0.01"/>
+        </geometry>
+      </visual>
+
+      <collision>
+        <origin rpy="0 ${pi/2} 0" xyz="0 0 0"/>
+        <geometry>
+          <cylinder radius="${thruster_radius}" length="${thruster_length}"/>
+        </geometry>
+      </collision>
+
+      <inertial>
+        <origin xyz="0 0 0" rpy="0 0 0"/>
+        <mass value="${thruster_mass}"/>
+        <inertia
+          ixx="${(thruster_mass*thruster_radius**2)/2}" ixy="0.0" ixz="0.0"
+          iyy="${(thruster_mass*thruster_length**2)/12 + (thruster_mass*thruster_radius**2)/4}" iyz="0.0"
+          izz="${(thruster_mass*thruster_length**2)/12 + (thruster_mass*thruster_radius**2)/4}"/>
+      </inertial>
+
+
+    </link>
+
+    <joint name="base_to_${prefix}_thruster" type="fixed">
+      <parent link="frame"/>
+      <child link="${prefix}_thruster"/>
+      <origin rpy ="${roll} ${pitch} ${yaw}" xyz="${x} ${y} ${z}"/>
+    </joint>
+  </xacro:macro>
+
+  <!-- Frame - base_link is the center of the frame, and center of surger thrusters in z. -->
+  <link name="frame">
+    <visual>
+      <origin rpy="${pi/2} 0 ${pi}" xyz="0.41552 -0.1554 -0.2159"/>
+      <geometry>
+        <mesh filename="package://auv_description/meshes/frame.stl" scale="0.01 0.01 0.01"/>
+      </geometry>
+    </visual>
+
+    <collision>
+      <origin rpy="0 0 0" xyz="0 0 0"/>
+      <geometry>
+        <box size="${frame_length} ${frame_height} ${frame_height}" />
+      </geometry>
+    </collision>
+
+    <inertial>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <mass value="${frame_mass}"/>
+      <inertia
+        ixx="${frame_mass*(frame_width**2+frame_height**2)/12}" ixy="0.0" ixz="0.0"
+        iyy="${frame_mass*(frame_length**2+frame_height**2)/12}" iyz="0.0"
+        izz="${frame_mass*(frame_width**2+frame_length**2)/12}"/>
+    </inertial>
+
+  </link>
+
+  <link name="base_link">
+  </link>
+
+  <!-- Main PV -->
+  <link name="main_hull">
+    <visual>
+      <origin rpy="${pi/2} 0 ${pi/2}" xyz="-0.2594 0 0"/>
+      <geometry>
+        <mesh filename="package://auv_description/meshes/main_hull.stl" scale="0.01 0.01 0.01"/>
+      </geometry>
+    </visual>
+
+    <!-- The main hull is modelled as a single cylinder. -->
+    <collision>
+      <origin rpy="0 ${pi/2} 0" xyz="0 0 0"/>
+      <geometry>
+        <cylinder radius="${main_hull_radius}" length="${main_hull_length}"/>
+      </geometry>
+    </collision>
+
+    <inertial>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <mass value="${main_hull_mass}"/>
+      <inertia
+        ixx="${(main_hull_mass*main_hull_radius**2)/2}" ixy="0.0" ixz="0.0"
+        iyy="${(main_hull_mass*main_hull_length**2)/12 + (main_hull_mass*main_hull_radius**2)/4}" iyz="0.0"
+        izz="${(main_hull_mass*main_hull_length**2)/12 + (main_hull_mass*main_hull_radius**2)/4}"/>
+    </inertial>
+
+  </link>
+
+  <!-- Battery PV -->
+  <link name="battery">
+    <visual>
+      <origin rpy="${pi/2} 0 0" xyz="0 0.1572 0"/>
+      <geometry>
+        <mesh filename="package://auv_description/meshes/battery.stl" scale="0.01 0.01 0.01"/>
+      </geometry>
+    </visual>
+
+    <collision>
+      <origin rpy="${pi/2} 0 0" xyz="0 0.1572 0"/>
+      <geometry>
+        <cylinder radius="${battery_radius}" length="${battery_length}"/>
+      </geometry>
+    </collision>
+
+    <inertial>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <mass value="${thruster_mass}"/>
+      <inertia
+        ixx="${(battery_mass*battery_length**2)/12 + (battery_mass*battery_radius**2)/4}" ixy="0.0" ixz="0.0"
+        iyy="${(battery_mass*battery_radius**2)/2}" iyz="0.0"
+        izz="${(battery_mass*battery_length**2)/12 + (battery_mass*battery_radius**2)/4}"/>
+    </inertial>
+
+  </link>
+
+  <joint name="base_to_frame" type="fixed">
+    <parent link="base_link"/>
+    <child link="frame"/>
+    <origin rpy="0 0 0" xyz="0 0 0"/>
+  </joint>
+
+  <!-- MAIN HULL TO FRAME JOINT -->
+  <joint name="base_to_main_hull" type="fixed">
+    <parent link="frame"/>
+    <child link="main_hull"/>
+    <origin rpy="0 0 0" xyz="0 0 0.1547"/>
+  </joint>
+
+  <!-- BATTERY TO FRAME JOINT -->
+  <joint name="base_to_battery" type="fixed">
+    <parent link="frame"/>
+    <child link="battery"/>
+    <origin rpy="0 0 0" xyz="0.2614 0 -0.1038"/>
+  </joint>
+
+  <!-- THRUSTER JOINTS -->
+  <xacro:thruster prefix="surge_port" yaw="0" roll="${pi}" pitch="0" x="0" y="0.21" z="0"/>
+  <xacro:thruster prefix="starboard_surge" yaw="0" roll="0" pitch="0" x="0" y="-0.21" z="0"/>
+  <xacro:thruster prefix="port_bow_heave" yaw="${pi}" roll="0" pitch="${-pi/2}" x="0.36" y="0.209" z="${heave_depth}"/>
+  <xacro:thruster prefix="port_stern_heave" yaw="${pi}" roll="0" pitch="${-pi/2}" x="-0.34" y="0.209" z="${heave_depth}"/>
+  <xacro:thruster prefix="starboard_bow_heave" yaw="0" roll="0" pitch="${-pi/2}" x="0.36" y="-0.209" z="${heave_depth}"/>
+  <xacro:thruster prefix="starboard_stern_heave" yaw="0" roll="0" pitch="${-pi/2}" x="-0.34" y="-0.209" z="${heave_depth}"/>
+  <xacro:thruster prefix="bow_sway" yaw="${pi/2}" roll="0" pitch="0" x="0.465" y="0" z="${sway_depth}"/>
+  <xacro:thruster prefix="stern_sway" yaw="${-pi/2}" roll="0" pitch="0" x="-0.465" y="0" z="${sway_depth}"/>
+
+  <!-- GAZEBO SPECIFIC SETTINGS -->
+  <gazebo reference="base_link">
+      <selfCollide>false</selfCollide>
+      <static>false</static>
+  </gazebo>
+  <gazebo reference="frame">
+      <material>Gazebo/Grey</material>
+      <selfCollide>false</selfCollide>
+  </gazebo>
+</robot>

@@ -22,3 +22,6 @@ catkin_ws/logs
 *.bin
 *.map
 *.elf
+
+# pycharm
+.idea/

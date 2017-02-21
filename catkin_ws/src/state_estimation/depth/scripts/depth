@@ -34,7 +34,7 @@ def mbar_to_depth(pressure):
     Returns:
         Depth of water in meters.
     """
-    return (pressure - MBAR_AT_SURFACE) * METERS_PER_MBAR + depth_offset
+    return ((pressure - MBAR_AT_SURFACE) * METERS_PER_MBAR + depth_offset) / 10.0
 
 
 def get_mean_depth(current_depth):
