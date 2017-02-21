@@ -106,7 +106,7 @@ void LaneDetector::imageCallback(const sensor_msgs::Image::ConstPtr& msg)
   lane_pub_.publish(findLane(contours, orange_filter.size()));
 }
 
-auv_msgs::Lane LaneDetector::findLane(vector<vector<Point> > contours, Size img_size)
+auv_msgs::Lane LaneDetector::findLane(vector<vector<Point> > &contours, Size img_size)
 {
   auv_msgs::Lane lane;
 

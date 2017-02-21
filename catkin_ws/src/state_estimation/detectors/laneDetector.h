@@ -52,5 +52,5 @@ private:
    * @param  img_size Size of image, for display purposes only.
    * @return          Lane message to publish.
    */
-  auv_msgs::Lane findLane(vector<vector<Point> > contours, Size img_size);
+  auv_msgs::Lane findLane(vector<vector<Point> > &contours, Size img_size);
 };
