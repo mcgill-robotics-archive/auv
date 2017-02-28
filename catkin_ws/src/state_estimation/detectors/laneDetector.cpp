@@ -19,7 +19,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
-#include <geometry_msgs/Point.h>
+#include <geometry_msgs/Point32.h>
 
 
 LaneDetector::LaneDetector(ros::NodeHandle& nh) :
@@ -29,7 +29,7 @@ LaneDetector::LaneDetector(ros::NodeHandle& nh) :
   ros::param::param<bool>("~visualize_lane", visualize_, false);
   // PUBLISHERS & SUBSCRIBERS
   image_sub_ = nh.subscribe<sensor_msgs::Image>("camera_down/image_color", 1, &LaneDetector::imageCallback, this);
-  lane_pub_ = nh.advertise<auv_msgs::Lane>("state_estimation/lane", 10);
+  lane_pub_ = nh.advertise<geometry_msgs::PolygonStamped>("state_estimation/lane", 10);
   toggle_ = nh.advertiseService("lane_detector/set_state", &LaneDetector::setStateCallback, this);
 }
 
@@ -106,11 +106,11 @@ void LaneDetector::imageCallback(const sensor_msgs::Image::ConstPtr& msg)
   lane_pub_.publish(findLane(contours, orange_filter.size()));
 }
 
-auv_msgs::Lane LaneDetector::findLane(vector<vector<Point> > &contours, Size img_size)
+geometry_msgs::PolygonStamped LaneDetector::findLane(vector<vector<Point> > &contours, Size img_size)
 {
-  auv_msgs::Lane lane;
+  geometry_msgs::PolygonStamped lane;
 
-  std::vector<geometry_msgs::Point> pts;
+  std::vector<geometry_msgs::Point32> pts;
 
   lane.header.stamp = ros::Time::now();
   lane.header.frame_id = "down_cam";
@@ -152,7 +152,7 @@ auv_msgs::Lane LaneDetector::findLane(vector<vector<Point> > &contours, Size img
   {
     line(drawing, rect_points[i], rect_points[(i + 1) % 4], color, 5, 8);
 
-    geometry_msgs::Point pt;
+    geometry_msgs::Point32 pt;
     pt.x = rect_points[i].x;
     pt.y = rect_points[i].y;
     pts.push_back(pt);
@@ -166,7 +166,7 @@ auv_msgs::Lane LaneDetector::findLane(vector<vector<Point> > &contours, Size img
     waitKey(10);
   }
 
-  lane.pts = pts;
+  lane.polygon.points = pts;
 
   return lane;
 }

@@ -7,7 +7,7 @@
 
 #include <ros/ros.h>
 #include <sensor_msgs/Image.h>
-#include <auv_msgs/Lane.h>
+#include <geometry_msgs/PolygonStamped.h>
 #include <std_srvs/SetBool.h>
 
 #include <cv_bridge/cv_bridge.h>
@@ -52,5 +52,5 @@ private:
    * @param  img_size Size of image, for display purposes only.
    * @return          Lane message to publish.
    */
-  auv_msgs::Lane findLane(vector<vector<Point> > &contours, Size img_size);
+  geometry_msgs::PolygonStamped findLane(vector<vector<Point> > &contours, Size img_size);
 };
