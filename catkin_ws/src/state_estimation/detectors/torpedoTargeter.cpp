@@ -35,15 +35,17 @@ void TorpedoTargeter::imageCallback(const sensor_msgs::Image::ConstPtr& msg) {
   Mat img = cv_ptr->image;  // Converting from ROS image to openCV image
 
   if(!img.data) {
-    printf("No data.\n");
+    ROS_WARN("No data!");
     return;
   }
 
   Mat small_img;
   Mat filtered;
 
+  float scale_factor = 0.5;
+
   // downsample and apply blur filter
-  resize(img, small_img, Size(), 0.5, 0.5, INTER_CUBIC);
+  resize(img, small_img, Size(), scale_factor, scale_factor, INTER_CUBIC);
   medianBlur(small_img, filtered, 25);
 
   uint8_t* pixelPtr = (uint8_t*)filtered.data;
@@ -128,8 +130,8 @@ void TorpedoTargeter::imageCallback(const sensor_msgs::Image::ConstPtr& msg) {
   circle(small_img, Point(cx, cy), 7, Scalar(0, 0, 255), 7);
 
   torpedoTarget.hole_detected = true;
-  torpedoTarget.x_hole = cx;
-  torpedoTarget.y_hole = cy;
+  torpedoTarget.x_hole = cx / scale_factor;
+  torpedoTarget.y_hole = cy / scale_factor;
 
   // Point2f rect_points[4];
   // rect.points(rect_points);
