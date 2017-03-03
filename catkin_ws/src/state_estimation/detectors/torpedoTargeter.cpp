@@ -127,6 +127,7 @@ void TorpedoTargeter::imageCallback(const sensor_msgs::Image::ConstPtr& msg) {
 
   circle(small_img, Point(cx, cy), 7, Scalar(0, 0, 255), 7);
 
+  torpedoTarget.hole_detected = true;
   torpedoTarget.x_hole = cx;
   torpedoTarget.y_hole = cy;
 
