@@ -29,7 +29,7 @@ class ScanStitcher(object):
                                            self.make_config, queue_size=1)
         self.slice_sub = rospy.Subscriber("/tritech_micron/scan", PointCloud,
                                           self.stitch, queue_size=1)
-        self.scan_pub = rospy.Publisher("full_scan", PointCloud, queue_size=1)
+        self.scan_pub = rospy.Publisher("sonar_proc/full_scan", PointCloud, queue_size=1)
 
         self.clouds = []
         self.scan_config = {}

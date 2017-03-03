@@ -68,7 +68,7 @@ void spin() {
             gyro.z = ims.gyrZ;
             pub3.publish(gyro);
 
-  	 geometry_msgs::Vector3 mag = geometry_msgs::Vector3();
+            geometry_msgs::Vector3 mag = geometry_msgs::Vector3();
             mag.x = ims.magX;
             mag.y = ims.magY;
             mag.z = ims.magZ;
@@ -82,6 +82,7 @@ void spin() {
             imu.linear_acceleration.x = ims.accX;
             imu.linear_acceleration.y = ims.accY;
             imu.linear_acceleration.z = ims.accZ;
+            imu.header.stamp = ros::Time::now();
             rawPub.publish(imu);
         }
 

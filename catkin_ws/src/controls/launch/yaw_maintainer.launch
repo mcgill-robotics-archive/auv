@@ -1,0 +1,12 @@
+<launch>
+    <arg name="desired_yaw" default="0"/>
+    <node 
+        name="maintain_yaw" 
+        pkg="controls"
+        type="maintain_yaw.py"
+        respawn="false" 
+        output="screen">
+        <param name="desired_yaw" value="$(arg desired_yaw)"/>
+    </node>
+    <include file="$(find controls)/launch/new_controls.launch"/>
+</launch>
