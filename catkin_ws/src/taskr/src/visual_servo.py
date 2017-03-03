@@ -95,7 +95,7 @@ class VisualServo(object):
 
         recovery_tries = 0
 
-        while True:
+        while not rospy.is_shutdown():
             if (rospy.get_rostime() - self.last_frame_time >
                     self.end_action_timeout):
                 rospy.logwarn("Target lost, moving on")
