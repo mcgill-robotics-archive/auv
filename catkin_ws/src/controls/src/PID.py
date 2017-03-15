@@ -19,18 +19,21 @@ class PID:
         self.Integrator_max = Integrator_max
         self.Integrator_min = Integrator_min
 
-    def update(self, error):
+    def update(self, error, delta_time=0.1):
         """
         Calculate PID output value for given error
         """
         if error is None:
             return self.output
 
-        self.P_value = self.Kp * error
-        self.D_value = self.Kd * (error - self.Derivator)
-        self.Derivator = error
+        # constant multiplier determined experimentally
+        delta_time = delta_time * 10
 
-        self.Integrator = self.Integrator + error
+        self.P_value = self.Kp * error * delta_time
+        self.D_value = self.Kd * (error - self.Derivator) * delta_time
+        self.Derivator = error * delta_time
+
+        self.Integrator = self.Integrator + error * delta_time
 
         if self.Integrator > self.Integrator_max:
             self.Integrator = self.Integrator_max
