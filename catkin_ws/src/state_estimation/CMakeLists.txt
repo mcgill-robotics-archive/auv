@@ -14,6 +14,7 @@ find_package(catkin REQUIRED COMPONENTS
   geometry_msgs
   sensor_msgs
   tf
+  cv_bridge
   rospy
   auv_msgs
   angles
@@ -23,6 +24,7 @@ find_package(catkin REQUIRED COMPONENTS
 
 ## Boost requires its own find_package
 find_package(Boost REQUIRED COMPONENTS)
+find_package(OpenCV REQUIRED)
 
 ## Have to put this in a separate find_package because we need to
 ## find cmake_modules first
@@ -39,9 +41,10 @@ catkin_package(
   angles
   tf_conversions
   eigen_conversions
+  cv_bridge
 )
 
-include_directories(${Boost_INCLUDE_DIRS} ${catkin_INCLUDE_DIRS})
+include_directories(${Boost_INCLUDE_DIRS} ${catkin_INCLUDE_DIRS} ${OpenCV_INCLUDE_DIRS})
 
 ###########
 ## Build ##
@@ -51,3 +54,4 @@ add_subdirectory(pose)
 add_subdirectory(tf)
 add_subdirectory(ukf)
 add_subdirectory(servo)
+add_subdirectory(detectors)
