@@ -5,6 +5,16 @@ from std_msgs.msg import Float64
 
 # Eventually we will import more msg type
 
+def check_depth_sensor():
+    print("We will begin with the Depth Sensor dry test.")
+
+    try:
+        wait_for_message("/raw_depth", Float64, 3)
+
+    except Exception:
+        print ("> The Depth Sensor is not connected.")
+        pass
+
 if __name__ == "__main__":
 
     """Calls function wait_for_message which creates an object for each sensor
@@ -23,17 +33,11 @@ if __name__ == "__main__":
     if Agreement == 'no' or Agreement == 'No':
         print ("Maybe later. Goodbye!")
 
-    elif Agreement == 'yes' or Agreement == 'Yes':
+    elif Agreement == 'yes' or Agreement == 'Yes' or Agreement == 'Y' \
+         or Agreement == 'y':
         print("Excellent choice!")
         time.sleep(1)
-        print("We will begin with the Depth Sensor dry test.")
-
-        try:
-            wait_for_message("/raw_depth", Float64, 3)
-
-        except Exception:
-            print ("> The Depth Sensor is not connected.")
-            pass
+        check_depth_sensor()
 
         time.sleep(1)
 
