@@ -7,12 +7,24 @@ from std_msgs.msg import Float64
 
 def check_depth_sensor():
     print("We will begin with the Depth Sensor dry test.")
+    check_depth_raw()
+    check_depth_pressure()
+    print("Depth sensor dry test completed")
 
+def check_depth_raw():
     try:
         wait_for_message("/raw_depth", Float64, 3)
 
     except Exception:
-        print ("> The Depth Sensor is not connected.")
+        print ("> /raw_depth is not being published.")
+        pass
+
+def check_depth_pressure():
+    try:
+        wait_for_message("/depth/pressure", Float64, 3)
+
+    except Exception:
+        print ("> /depth/pressure is not being published.")
         pass
 
 if __name__ == "__main__":
