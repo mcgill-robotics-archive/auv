@@ -4,7 +4,7 @@
  * @authors Jana Pavlasek, Paul Wu
  */
 
-#include "laneDetector.h"
+#include "lane_detector.h"
 
 #include <vector>
 #include <opencv2/core/core.hpp>
