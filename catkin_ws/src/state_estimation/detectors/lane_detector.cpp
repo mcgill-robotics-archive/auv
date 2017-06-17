@@ -101,23 +101,23 @@ void LaneDetector::imageCallback(const sensor_msgs::Image::ConstPtr& msg)
   /*
    * We need to only publish if the lane we find is actually a valid lane.
    */
-  geometry_msgs::PolygonStamped lane = findLane(contours, orange_filter.size());
-  lane_pub_.publish(lane);
+  findLane(contours, orange_filter.size());
+  lane_pub_.publish(lane_);
 }
 
-geometry_msgs::PolygonStamped LaneDetector::findLane(vector<vector<Point> > &contours, Size img_size)
+void LaneDetector::findLane(vector<vector<Point> > &contours, Size img_size)
 {
-  geometry_msgs::PolygonStamped lane;
+  // Clear points so we do not have carry over from previous call.
+  pts_.clear();
+  lane_.polygon.points = pts_;
 
-  std::vector<geometry_msgs::Point32> pts;
-
-  lane.header.stamp = ros::Time::now();
-  lane.header.frame_id = "down_cam";
+  lane_.header.stamp = ros::Time::now();
+  lane_.header.frame_id = "down_cam";
 
   // If there are no contours, return an empty message.
   if (contours.size() == 0)
   {
-    return lane;
+    return;
   }
 
   // Assume that the lane is the object with the largest area.
@@ -140,20 +140,14 @@ geometry_msgs::PolygonStamped LaneDetector::findLane(vector<vector<Point> > &con
 
   lane_rect = minAreaRect(Mat(contours[max_idx]));
 
-  // We know the approximate ratio of the side lengths of the lane, which we use here to filter out false positives.
-  float long_side = max(lane_rect.size.width, lane_rect.size.height);
-  float short_side = min(lane_rect.size.width, lane_rect.size.height);
-
-  float side_ratio = long_side / short_side;
-
   // Check that side_ratio is between the lower and upper bound of the lane ratio.
-  if (side_ratio - LANE_DIM_RATIO_LOWER_BOUND <= LANE_DIM_RATIO_UPPER_BOUND - LANE_DIM_RATIO_LOWER_BOUND)
+  if (rectangleSideRatioFilter(lane_rect))
   {
-    return extractLanePoints(lane, img_size);
+    extractLanePoints(img_size, lane_rect);
   }
 }
 
-geometry_msgs::PolygonStamped extractLanePoints(geometry_msgs::PolygonStamped lane, Size img_size)
+void LaneDetector::extractLanePoints(Size img_size, RotatedRect lane_rect)
 {
   // Get the points of the rectangle.
   Point2f rect_points[4];
@@ -170,7 +164,7 @@ geometry_msgs::PolygonStamped extractLanePoints(geometry_msgs::PolygonStamped la
     geometry_msgs::Point32 pt;
     pt.x = rect_points[i].x;
     pt.y = rect_points[i].y;
-    pts.push_back(pt);
+    pts_.push_back(pt);
   }
 
   // Only visualize if requested.
@@ -181,9 +175,20 @@ geometry_msgs::PolygonStamped extractLanePoints(geometry_msgs::PolygonStamped la
     waitKey(10);
   }
 
-  lane.polygon.points = pts;
+  lane_.polygon.points = pts_;
+}
 
-  return lane;
+bool LaneDetector::rectangleSideRatioFilter(RotatedRect lane_rect)
+{
+  // We know the approximate ratio of the side lengths of the lane, which we use here to filter out false positives.
+  float long_side = max(lane_rect.size.width, lane_rect.size.height);
+  float short_side = min(lane_rect.size.width, lane_rect.size.height);
+
+  float side_ratio = long_side / short_side;
+
+  // Check that side_ratio is between the lower and upper bound of the lane ratio.
+  bool in_range = side_ratio - LANE_DIM_RATIO_LOWER_BOUND <= LANE_DIM_RATIO_UPPER_BOUND - LANE_DIM_RATIO_LOWER_BOUND;
+  return in_range;
 }
 
 int main(int argc, char **argv)

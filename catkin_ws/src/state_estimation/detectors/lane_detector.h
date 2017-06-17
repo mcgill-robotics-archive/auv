@@ -23,6 +23,9 @@ public:
   LaneDetector(ros::NodeHandle& nh);
 
 private:
+  geometry_msgs::PolygonStamped lane_;
+  std::vector<geometry_msgs::Point32> pts_;
+
   // The actual ratio is 8:1.
   const float LANE_DIM_RATIO_LOWER_BOUND = 12;
   const float LANE_DIM_RATIO_UPPER_BOUND = 5;
@@ -55,7 +58,7 @@ private:
    * @param  img_size Size of image, for display purposes only.
    * @return          Lane message to publish.
    */
-  geometry_msgs::PolygonStamped findLane(vector<vector<Point> > &contours, Size img_size);
+  void findLane(vector<vector<Point> > &contours, Size img_size);
 
   /**
    * @brief Given a valid bounding box, extract the vertices.
@@ -63,5 +66,10 @@ private:
    * @param img_size  Size of image, for display purposes only.
    * @return          Lane message to publish.
    */
-  geometry_msgs::PolygonStamped extractLanePoints(geometry_msgs::PolygonStamped lane, Size img_size);
+  void extractLanePoints(Size img_size, RotatedRect lane_rect);
+
+  /**
+   * @brief Return true if the ratio of sides falls within an acceptable range of what we expect for the lane task.
+   */
+  bool rectangleSideRatioFilter(RotatedRect lane_rect);
 };
