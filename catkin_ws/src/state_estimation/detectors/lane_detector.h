@@ -29,6 +29,9 @@ private:
   // The actual ratio is 8:1.
   const float LANE_DIM_RATIO_LOWER_BOUND = 12;
   const float LANE_DIM_RATIO_UPPER_BOUND = 5;
+  const float AREA_RATIO_LOWER_BOUND = 0.7;
+  const float AREA_RATIO_UPPER_BOUND = 1.3;
+
   ros::Subscriber image_sub_;
   ros::Publisher lane_pub_;
   ros::ServiceServer toggle_;
@@ -56,20 +59,29 @@ private:
    * @brief Finds the lane from a list of contours.
    * @param  contours List of contours found in the image.
    * @param  img_size Size of image, for display purposes only.
-   * @return          Lane message to publish.
+   * @return          Whether or not the lane we detect appears valid.
    */
-  void findLane(vector<vector<Point> > &contours, Size img_size);
+  bool findLane(vector<vector<Point> > &contours, Size img_size);
 
   /**
    * @brief Given a valid bounding box, extract the vertices.
-   * @param lane      The lane message to be populated.
-   * @param img_size  Size of image, for display purposes only.
-   * @return          Lane message to publish.
+   * @param img_size    Size of image, for display purposes only.
+   * @param lane_rect   The bounding rectangle of the lane.
    */
   void extractLanePoints(Size img_size, RotatedRect lane_rect);
 
   /**
    * @brief Return true if the ratio of sides falls within an acceptable range of what we expect for the lane task.
+   * @param lane_rect   The bounding rectangle of the lane.
+   * @return            True if the side ratio is within range, false otherwise.
    */
   bool rectangleSideRatioFilter(RotatedRect lane_rect);
+
+  /**
+   * @brief Return true if the ratio of areas falls within an acceptable range of what we expect for the lane task.
+   * @param lane_rect   The bounding rectangle of the lane.
+   * @param blob_area   The actual area of the blob detected by OpenCV.
+   * @return            True if the side ratio is within range, false otherwise.
+   */
+  bool rectangleAreaRatioFilter(RotatedRect lane_rect, float blob_area);
 };

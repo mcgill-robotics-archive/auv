@@ -98,14 +98,18 @@ void LaneDetector::imageCallback(const sensor_msgs::Image::ConstPtr& msg)
   /// Find contours
   findContours(orange_filter, contours, hierarchy, CV_RETR_TREE, CV_CHAIN_APPROX_SIMPLE, Point(0, 0));
 
+  // Attempt to find the lane.
+  bool valid_lane = findLane(contours, orange_filter.size());
+
   /*
    * We need to only publish if the lane we find is actually a valid lane.
    */
-  findLane(contours, orange_filter.size());
-  lane_pub_.publish(lane_);
+  if (valid_lane){
+    lane_pub_.publish(lane_);
+  }
 }
 
-void LaneDetector::findLane(vector<vector<Point> > &contours, Size img_size)
+bool LaneDetector::findLane(vector<vector<Point> > &contours, Size img_size)
 {
   // Clear points so we do not have carry over from previous call.
   pts_.clear();
@@ -117,7 +121,7 @@ void LaneDetector::findLane(vector<vector<Point> > &contours, Size img_size)
   // If there are no contours, return an empty message.
   if (contours.size() == 0)
   {
-    return;
+    return false;
   }
 
   // Assume that the lane is the object with the largest area.
@@ -137,13 +141,19 @@ void LaneDetector::findLane(vector<vector<Point> > &contours, Size img_size)
 
   // Find the rectangle of best fit to the lane contour.
   RotatedRect lane_rect;
-
   lane_rect = minAreaRect(Mat(contours[max_idx]));
 
-  // Check that side_ratio is between the lower and upper bound of the lane ratio.
-  if (rectangleSideRatioFilter(lane_rect))
+  // Filter out false positives:
+  // 1 - Check that side_ratio is between the lower and upper bound of the lane ratio.
+  // 2 - Check that the ratio of the area of the bounding box and the actual area is within an acceptable range.
+  if (rectangleSideRatioFilter(lane_rect) && rectangleAreaRatioFilter(lane_rect, max_area))
   {
     extractLanePoints(img_size, lane_rect);
+    return true;
+  }
+  else
+  {
+    return false;
   }
 }
 
@@ -187,8 +197,16 @@ bool LaneDetector::rectangleSideRatioFilter(RotatedRect lane_rect)
   float side_ratio = long_side / short_side;
 
   // Check that side_ratio is between the lower and upper bound of the lane ratio.
-  bool in_range = side_ratio - LANE_DIM_RATIO_LOWER_BOUND <= LANE_DIM_RATIO_UPPER_BOUND - LANE_DIM_RATIO_LOWER_BOUND;
-  return in_range;
+  return side_ratio - LANE_DIM_RATIO_LOWER_BOUND <= LANE_DIM_RATIO_UPPER_BOUND - LANE_DIM_RATIO_LOWER_BOUND;
+}
+
+bool LaneDetector::rectangleAreaRatioFilter(RotatedRect lane_rect, float blob_area)
+{
+  float lane_rect_area = lane_rect.size.width * lane_rect.size.height;
+  float rect_to_blob_area_ratio = lane_rect_area / blob_area;
+
+  // Check that rect_to_blob_area_ratio is between AREA_RATIO_LOWER_BOUND and AREA_RATIO_UPPER_BOUND.
+  return rect_to_blob_area_ratio - AREA_RATIO_LOWER_BOUND <= AREA_RATIO_UPPER_BOUND - AREA_RATIO_LOWER_BOUND;
 }
 
 int main(int argc, char **argv)
