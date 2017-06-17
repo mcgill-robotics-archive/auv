@@ -23,6 +23,9 @@ public:
   LaneDetector(ros::NodeHandle& nh);
 
 private:
+  // The actual ratio is 8:1.
+  const float LANE_DIM_RATIO_LOWER_BOUND = 12;
+  const float LANE_DIM_RATIO_UPPER_BOUND = 5;
   ros::Subscriber image_sub_;
   ros::Publisher lane_pub_;
   ros::ServiceServer toggle_;
@@ -53,4 +56,12 @@ private:
    * @return          Lane message to publish.
    */
   geometry_msgs::PolygonStamped findLane(vector<vector<Point> > &contours, Size img_size);
+
+  /**
+   * @brief Given a valid bounding box, extract the vertices.
+   * @param lane      The lane message to be populated.
+   * @param img_size  Size of image, for display purposes only.
+   * @return          Lane message to publish.
+   */
+  geometry_msgs::PolygonStamped extractLanePoints(geometry_msgs::PolygonStamped lane, Size img_size);
 };

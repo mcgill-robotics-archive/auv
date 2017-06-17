@@ -1,7 +1,7 @@
 /**
  * laneDetector.cpp
  * @description A class to detect the lane using OpenCV filters.
- * @authors Jana Pavlasek, Paul Wu
+ * @authors Jana Pavlasek, Paul Wu, Malcolm Watt
  */
 
 #include "lane_detector.h"
@@ -10,11 +10,7 @@
 #include <opencv2/core/core.hpp>
 #include <opencv2/imgproc/imgproc.hpp>
 #include <opencv2/highgui/highgui.hpp>
-#if CV_MAJOR_VERSION == 2
-// do opencv 2 code
-#elif CV_MAJOR_VERSION == 3
-// do opencv 3 code
-#endif
+
 #include <iostream>
 #include <stdio.h>
 #include <stdlib.h>
@@ -22,8 +18,7 @@
 #include <geometry_msgs/Point32.h>
 
 
-LaneDetector::LaneDetector(ros::NodeHandle& nh) :
-  detect_(false)
+LaneDetector::LaneDetector(ros::NodeHandle& nh) : detect_(false)
 {
   // PARAMS
   ros::param::param<bool>("~visualize_lane", visualize_, false);
@@ -103,7 +98,11 @@ void LaneDetector::imageCallback(const sensor_msgs::Image::ConstPtr& msg)
   /// Find contours
   findContours(orange_filter, contours, hierarchy, CV_RETR_TREE, CV_CHAIN_APPROX_SIMPLE, Point(0, 0));
 
-  lane_pub_.publish(findLane(contours, orange_filter.size()));
+  /*
+   * We need to only publish if the lane we find is actually a valid lane.
+   */
+  geometry_msgs::PolygonStamped lane = findLane(contours, orange_filter.size());
+  lane_pub_.publish(lane);
 }
 
 geometry_msgs::PolygonStamped LaneDetector::findLane(vector<vector<Point> > &contours, Size img_size)
@@ -125,6 +124,7 @@ geometry_msgs::PolygonStamped LaneDetector::findLane(vector<vector<Point> > &con
   float max_area = 0.0;
   int max_idx = 0;
 
+  // Find the contour with the largest area.
   for(int i = 0; i < contours.size(); i++)
   {
     float current_area = contourArea(contours[i]);
@@ -140,6 +140,21 @@ geometry_msgs::PolygonStamped LaneDetector::findLane(vector<vector<Point> > &con
 
   lane_rect = minAreaRect(Mat(contours[max_idx]));
 
+  // We know the approximate ratio of the side lengths of the lane, which we use here to filter out false positives.
+  float long_side = max(lane_rect.size.width, lane_rect.size.height);
+  float short_side = min(lane_rect.size.width, lane_rect.size.height);
+
+  float side_ratio = long_side / short_side;
+
+  // Check that side_ratio is between the lower and upper bound of the lane ratio.
+  if (side_ratio - LANE_DIM_RATIO_LOWER_BOUND <= LANE_DIM_RATIO_UPPER_BOUND - LANE_DIM_RATIO_LOWER_BOUND)
+  {
+    return extractLanePoints(lane, img_size);
+  }
+}
+
+geometry_msgs::PolygonStamped extractLanePoints(geometry_msgs::PolygonStamped lane, Size img_size)
+{
   // Get the points of the rectangle.
   Point2f rect_points[4];
   lane_rect.points(rect_points);
