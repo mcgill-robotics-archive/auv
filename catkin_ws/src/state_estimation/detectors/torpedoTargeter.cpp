@@ -4,7 +4,7 @@
  * @authors Auguste Lalande
  */
 
-#include <torpedoTargeter.h>
+#include "torpedoTargeter.h"
 
 
 RNG rng(12345);
