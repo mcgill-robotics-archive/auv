@@ -21,4 +21,4 @@ catkin_package(
   rospy
 )
 
-catkin_add_nosetests(test)
+# catkin_add_nosetests(test)
