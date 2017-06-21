@@ -25,6 +25,7 @@ class GoToDepthServer(object):
                 cnt += 1
             else:
                 cnt = 0
+            rospy.sleep(1)
 
         depth_maintainer.stop()
         self.server.set_succeeded()
