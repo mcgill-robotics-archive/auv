@@ -15,7 +15,7 @@ if __name__ == '__main__':
     # TODO: All testing values. Replace these with params
     goal = GoToDepthGoal()
     goal.depth = 3.0
-    goal.margin = 0.3
+    goal.stable_threshold = 0.3
     goal.stable_periods = 20
     client.send_goal(goal)
     client.wait_for_result(rospy.Duration(30))
