@@ -6,9 +6,20 @@ find_package(catkin REQUIRED COMPONENTS
   std_msgs
   auv_msgs
   geometry_msgs
+  genmsg
+  actionlib_msgs
+  actionlib
+)
+
+add_action_files(DIRECTORY
+    action FILES
+        GoToDepth.action
 )
 
 generate_messages(DEPENDENCIES
     geometry_msgs
     std_msgs
+    actionlib_msgs
 )
+
+add_subdirectory(test)
