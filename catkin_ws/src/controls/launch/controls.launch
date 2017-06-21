@@ -1,7 +1,6 @@
 <launch>
     <!-- Launch both nodes -->
-    <node name="controls" pkg="controls" type="controls" respawn="false" output="screen">
-    	<rosparam command="load" file="$(find controls)/config/params.yaml" />
+    <node name="controls" pkg="controls" type="superimposer.py" respawn="false" output="screen">
     </node>
     <node name="thrust_mapper" pkg="controls" type="thrust_mapper" respawn="false" output="screen">
       <remap from="thrust_cmds" to="electrical_interface/motor"/>

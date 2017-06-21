@@ -1,0 +1,27 @@
+<launch>
+    <node
+        name="depth_client"
+        pkg="controls"
+        type="depth_client.py"
+        respawn="false"
+        output="screen">
+    </node>
+    <node
+        name="gotodepth_server"
+        pkg="controls"
+        type="controller_server.py"
+        respawn="false"
+        output="screen">
+    </node>
+    <node
+        name="mocktf"
+        pkg="controls"
+        type="mocktf.py"
+        respawn="false"
+        output="screen">
+    </node>
+    <group ns="PID">
+        <rosparam command="load" file="$(find controls)/config/pid_gains.yaml" />
+    </group>
+    <include file="$(find controls)/launch/controls.launch"/>
+</launch>
