@@ -44,3 +44,6 @@ windows:
   - lane_detector:
       panes:
         - roslaunch state_estimation detectors.launch --wait
+  - detector_service_call:
+      panes:
+        - rosservice call /lane_detector/set_state --wait
