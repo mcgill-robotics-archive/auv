@@ -27,10 +27,10 @@ private:
   std::vector<geometry_msgs::Point32> pts_;
 
   // The actual ratio is 8:1.
-  const float LANE_DIM_RATIO_LOWER_BOUND = 12;
-  const float LANE_DIM_RATIO_UPPER_BOUND = 5;
-  const float AREA_RATIO_LOWER_BOUND = 0.7;
-  const float AREA_RATIO_UPPER_BOUND = 1.3;
+  float lane_dim_ratio_lower_bound_;
+  float lane_dim_ratio_upper_bound_;
+  float area_ratio_lower_bound_;
+  float area_ratio_upper_bound_;
 
   ros::Subscriber image_sub_;
   ros::Publisher lane_pub_;

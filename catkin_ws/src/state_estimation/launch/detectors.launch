@@ -1,7 +1,15 @@
 <launch>
     <arg name="visualize" default="false" />
+    <arg name="lane_dim_ratio_upper" default="10" />
+    <arg name="lane_dim_ratio_lower" default="5" />
+    <arg name="lane_area_ratio_upper" default="1.5" />
+    <arg name="lane_area_ratio_lower" default="0.6" />
 
     <node name="lane_detector" type="lane_detector" pkg="state_estimation">
         <param name="visualize_lane" value="$(arg visualize)" />
+        <param name="lane_dimension_ratio_lower_bound" value="$(arg lane_dim_ratio_lower)" />
+        <param name="lane_dimension_ratio_upper_bound" value="$(arg lane_dim_ratio_upper)" />
+        <param name="lane_area_ratio_upper_bound" value="$(arg lane_area_ratio_upper)" />
+        <param name="lane_area_ratio_lower_bound" value="$(arg lane_area_ratio_lower)" />
     </node>
 </launch>

@@ -22,6 +22,11 @@ LaneDetector::LaneDetector(ros::NodeHandle& nh) : detect_(false)
 {
   // PARAMS
   ros::param::param<bool>("~visualize_lane", visualize_, false);
+  ros::param::param<float>("~lane_dimension_ratio_upper_bound", lane_dim_ratio_upper_bound_, 10);
+  ros::param::param<float>("~lane_dimension_ratio_lower_bound", lane_dim_ratio_lower_bound_, 5);
+  ros::param::param<float>("~lane_area_ratio_upper_bound", area_ratio_upper_bound_, 1.5);
+  ros::param::param<float>("~lane_area_ratio_lower_bound", area_ratio_lower_bound_, 0.6);
+
   // PUBLISHERS & SUBSCRIBERS
   image_sub_ = nh.subscribe<sensor_msgs::Image>("camera_down/image_color", 1, &LaneDetector::imageCallback, this);
   lane_pub_ = nh.advertise<geometry_msgs::PolygonStamped>("state_estimation/lane", 10);
@@ -197,7 +202,7 @@ bool LaneDetector::rectangleSideRatioFilter(RotatedRect lane_rect)
   float side_ratio = long_side / short_side;
 
   // Check that side_ratio is between the lower and upper bound of the lane ratio.
-  return side_ratio - LANE_DIM_RATIO_LOWER_BOUND <= LANE_DIM_RATIO_UPPER_BOUND - LANE_DIM_RATIO_LOWER_BOUND;
+  return side_ratio - lane_dim_ratio_lower_bound_ <= lane_dim_ratio_upper_bound_ - lane_dim_ratio_lower_bound_;
 }
 
 bool LaneDetector::rectangleAreaRatioFilter(RotatedRect lane_rect, float blob_area)
@@ -206,7 +211,7 @@ bool LaneDetector::rectangleAreaRatioFilter(RotatedRect lane_rect, float blob_ar
   float rect_to_blob_area_ratio = lane_rect_area / blob_area;
 
   // Check that rect_to_blob_area_ratio is between AREA_RATIO_LOWER_BOUND and AREA_RATIO_UPPER_BOUND.
-  return rect_to_blob_area_ratio - AREA_RATIO_LOWER_BOUND <= AREA_RATIO_UPPER_BOUND - AREA_RATIO_LOWER_BOUND;
+  return rect_to_blob_area_ratio - area_ratio_lower_bound_ <= area_ratio_upper_bound_ - area_ratio_lower_bound_;
 }
 
 int main(int argc, char **argv)
