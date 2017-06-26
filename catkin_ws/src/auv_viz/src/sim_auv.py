@@ -20,9 +20,12 @@ class FakeAUV(object):
         self.vel_history = [Vector3(), Vector3()]
         self.ang_vel_history = [Vector3(), Vector3()]
 
-        self.control_sub = rospy.Subscriber("controls/wrench", Wrench, self.control_cb, queue_size=1)
+        self.surface = 0.0  # Surface of the water.
 
-        self.current_dist = Vector3()
+        self.control_sub = rospy.Subscriber("controls/wrench", Wrench, self.control_cb, queue_size=1)
+        self.timer = rospy.Timer(rospy.Duration(self.period), self.broadcast)
+
+        self.current_pos = Vector3()
         self.current_angle = Vector3()
 
         self.m = 35                 # mass - kg
@@ -42,6 +45,20 @@ class FakeAUV(object):
         self.Fg = self.m * self.g             # Grafivational force
         self.Fb = self.V * self.rho * self.g  # Buoyancy force
 
+    def broadcast(self, _):
+        # Turn the distances into the correct form.
+        quaternion = quaternion_from_euler(self.current_angle.x, self.current_angle.y, self.current_angle.z)
+        position = (self.current_pos.x, -self.current_pos.y, -self.current_pos.z)
+
+        # Brodcast the transform.
+        self.broadcaster.sendTransform(
+            position,
+            quaternion,
+            rospy.Time.now(),
+            self.robot_frame,
+            self.map_frame
+        )
+
     def control_cb(self, msg):
         vel, ang_vel = self.wrench_to_twist(msg)
 
@@ -55,21 +72,11 @@ class FakeAUV(object):
         self.ang_vel_history.append(ang_vel)
 
         # Integrate to get distance change.
-        self.current_dist = add(self.current_dist, self.integrateAll(self.vel_history))
+        self.current_pos = add(self.current_pos, self.integrateAll(self.vel_history))
         self.current_angle = add(self.current_angle, self.integrateAll(self.ang_vel_history))
 
-        # Turn the distances into the correct form.
-        quaternion = quaternion_from_euler(self.current_angle.x, self.current_angle.y, self.current_angle.z)
-        position = (self.current_dist.x, -self.current_dist.y, -self.current_dist.z)
-
-        # Brodcast the transform.
-        self.broadcaster.sendTransform(
-            position,
-            quaternion,
-            rospy.Time.now(),
-            self.robot_frame,
-            self.map_frame
-        )
+        if self.current_pos.z > self.surface:
+            self.current_pos.z = self.surface
 
     def wrench_to_twist(self, wrench):
         vel = Vector3()
@@ -85,8 +92,6 @@ class FakeAUV(object):
 
         ang_vel.z = ((wrench.torque.z - self.drag(self.ang_vel_history[0].z, "theta")) *
                      self.period * self.rot_coeff) + self.ang_vel_history[0].z
-
-        print "vel", vel, "ang vel", ang_vel
 
         return vel, ang_vel
 
