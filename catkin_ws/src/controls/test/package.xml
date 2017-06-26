@@ -1,0 +1,11 @@
+<?xml version="1.0"?>
+<package>
+  <name>test</name>
+  <version>0.0.0</version>
+  <description>The test package</description>
+
+  <maintainer email="justin.bell@mail.mcgill.ca">Justin</maintainer>
+
+  <buildtool_depend>catkin</buildtool_depend>
+
+</package>
