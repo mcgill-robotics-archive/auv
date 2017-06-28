@@ -40,8 +40,7 @@ class FakeAUV(object):
         self.drag_coeff_theta = 3   # all drag coeffs together
         self.rot_coeff = 0.1        # r / I
 
-        # We'll ignore buoyancy for now, because we lack a water surface (avoid floating up forever)
-        # TODO - Jana: Add a water surface by setting z velocity to zero above a surface level/.
+        # We'll ignore these for now for simplicity.
         self.Fg = self.m * self.g             # Grafivational force
         self.Fb = self.V * self.rho * self.g  # Buoyancy force
 
