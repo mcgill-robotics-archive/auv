@@ -58,6 +58,24 @@ class FakeAUV(object):
             self.map_frame
         )
 
+        # Brodcast floating horizon and initial horizon.
+        self.broadcaster.sendTransform(
+            (0, 0, 0),
+            (0, 0, 0, 1),
+            rospy.Time.now(),
+            "floating_horizon",
+            self.map_frame
+        )
+
+        # Brodcast floating horizon and initial horizon.
+        self.broadcaster.sendTransform(
+            (0, 0, 0),
+            (0, 0, 0, 1),
+            rospy.Time.now(),
+            "initial_horizon",
+            self.map_frame
+        )
+
     def control_cb(self, msg):
         vel, ang_vel = self.wrench_to_twist(msg)
 
