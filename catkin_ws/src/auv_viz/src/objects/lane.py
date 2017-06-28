@@ -66,10 +66,10 @@ class Lane(object):
     def pub_lane(self, _):
         # Get the transform between the lane and the robot.
         try:
-            self.listener.waitForTransform("lane", "base_link", rospy.Time.now(), rospy.Duration(1.0))
-            trans, rot = self.listener.lookupTransform("lane", "base_link", rospy.Time())
+            self.listener.waitForTransform("lane", "robot", rospy.Time.now(), rospy.Duration(1.0))
+            trans, rot = self.listener.lookupTransform("lane", "robot", rospy.Time())
         except Exception:
-            rospy.logerr_throttle(30, "Can't get tranform between lane and base_link")
+            rospy.logerr_throttle(30, "Can't get tranform between lane and robot")
             return
 
         roll, pitch, yaw = tf.transformations.euler_from_quaternion(rot)

@@ -3,7 +3,7 @@
 import rospy
 import tf
 import numpy as np
-from geometry_msgs.msg import Wrench, Twist
+from geometry_msgs.msg import Wrench
 from geometry_msgs.msg import Vector3
 from tf.transformations import quaternion_from_euler
 
@@ -12,7 +12,7 @@ class FakeAUV(object):
 
     def __init__(self):
         self.broadcaster = tf.TransformBroadcaster()
-        self.robot_frame = "base_link"
+        self.robot_frame = "robot"
         self.map_frame = "map"
 
         self.window = 2
