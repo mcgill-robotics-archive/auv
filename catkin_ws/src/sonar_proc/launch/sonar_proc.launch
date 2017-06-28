@@ -13,4 +13,8 @@
   <node name="task_point" pkg="sonar_proc" type="task_point.py" output="screen">
     <param name="manuever_length" value="5.0" />
   </node>
+
+  <!-- Needed because the driver publishes the scan in the "sonar" frame. -->
+  <node pkg="tf" type="static_transform_publisher" name="sonar_broadcaster" args="0 0 0 0 0 0 1 robot sonar 100" />
+
 </launch>
