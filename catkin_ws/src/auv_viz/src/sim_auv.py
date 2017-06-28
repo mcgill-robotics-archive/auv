@@ -75,7 +75,7 @@ class FakeAUV(object):
         self.current_pos = add(self.current_pos, self.integrateAll(self.vel_history))
         self.current_angle = add(self.current_angle, self.integrateAll(self.ang_vel_history))
 
-        if self.current_pos.z > self.surface:
+        if self.current_pos.z < self.surface:
             self.current_pos.z = self.surface
 
     def wrench_to_twist(self, wrench):

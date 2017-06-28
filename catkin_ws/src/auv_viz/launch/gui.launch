@@ -2,6 +2,7 @@
   <arg name="rviz_config" default="$(find auv_viz)/config/robot.rviz" />
 
   <include file="$(find auv_description)/launch/description.launch" />
+  <include file="$(find controls)/launch/controls.launch" />
   <node name="auv_rviz_sim" pkg="auv_viz" type="sim_auv.py"/>
   <node name="rviz" pkg="rviz" type="rviz" args="-d $(arg rviz_config)"/>
 </launch>
