@@ -19,10 +19,10 @@ class Move(object):
 
     def __init__(self, point):
         """Constructor for the Move object."""
-        self.surge_pub = rospy.Publisher('controls/superimposer/surge', Float64, queue_size=1)
+        self.surge_pub = rospy.Publisher(
+            'controls/superimposer/surge', Float64, queue_size=1)
         self.preempted = False
         self.distance = point["distance"]
-        print point
 
     def start(self, server, feedback_msg):
         """Do the move action."""
@@ -30,20 +30,24 @@ class Move(object):
         time = self.get_time(fabs(self.distance))
         start = rospy.Time.now()
 
+        self.surge_pub.publish(self.VELOCITY * self.VEL_COEFFICIENT)
+
         # Send surge commands.
         # Should run RATE * TIME times. For example, if we send cmds at
         # 10 cmd/s (Hz), for 5 seconds, we need to loop 50 times.
         for i in range(0, int(self.RATE * time)):
-            rospy.loginfo("Sending cmd {}s / {}s".format(float(i) / self.RATE, time))
-
-            self.surge_pub.publish(self.VELOCITY * self.VEL_COEFFICIENT)
+            rospy.loginfo(
+                "Sending cmd {}s / {}s".format(float(i) / self.RATE, time))
 
             if self.preempted:
+                self.surge_pub.publish(0)
                 return
 
             rate.sleep()
 
-        rospy.loginfo("Done move in time {}".format((rospy.Time.now() - start).to_sec()))
+        self.surge_pub.publish(0)
+        rospy.loginfo(
+            "Done move in time {}".format((rospy.Time.now() - start).to_sec()))
 
     def get_time(self, distance):
         """Get the time for which to travel at the given velocity to achieve
