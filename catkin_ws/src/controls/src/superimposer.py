@@ -67,6 +67,6 @@ if __name__ == '__main__':
 
     super_imposer = SuperImposer()
     # TODO: experiment with referesh rate
-    timer = rospy.Timer(rospy.Duration(0, 1), super_imposer.update)
+    timer = rospy.Timer(rospy.Duration(0.1), super_imposer.update)
     rospy.on_shutdown(timer.shutdown)
     rospy.spin()

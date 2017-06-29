@@ -22,12 +22,6 @@ class Shoot(object):
         # file to True
         setattr(solenoid_command, self.projectile_name, True)
 
-        # Handle actionlib server preemption
-        if server.is_preempt_requested():
-            rospy.loginfo("Shoot preempted")
-            server.set_preempted()
-            return
-
         while self.pub.get_num_connections() == 0:
             rospy.logdebug("Waiting for subscribers in Shoot")
             continue
@@ -39,3 +33,7 @@ class Shoot(object):
 
         feedback_msg.is_done = True
         server.publish_feedback(feedback_msg)
+
+    def stop(self):
+        """Nothing to do for stop."""
+        pass
