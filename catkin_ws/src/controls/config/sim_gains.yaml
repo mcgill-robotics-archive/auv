@@ -1,29 +1,10 @@
-#All gains
-kp_xPos: 5.0
-ki_xPos: 0.0
-kd_xPos: 1.0
+# Lists represent the K_p, K_i, K_d gains respectively
+translation_gains:
+    surge: [20.0, 0.0, 0.0]
+    sway: [50.0, 0.0, 0.0]
+    heave: [50.0, 0.0, 0.0]
 
-kp_yPos: 5.0
-ki_yPos: 0.0
-kd_yPos: 1.0
-
-kp_depth: 20
-ki_depth: 0.0
-kd_depth: 0.0
-
-kp_pitch: 5.0
-ki_pitch: 0.0
-kd_pitch: 1.0
-
-kp_roll: 5.0
-ki_roll: 0.0
-kd_roll: 1.0
-
-kp_yaw: 5.0
-ki_yaw: 0.0
-kd_yaw: 1.0
-
-#Speed Coefficients, they don't really mean anything right now...
-
-surge_coeff: 5
-sway_coeff: 5
+rotation_gains:
+    pitch: [5.0, 0.0, 0.0]
+    roll: [1.0, 0.0, 0.0]
+    yaw: [20.0, 0.0, 5.0]
