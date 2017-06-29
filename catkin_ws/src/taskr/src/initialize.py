@@ -52,3 +52,9 @@ class Initializer(object):
         for i in range(10):
             self.init_thrusters()
             rospy.sleep(0.1)
+
+    def stop(self):
+        """Nothing to do for stop.
+
+        TODO: Stop initialization"""
+        pass

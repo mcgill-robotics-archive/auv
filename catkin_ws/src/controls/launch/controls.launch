@@ -1,4 +1,8 @@
 <launch>
+    <arg name="gains_file" default="$(find controls)/config/pid_gains.yaml" />
+
+    <rosparam command="load" file="$(arg gains_file)" ns="PID" />
+
     <!-- Launch both nodes -->
     <node name="controls" pkg="controls" type="superimposer.py" respawn="false" output="screen">
     </node>
