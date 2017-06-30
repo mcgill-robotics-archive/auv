@@ -93,6 +93,10 @@
   <link name="base_link">
   </link>
 
+  <!-- This is needed for backwards compatibility only. -->
+  <link name="robot">
+  </link>
+
   <!-- Main PV -->
   <link name="main_hull">
     <visual>
@@ -147,6 +151,13 @@
     </inertial>
 
   </link>
+
+  <!-- This is needed for backwards compatibility only. -->
+  <joint name="base_to_robot" type="fixed">
+    <parent link="robot"/>
+    <child link="base_link"/>
+    <origin rpy="0 0 0" xyz="0 0 0"/>
+  </joint>
 
   <joint name="base_to_frame" type="fixed">
     <parent link="base_link"/>

@@ -1,0 +1,14 @@
+<?xml version="1.0"?>
+<package>
+  <name>auv_viz</name>
+  <version>0.0.0</version>
+  <description>The auv_viz package</description>
+
+  <maintainer email="jbpavlasek@gmail.com">Jana Pavlasek</maintainer>
+  <license>TODO</license>
+
+  <buildtool_depend>catkin</buildtool_depend>
+
+  <export>
+  </export>
+</package>
