@@ -48,11 +48,11 @@ cable directly to your computer.
 
 ## Build Status
 
-[master]: http://dev.mcgillrobotics.com:8080/buildStatus/icon?job=auv_master
-[master url]: http://dev.mcgillrobotics.com:8080/job/auv_master
+[master]: http://dev.mcgillrobotics.com/buildStatus/icon?job=auv_master
+[master url]: http://dev.mcgillrobotics.com/job/auv_master
 
-[dev]: http://dev.mcgillrobotics.com:8080/buildStatus/icon?job=auv_dev
-[dev url]: http://dev.mcgillrobotics.com:8080/job/auv_dev
+[dev]: http://dev.mcgillrobotics.com/buildStatus/icon?job=auv_dev
+[dev url]: http://dev.mcgillrobotics.com/job/auv_dev
 
 | Branch   | Status                  |
 |:--------:|:-----------------------:|
