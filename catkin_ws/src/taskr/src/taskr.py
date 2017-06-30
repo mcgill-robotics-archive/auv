@@ -4,6 +4,7 @@ import rospy
 from move import Move
 from shoot import Shoot
 from initialize import Initializer
+from acoustic_servo import AcousticServo
 from actionlib import SimpleActionServer
 from auv_msgs.msg import TaskStatus
 from planner.msg import TaskFeedback, TaskResult, TaskAction
@@ -16,11 +17,13 @@ current_task.action = TaskStatus.ACTION_IDLE
 # Maps to the objects and states.
 action_object_map = {"move": Move,
                      "shoot": Shoot,
-                     "initialize": Initializer}
+                     "initialize": Initializer,
+                     "acoustic_servo": AcousticServo}
 
 action_state_map = {"move": TaskStatus.MOVE,
                     "shoot": TaskStatus.SHOOT,
-                    "initialize": TaskStatus.INITIALIZE}
+                    "initialize": TaskStatus.INITIALIZE,
+                    "acoustic_servo": TaskStatus.OCTAGON}
 
 
 class Task(object):

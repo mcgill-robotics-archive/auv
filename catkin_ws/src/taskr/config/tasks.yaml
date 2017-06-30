@@ -35,7 +35,9 @@ torpedo:
 # OCTAGON TASK
 # Search for octogon using hydrophones.
 octagon:
-  actions: []
+  actions:
+    - maintain_depth: 1.0
+    - acoustic_servo: "hydrophones"
 
 # TEST TASK
 # Represents any series of actions for testing purposes.
