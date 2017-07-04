@@ -8,6 +8,8 @@
     <arg name="gains_file" value="$(arg gains_file)" />
   </include>
 
+  <node name="state_publisher" type="state_publisher" pkg="state_estimation" />
+
   <node name="auv_rviz_sim" pkg="auv_viz" type="sim_auv.py"/>
 
   <node name="rviz" pkg="rviz" type="rviz" args="-d $(arg rviz_config)"/>
