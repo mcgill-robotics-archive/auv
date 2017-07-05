@@ -37,7 +37,7 @@ windows:
         - clear
   - rviz:
       panes:
-        - rviz -d ${ROBOTIC_PATH}/auv/catkin_ws/src/state_estimation/detectors.rviz
+        - rviz -d ${ROBOTIC_PATH}/auv/catkin_ws/src/state_estimation/config/detectors.rviz
   - image_view:   
       panes:
         - rqt_image_view

@@ -8,9 +8,9 @@
     <node name="lane_detector" type="lane_detector" pkg="state_estimation"
             output="screen">
         <param name="visualize_lane" value="$(arg visualize)" />
-        <param name="lane_dimension_ratio_lower_bound" value="$(arg lane_dim_ratio_lower)" />
-        <param name="lane_dimension_ratio_upper_bound" value="$(arg lane_dim_ratio_upper)" />
-        <param name="lane_area_ratio_upper_bound" value="$(arg lane_area_ratio_upper)" />
-        <param name="lane_area_ratio_lower_bound" value="$(arg lane_area_ratio_lower)" />
+        <param name="lane_detector/dim_ratio/lower" value="$(arg lane_dim_ratio_lower)" />
+        <param name="lane_detector/dim_ratio/upper" value="$(arg lane_dim_ratio_upper)" />
+        <param name="lane_detector/area_ratio/upper" value="$(arg lane_area_ratio_upper)" />
+        <param name="lane_detector/area_ratio/lower" value="$(arg lane_area_ratio_lower)" />
     </node>
 </launch>

@@ -18,14 +18,15 @@
 #include <geometry_msgs/Point32.h>
 
 
-LaneDetector::LaneDetector(ros::NodeHandle& nh) : detect_(false)
+LaneDetector::LaneDetector(ros::NodeHandle& nh) :
+  detect_(false)
 {
   // PARAMS
   ros::param::param<bool>("~visualize_lane", visualize_, false);
-  ros::param::param<float>("~lane_dimension_ratio_upper_bound", lane_dim_ratio_upper_bound_, 10);
-  ros::param::param<float>("~lane_dimension_ratio_lower_bound", lane_dim_ratio_lower_bound_, 5);
-  ros::param::param<float>("~lane_area_ratio_upper_bound", area_ratio_upper_bound_, 1.5);
-  ros::param::param<float>("~lane_area_ratio_lower_bound", area_ratio_lower_bound_, 0.6);
+  ros::param::param<float>("~lane_detector/dim_ratio/upper", lane_dim_ratio_upper_bound_, 10);
+  ros::param::param<float>("~lane_detector/dim_ratio/lower", lane_dim_ratio_lower_bound_, 5);
+  ros::param::param<float>("~lane_detector/area_ratio/upper", area_ratio_upper_bound_, 1.5);
+  ros::param::param<float>("~lane_detector/area_ratio/lower", area_ratio_lower_bound_, 0.6);
 
   // PUBLISHERS & SUBSCRIBERS
   image_sub_ = nh.subscribe<sensor_msgs::Image>("camera_down/image_color", 1, &LaneDetector::imageCallback, this);
@@ -103,30 +104,26 @@ void LaneDetector::imageCallback(const sensor_msgs::Image::ConstPtr& msg)
   /// Find contours
   findContours(orange_filter, contours, hierarchy, CV_RETR_TREE, CV_CHAIN_APPROX_SIMPLE, Point(0, 0));
 
-  // Attempt to find the lane.
-  bool valid_lane = findLane(contours, orange_filter.size());
+  // Create a Lane.
+  geometry_msgs::PolygonStamped lane;
 
-  /*
-   * We need to only publish if the lane we find is actually a valid lane.
-   */
-  if (valid_lane){
-    lane_pub_.publish(lane_);
-  }
+  // Attempt to find the lane.
+  lane.polygon.points = findLane(contours, orange_filter.size());
+
+  lane.header.stamp = ros::Time::now();
+  lane.header.frame_id = "down_cam";
+
+  lane_pub_.publish(lane);
 }
 
-bool LaneDetector::findLane(vector<vector<Point> > &contours, Size img_size)
+std::vector<geometry_msgs::Point32> LaneDetector::findLane(vector<vector<Point> > &contours, Size img_size)
 {
-  // Clear points so we do not have carry over from previous call.
-  pts_.clear();
-  lane_.polygon.points = pts_;
-
-  lane_.header.stamp = ros::Time::now();
-  lane_.header.frame_id = "down_cam";
+  std::vector<geometry_msgs::Point32> pts;
 
   // If there are no contours, return an empty message.
   if (contours.size() == 0)
   {
-    return false;
+    return pts;
   }
 
   // Assume that the lane is the object with the largest area.
@@ -153,16 +150,13 @@ bool LaneDetector::findLane(vector<vector<Point> > &contours, Size img_size)
   // 2 - Check that the ratio of the area of the bounding box and the actual area is within an acceptable range.
   if (rectangleSideRatioFilter(lane_rect) && rectangleAreaRatioFilter(lane_rect, max_area))
   {
-    extractLanePoints(img_size, lane_rect);
-    return true;
+    extractLanePoints(img_size, lane_rect, &pts);
   }
-  else
-  {
-    return false;
-  }
+
+  return pts;
 }
 
-void LaneDetector::extractLanePoints(Size img_size, RotatedRect lane_rect)
+void LaneDetector::extractLanePoints(Size img_size, RotatedRect lane_rect, std::vector<geometry_msgs::Point32> * pts)
 {
   // Get the points of the rectangle.
   Point2f rect_points[4];
@@ -179,7 +173,7 @@ void LaneDetector::extractLanePoints(Size img_size, RotatedRect lane_rect)
     geometry_msgs::Point32 pt;
     pt.x = rect_points[i].x;
     pt.y = rect_points[i].y;
-    pts_.push_back(pt);
+    pts->push_back(pt);
   }
 
   // Only visualize if requested.
@@ -189,8 +183,6 @@ void LaneDetector::extractLanePoints(Size img_size, RotatedRect lane_rect)
     imshow("Lane!!", drawing);
     waitKey(10);
   }
-
-  lane_.polygon.points = pts_;
 }
 
 bool LaneDetector::rectangleSideRatioFilter(RotatedRect lane_rect)
