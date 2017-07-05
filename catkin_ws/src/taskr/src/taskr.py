@@ -80,6 +80,7 @@ class Task(object):
 
                     # Remove the action when done.
                     if action in self.running_actions:
+                        action.stop()
                         self.running_actions.remove(action)
                 else:
                     rospy.logerr("{} is not a known type.".format(key))
