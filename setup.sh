@@ -78,14 +78,15 @@ if [[ "$(uname -m)" == "x86_64" ]]; then
 
     echo "Installing Arduino IDE..."
     # Download and extract
-    arduino_tar=arduino-1.6.5-r5-linux64.tar.xz
+    arduino_ver=arduino-1.6.5-r5
+    arduino_tar=${arduino_ver}-linux64.tar.xz
     pushd ~/
     wget -O ${arduino_tar} https://downloads.arduino.cc/${arduino_tar}
-    tar -xf ${arduino_tar} arduino
+    tar -xf ${arduino_tar}
     rm -f ${arduino_tar}
 
     # Move to /opt
-    sudo mv arduino /opt/arduino
+    sudo mv ${arduino_ver} /opt/arduino
 
     # Install .desktop file for desktop machines
     if [[ $(command -v desktop-file-install) ]]; then
