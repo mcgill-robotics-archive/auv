@@ -73,7 +73,7 @@ if [[ "$(uname -m)" == "x86_64" ]]; then
 
     echo "Installing Arduino IDE..."
     # Download and extract
-    arduino_tar=arduino-1.6.3-linux64.tar.xz
+    arduino_tar=arduino-1.6.5-r5-linux64.tar.xz
     pushd ~/
     wget -O ${arduino_tar} https://downloads.arduino.cc/${arduino_tar}
     tar -xf ${arduino_tar}
