@@ -3,6 +3,7 @@
 import rospy
 import tf
 import numpy as np
+from std_msgs.msg import Float64
 from geometry_msgs.msg import Wrench
 from geometry_msgs.msg import Vector3
 from tf.transformations import quaternion_from_euler
@@ -23,7 +24,9 @@ class FakeAUV(object):
         self.surface = 0.0  # Surface of the water.
 
         self.control_sub = rospy.Subscriber("controls/wrench", Wrench, self.control_cb, queue_size=1)
+
         self.timer = rospy.Timer(rospy.Duration(self.period), self.broadcast)
+        self.depth_pub = rospy.Publisher("state_estimation/depth", Float64, queue_size=1)
 
         self.current_pos = Vector3()
         self.current_angle = Vector3()
@@ -75,6 +78,9 @@ class FakeAUV(object):
             "initial_horizon",
             self.map_frame
         )
+
+        # Publish the depth on a topic as well.
+        self.depth_pub.publish(self.current_pos.z)
 
     def control_cb(self, msg):
         vel, ang_vel = self.wrench_to_twist(msg)

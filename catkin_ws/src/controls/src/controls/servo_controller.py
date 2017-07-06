@@ -65,9 +65,23 @@ class DepthMaintainer(ServoController):
     def __init__(self, setpoint=None):
         pid = PID(*trans_gains['heave'])
         pub = rospy.Publisher('controls/superimposer/heave', Float64, queue_size=1)
+
+        self.depth_sub = rospy.Subscriber('state_estimation/depth', Float64, self.depth_cb, queue_size=1)
+        self.depth = None
+
         if setpoint is None:
             setpoint = get_current_depth()
-        super(DepthMaintainer, self).__init__(pid, pub, get_depth_error, setpoint)
+        super(DepthMaintainer, self).__init__(pid, pub, self.depth_error, setpoint)
+
+    def depth_cb(self, msg):
+        self.depth = msg.data
+
+    def depth_error(self, setpoint):
+        if self.depth is None:
+            rospy.logerr("The depth has not been initialized.")
+            return 0
+
+        return setpoint - self.depth
 
 
 class YawMaintainer(ServoController):
