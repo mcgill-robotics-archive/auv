@@ -65,14 +65,14 @@ private:
    * @param img_size    Size of image, for display purposes only.
    * @param lane_rect   The bounding rectangle of the lane.
    */
-  void extractLanePoints(Size img_size, RotatedRect lane_rect, std::vector<geometry_msgs::Point32> * pts);
+  void extractLanePoints(Size& img_size, RotatedRect& lane_rect, std::vector<geometry_msgs::Point32>& pts);
 
   /**
    * @brief Return true if the ratio of sides falls within an acceptable range of what we expect for the lane task.
    * @param lane_rect   The bounding rectangle of the lane.
    * @return            True if the side ratio is within range, false otherwise.
    */
-  bool rectangleSideRatioFilter(RotatedRect lane_rect);
+  bool rectangleSideRatioFilter(RotatedRect& lane_rect);
 
   /**
    * @brief Return true if the ratio of areas falls within an acceptable range of what we expect for the lane task.
@@ -80,5 +80,5 @@ private:
    * @param blob_area   The actual area of the blob detected by OpenCV.
    * @return            True if the side ratio is within range, false otherwise.
    */
-  bool rectangleAreaRatioFilter(RotatedRect lane_rect, float blob_area);
+  bool rectangleAreaRatioFilter(RotatedRect& lane_rect, float blob_area);
 };

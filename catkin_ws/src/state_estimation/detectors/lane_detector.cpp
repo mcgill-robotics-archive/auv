@@ -150,13 +150,13 @@ std::vector<geometry_msgs::Point32> LaneDetector::findLane(vector<vector<Point> 
   // 2 - Check that the ratio of the area of the bounding box and the actual area is within an acceptable range.
   if (rectangleSideRatioFilter(lane_rect) && rectangleAreaRatioFilter(lane_rect, max_area))
   {
-    extractLanePoints(img_size, lane_rect, &pts);
+    extractLanePoints(img_size, lane_rect, pts);
   }
 
   return pts;
 }
 
-void LaneDetector::extractLanePoints(Size img_size, RotatedRect lane_rect, std::vector<geometry_msgs::Point32> * pts)
+void LaneDetector::extractLanePoints(Size& img_size, RotatedRect& lane_rect, std::vector<geometry_msgs::Point32>& pts)
 {
   // Get the points of the rectangle.
   Point2f rect_points[4];
@@ -173,7 +173,7 @@ void LaneDetector::extractLanePoints(Size img_size, RotatedRect lane_rect, std::
     geometry_msgs::Point32 pt;
     pt.x = rect_points[i].x;
     pt.y = rect_points[i].y;
-    pts->push_back(pt);
+    pts.push_back(pt);
   }
 
   // Only visualize if requested.
@@ -185,25 +185,28 @@ void LaneDetector::extractLanePoints(Size img_size, RotatedRect lane_rect, std::
   }
 }
 
-bool LaneDetector::rectangleSideRatioFilter(RotatedRect lane_rect)
+bool LaneDetector::rectangleSideRatioFilter(RotatedRect& lane_rect)
 {
   // We know the approximate ratio of the side lengths of the lane, which we use here to filter out false positives.
   float long_side = max(lane_rect.size.width, lane_rect.size.height);
   float short_side = min(lane_rect.size.width, lane_rect.size.height);
 
   float side_ratio = long_side / short_side;
+  ROS_DEBUG("Side ratio for the lane is %f", side_ratio);
 
   // Check that side_ratio is between the lower and upper bound of the lane ratio.
-  return side_ratio - lane_dim_ratio_lower_bound_ <= lane_dim_ratio_upper_bound_ - lane_dim_ratio_lower_bound_;
+  return side_ratio >= lane_dim_ratio_lower_bound_ && side_ratio <= lane_dim_ratio_upper_bound_;
 }
 
-bool LaneDetector::rectangleAreaRatioFilter(RotatedRect lane_rect, float blob_area)
+bool LaneDetector::rectangleAreaRatioFilter(RotatedRect& lane_rect, float blob_area)
 {
   float lane_rect_area = lane_rect.size.width * lane_rect.size.height;
   float rect_to_blob_area_ratio = lane_rect_area / blob_area;
 
+  ROS_DEBUG("Area ratio for the lane is %f", rect_to_blob_area_ratio);
+
   // Check that rect_to_blob_area_ratio is between AREA_RATIO_LOWER_BOUND and AREA_RATIO_UPPER_BOUND.
-  return rect_to_blob_area_ratio - area_ratio_lower_bound_ <= area_ratio_upper_bound_ - area_ratio_lower_bound_;
+  return rect_to_blob_area_ratio >= area_ratio_lower_bound_ && rect_to_blob_area_ratio <= area_ratio_upper_bound_;
 }
 
 int main(int argc, char **argv)
