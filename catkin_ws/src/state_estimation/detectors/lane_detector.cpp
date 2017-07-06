@@ -1,20 +1,16 @@
 /**
  * laneDetector.cpp
  * @description A class to detect the lane using OpenCV filters.
- * @authors Jana Pavlasek, Paul Wu
+ * @authors Jana Pavlasek, Paul Wu, Malcolm Watt
  */
 
-#include "laneDetector.h"
+#include "lane_detector.h"
 
 #include <vector>
 #include <opencv2/core/core.hpp>
 #include <opencv2/imgproc/imgproc.hpp>
 #include <opencv2/highgui/highgui.hpp>
-#if CV_MAJOR_VERSION == 2
-// do opencv 2 code
-#elif CV_MAJOR_VERSION == 3
-// do opencv 3 code
-#endif
+
 #include <iostream>
 #include <stdio.h>
 #include <stdlib.h>
@@ -27,6 +23,11 @@ LaneDetector::LaneDetector(ros::NodeHandle& nh) :
 {
   // PARAMS
   ros::param::param<bool>("~visualize_lane", visualize_, false);
+  ros::param::param<float>("~lane_detector/dim_ratio/upper", lane_dim_ratio_upper_bound_, 10);
+  ros::param::param<float>("~lane_detector/dim_ratio/lower", lane_dim_ratio_lower_bound_, 5);
+  ros::param::param<float>("~lane_detector/area_ratio/upper", area_ratio_upper_bound_, 1.5);
+  ros::param::param<float>("~lane_detector/area_ratio/lower", area_ratio_lower_bound_, 0.6);
+
   // PUBLISHERS & SUBSCRIBERS
   image_sub_ = nh.subscribe<sensor_msgs::Image>("camera_down/image_color", 1, &LaneDetector::imageCallback, this);
   lane_pub_ = nh.advertise<geometry_msgs::PolygonStamped>("state_estimation/lane", 10);
@@ -103,28 +104,33 @@ void LaneDetector::imageCallback(const sensor_msgs::Image::ConstPtr& msg)
   /// Find contours
   findContours(orange_filter, contours, hierarchy, CV_RETR_TREE, CV_CHAIN_APPROX_SIMPLE, Point(0, 0));
 
-  lane_pub_.publish(findLane(contours, orange_filter.size()));
-}
-
-geometry_msgs::PolygonStamped LaneDetector::findLane(vector<vector<Point> > &contours, Size img_size)
-{
+  // Create a Lane.
   geometry_msgs::PolygonStamped lane;
 
-  std::vector<geometry_msgs::Point32> pts;
+  // Attempt to find the lane.
+  lane.polygon.points = findLane(contours, orange_filter.size());
 
   lane.header.stamp = ros::Time::now();
   lane.header.frame_id = "down_cam";
 
+  lane_pub_.publish(lane);
+}
+
+std::vector<geometry_msgs::Point32> LaneDetector::findLane(vector<vector<Point> > &contours, Size img_size)
+{
+  std::vector<geometry_msgs::Point32> pts;
+
   // If there are no contours, return an empty message.
   if (contours.size() == 0)
   {
-    return lane;
+    return pts;
   }
 
   // Assume that the lane is the object with the largest area.
   float max_area = 0.0;
   int max_idx = 0;
 
+  // Find the contour with the largest area.
   for(int i = 0; i < contours.size(); i++)
   {
     float current_area = contourArea(contours[i]);
@@ -137,9 +143,21 @@ geometry_msgs::PolygonStamped LaneDetector::findLane(vector<vector<Point> > &con
 
   // Find the rectangle of best fit to the lane contour.
   RotatedRect lane_rect;
-
   lane_rect = minAreaRect(Mat(contours[max_idx]));
 
+  // Filter out false positives:
+  // 1 - Check that side_ratio is between the lower and upper bound of the lane ratio.
+  // 2 - Check that the ratio of the area of the bounding box and the actual area is within an acceptable range.
+  if (rectangleSideRatioFilter(lane_rect) && rectangleAreaRatioFilter(lane_rect, max_area))
+  {
+    extractLanePoints(img_size, lane_rect, pts);
+  }
+
+  return pts;
+}
+
+void LaneDetector::extractLanePoints(Size& img_size, RotatedRect& lane_rect, std::vector<geometry_msgs::Point32>& pts)
+{
   // Get the points of the rectangle.
   Point2f rect_points[4];
   lane_rect.points(rect_points);
@@ -165,10 +183,30 @@ geometry_msgs::PolygonStamped LaneDetector::findLane(vector<vector<Point> > &con
     imshow("Lane!!", drawing);
     waitKey(10);
   }
+}
 
-  lane.polygon.points = pts;
+bool LaneDetector::rectangleSideRatioFilter(RotatedRect& lane_rect)
+{
+  // We know the approximate ratio of the side lengths of the lane, which we use here to filter out false positives.
+  float long_side = max(lane_rect.size.width, lane_rect.size.height);
+  float short_side = min(lane_rect.size.width, lane_rect.size.height);
 
-  return lane;
+  float side_ratio = long_side / short_side;
+  ROS_DEBUG("Side ratio for the lane is %f", side_ratio);
+
+  // Check that side_ratio is between the lower and upper bound of the lane ratio.
+  return side_ratio >= lane_dim_ratio_lower_bound_ && side_ratio <= lane_dim_ratio_upper_bound_;
+}
+
+bool LaneDetector::rectangleAreaRatioFilter(RotatedRect& lane_rect, float blob_area)
+{
+  float lane_rect_area = lane_rect.size.width * lane_rect.size.height;
+  float rect_to_blob_area_ratio = lane_rect_area / blob_area;
+
+  ROS_DEBUG("Area ratio for the lane is %f", rect_to_blob_area_ratio);
+
+  // Check that rect_to_blob_area_ratio is between AREA_RATIO_LOWER_BOUND and AREA_RATIO_UPPER_BOUND.
+  return rect_to_blob_area_ratio >= area_ratio_lower_bound_ && rect_to_blob_area_ratio <= area_ratio_upper_bound_;
 }
 
 int main(int argc, char **argv)
