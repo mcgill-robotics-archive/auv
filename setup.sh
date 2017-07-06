@@ -5,6 +5,11 @@
 # Fail on first error
 set -e
 
+if [[ "$(whoami)" == "root" ]]; then
+  echo "Please DO NOT run this as root!"
+  exit -1
+fi
+
 # Ask for sudo power
 sudo -v
 
