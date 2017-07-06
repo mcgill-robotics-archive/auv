@@ -2,6 +2,12 @@
 
 # Setup McGill Robotics AUV workspace
 
+# Fail on first error
+set -e
+
+# Ask for sudo power
+sudo -v
+
 # Update Git repo
 echo "Pulling latest chages..."
 git pull && git submodule update --init --recursive
@@ -24,7 +30,6 @@ echo "Installing Python package dependencies..."
 sudo pip install scipy scikit-learn
 echo
 
-<<<<<<< Updated upstream
 # Increase USBFS buffer size
 if [[ $(uname -m) == "x86_64" ]]; then
   if [[ -z $(grep 'usbcore.usbfs_memory_mb=1024' /etc/default/grub) ]]; then
@@ -76,11 +81,11 @@ if [[ "$(uname -m)" == "x86_64" ]]; then
     arduino_tar=arduino-1.6.5-r5-linux64.tar.xz
     pushd ~/
     wget -O ${arduino_tar} https://downloads.arduino.cc/${arduino_tar}
-    tar -xf ${arduino_tar}
+    tar -xf ${arduino_tar} arduino
     rm -f ${arduino_tar}
 
     # Move to /opt
-    sudo mv arduino-1.6.3 /opt/arduino
+    sudo mv arduino /opt/arduino
 
     # Install .desktop file for desktop machines
     if [[ $(command -v desktop-file-install) ]]; then
