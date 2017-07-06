@@ -1,7 +1,7 @@
 # McGill Robotics Autonomous Underwater Vehicle
 
 This is the repository for the McGill Robotics Autonomous Underwater Vehicle
-project. The AUV competes in the AUVSI's RoboSub competition, hosted annually
+projee AUV competes in the AUVSI's RoboSub competition, hosted annually
 at the TRANSDEC facility in San Diego.
 
 ## Prerequisites
@@ -14,6 +14,17 @@ properly. If you have already installed and run `compsys` and you wish to manual
 ./setup.sh
 ```
 
+### Teensyduino
+
+If you wish to compile code for Teensy, you will need to manually install
+Teensyduino Arduino addon by running and choose `/opt/arduino` as install
+location:
+
+```bash
+wget https://www.pjrc.com/teensy/td_137/TeensyduinoInstall.linux64
+chmod +x TeensyduinoInstall.linux64
+sudo ./TeensyduinoInstall.linux64
+```
 
 ## Cloning & Updating the Repository
 
