@@ -3,7 +3,7 @@
 name: MAIN
 root: /home/robotics/auv
 
-pre: export SHELL=/bin/zsh && export PATH=/usr/local/sbin/:/usr/local/bin/:/usr/sbin:${PATH}:/sbin:/usr/games:/usr/local/games
+pre: mv ~/.zhistory ~/.zhistory.old && strings ~/.zhistory.old > ~/.zhistory && export SHELL=/bin/zsh && export PATH=/usr/local/sbin/:/usr/local/bin/:/usr/sbin:${PATH}:/sbin:/usr/games:/usr/local/games
 
 windows:
     - core: roscore
