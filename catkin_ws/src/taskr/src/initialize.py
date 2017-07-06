@@ -49,9 +49,11 @@ class Initializer(object):
 
             server.set_aborted()
 
-        for i in range(10):
+        for i in range(40):
             self.init_thrusters()
             rospy.sleep(0.1)
+
+        rospy.sleep(0.5)
 
     def stop(self):
         """Nothing to do for stop.
