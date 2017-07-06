@@ -24,6 +24,7 @@ echo "Installing Python package dependencies..."
 sudo pip install scipy scikit-learn
 echo
 
+<<<<<<< Updated upstream
 # Increase USBFS buffer size
 if [[ $(uname -m) == "x86_64" ]]; then
   if [[ -z $(grep 'usbcore.usbfs_memory_mb=1024' /etc/default/grub) ]]; then
@@ -110,5 +111,10 @@ if [[ "$(uname -m)" == "x86_64" ]]; then
     echo
   fi
 fi
+
+# Add user tp dialout to get access to devices
+echo "Adding user to groups..."
+sudo usermod -aG dialout robotics
+echo
 
 echo "Setup complete."
