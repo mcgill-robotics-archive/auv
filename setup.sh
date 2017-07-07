@@ -38,11 +38,6 @@ if [[ -x "$(command -v rosdep)" ]]; then
   echo
 fi
 
-# Python package dependencies
-echo "Installing Python package dependencies..."
-sudo pip install scipy scikit-learn
-echo
-
 # Increase USBFS buffer size
 if [[ $(uname -m) == "x86_64" ]]; then
   if [[ -z $(grep 'usbcore.usbfs_memory_mb=1024' /etc/default/grub) ]]; then
