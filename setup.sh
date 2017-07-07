@@ -29,7 +29,7 @@ if [[ -x "$(command -v rosdep)" ]]; then
     echo "Installing dependancies for Ubuntu 16.04..."
     rosdep install -r -y --from-paths src --rosdistro kinetic --ignore-src \
     --skip-keys="arduino-core"
-  elif [[ "$(lsb_release -cs)" == "trusty"]]; then
+  elif [[ "$(lsb_release -cs)" == "trusty" ]]; then
     echo "Installing dependancies for Ubuntu 14.04..."
     rosdep install -r -y --from-paths src --rosdistro jade --ignore-src \
     --skip-keys="arduino-core"
