@@ -3,6 +3,8 @@
 # Setup McGill Robotics AUV workspace
 
 # Fail on first error
+echo "Welcome to McGill Robotics setup AUV setup script!"
+
 set -e
 
 if [[ "$(whoami)" == "root" ]]; then
@@ -20,20 +22,21 @@ echo
 
 # ROS package dependencies
 if [[ -x "$(command -v rosdep)" ]]; then
-  echo "Installing ROS package dependencies..."
   rosdep update
   pushd catkin_ws
   catkin clean -y
-  rosdep install -r -y --from-paths src --rosdistro kinetic --ignore-src \
+  if [[ "$(lsb_release -cs)" == "xenial" ]]; then
+    echo "Installing dependancies for Ubuntu 16.04..."
+    rosdep install -r -y --from-paths src --rosdistro kinetic --ignore-src \
     --skip-keys="arduino-core"
+  elif [[ "$(lsb_release -cs)" == "trusty" ]]; then
+    echo "Installing dependancies for Ubuntu 14.04..."
+    rosdep install -r -y --from-paths src --rosdistro jade --ignore-src \
+    --skip-keys="arduino-core"
+  fi
   popd
   echo
 fi
-
-# Python package dependencies
-echo "Installing Python package dependencies..."
-sudo pip install scipy scikit-learn
-echo
 
 # Increase USBFS buffer size
 if [[ $(uname -m) == "x86_64" ]]; then
