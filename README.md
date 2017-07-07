@@ -1,7 +1,7 @@
 # McGill Robotics Autonomous Underwater Vehicle
 
 This is the repository for the McGill Robotics Autonomous Underwater Vehicle
-projee AUV competes in the AUVSI's RoboSub competition, hosted annually
+projet. The AUV competes in the AUVSI's RoboSub competition, hosted annually
 at the TRANSDEC facility in San Diego.
 
 ## Prerequisites
