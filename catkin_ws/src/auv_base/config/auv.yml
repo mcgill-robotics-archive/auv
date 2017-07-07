@@ -7,11 +7,13 @@ pre: export SHELL=/bin/zsh && export PATH=/usr/local/sbin/:/usr/local/bin/:/usr/
 
 windows:
     - core:
+        layout: main-vertical
         panes:
           - roscore
           - roslaunch state_estimation state_estimation.launch --wait
           - roslaunch controls controls.launch --wait
     - serial:
+        layout: tiled
         panes:
           - roslaunch arduino teensy.launch --wait
           - roslaunch hydrophones hydrophones.launch --wait
