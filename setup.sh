@@ -126,6 +126,13 @@ if [[ "$(uname -m)" == "x86_64" ]]; then
   fi
 fi
 
+# Symlink st-flash for hydrophpone
+if [[ ! -e /usr/bin/st-flash ]]; then
+  echo "Symlinking st-flash..."
+  st_flash_dir=$(dirname $(readlink -f $0))/catkin_ws/src/nucleo/drivers
+  sudo ln -s ${st_flash_dir}/st-flash /usr/bin/st-flash
+fi
+
 # Add user tp dialout to get access to devices
 echo "Adding user to groups..."
 sudo usermod -aG dialout robotics
