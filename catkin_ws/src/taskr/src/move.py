@@ -45,7 +45,6 @@ class Move(object):
 
             rate.sleep()
 
-        self.surge_pub.publish(0)
         rospy.loginfo(
             "Done move in time {}".format((rospy.Time.now() - start).to_sec()))
 
@@ -56,3 +55,4 @@ class Move(object):
 
     def stop(self):
         self.preempted = True
+        self.surge_pub.publish(0)
