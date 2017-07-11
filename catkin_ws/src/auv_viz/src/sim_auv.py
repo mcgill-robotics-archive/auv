@@ -49,7 +49,7 @@ class FakeAUV(object):
 
     def broadcast(self, _):
         # Turn the distances into the correct form.
-        quaternion = quaternion_from_euler(self.current_angle.x, self.current_angle.y, self.current_angle.z)
+        quaternion = quaternion_from_euler(self.current_angle.x, -self.current_angle.y, -self.current_angle.z)
         position = (self.current_pos.x, -self.current_pos.y, -self.current_pos.z)
 
         # Brodcast the transform.
