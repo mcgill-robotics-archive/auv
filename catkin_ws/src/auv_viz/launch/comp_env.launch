@@ -1,4 +1,5 @@
 <launch>
   <include file="$(find auv_viz)/launch/gui.launch" />
   <node name="fake_lane" pkg="auv_viz" type="lane.py"/>
+  <node name="fake_buoy" pkg="auv_viz" type="buoy.py"/>
 </launch>
