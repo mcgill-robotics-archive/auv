@@ -75,7 +75,7 @@ class Lane(object):
         roll, pitch, yaw = tf.transformations.euler_from_quaternion(rot)
 
         # Rotate the polygon by the yaw, and shift by the translation.
-        transformed = self.transform_polygon(self.polygon_pts, trans[0], trans[1], yaw)
+        transformed = self.transform_polygon(self.polygon_pts, trans[0], -trans[1], yaw)
 
         # Create polygon to publish.
         polygon = PolygonStamped()
@@ -117,11 +117,11 @@ class Lane(object):
         Ty = self.P[3 + 1 * 4]
 
         pixels = Point()
-        pixels.x = (fx * point.x + Tx) / (-point.z) + cx
-        pixels.y = (fy * point.y + Ty) / (-point.z) + cy
+        pixels.x = int((fx * point.y + Tx) / point.x + cx)
+        pixels.y = int((fy * point.z + Ty) / point.x + cy)
 
         if pixels.x > self.im_width or pixels.y > self.im_height:
-            return None
+            return
 
         return pixels
 
