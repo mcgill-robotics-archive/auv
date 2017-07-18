@@ -6,6 +6,7 @@
 
 #include "torpedoTargeter.h"
 
+#define THRESHOLD_VALUE 128
 
 RNG rng(12345);
 
@@ -41,6 +42,9 @@ void TorpedoTargeter::imageCallback(const sensor_msgs::Image::ConstPtr& msg) {
 
   Mat small_img;
   Mat filtered;
+  Mat gray;               // New
+  Mat thresholded;        // New
+  Mat out_contour_img;    // New
 
   float scale_factor = 0.5;
 
@@ -48,36 +52,47 @@ void TorpedoTargeter::imageCallback(const sensor_msgs::Image::ConstPtr& msg) {
   resize(img, small_img, Size(), scale_factor, scale_factor, INTER_CUBIC);
   medianBlur(small_img, filtered, 25);
 
-  uint8_t* pixelPtr = (uint8_t*)filtered.data;
-  int cn = filtered.channels();
-  int nRows = filtered.rows;
-  int nCols = filtered.cols;
+// ==========================
+// === Auguste's Old Code ===
+// ==========================
+  // uint8_t* pixelPtr = (uint8_t*)filtered.data;
+  // int cn = filtered.channels();
+  // int nRows = filtered.rows;
+  // int nCols = filtered.cols;
 
-  Mat gray(nRows, nCols, CV_8UC1, Scalar(0));
-  uint8_t* grayPtr = (uint8_t*)gray.data;
+  // Mat gray(nRows, nCols, CV_8UC1, Scalar(0));
+  // uint8_t* grayPtr = (uint8_t*)gray.data;
 
-  // create grayscale based on the rule that pixels where blue channel is less then green channel
-  // should be black. And the inverse should be white
-  for(int i = 0; i < nRows; i++) {
-    for(int j = 0; j < nCols; j++) {
-      if (pixelPtr[i * nCols * cn + j * cn] < pixelPtr[i * nCols * cn + j * cn + 1]) // B < G
-        grayPtr[i * nCols + j] = 255;
-    }
-  }
+  // // create grayscale based on the rule that pixels where blue channel is less then green channel
+  // // should be black. And the inverse should be white
+  // for(int i = 0; i < nRows; i++) {
+  //   for(int j = 0; j < nCols; j++) {
+  //     if (pixelPtr[i * nCols * cn + j * cn] < pixelPtr[i * nCols * cn + j * cn + 1]) // B < G
+  //       grayPtr[i * nCols + j] = 255;
+  //   }
+  // }
 
-  Mat grayCopy = gray.clone();
+  // Mat grayCopy = gray.clone();
+  // vector<vector<Point> > contours;
+  // vector<Vec4i> hierarchy;
+  // // extract contours of apparent objects
+// =============================================================================
+
+  cvtColor(filtered, gray, CV_BGR2GRAY);
+  threshold(gray, thresholded, THRESHOLD_VALUE, 255, CV_THRESH_BINARY);
+  out_contour_img = gray.clone();
+
   vector<vector<Point> > contours;
   vector<Vec4i> hierarchy;
-  // extract contours of apparent objects
-  findContours(grayCopy, contours, hierarchy, CV_RETR_TREE, CV_CHAIN_APPROX_SIMPLE, Point(0, 0));
+  findContours(out_contour_img, contours, hierarchy, CV_RETR_TREE, CV_CHAIN_APPROX_SIMPLE, Point(0, 0));
 
   int largest_area = 0;
   int largest_contour_index = 0;
   // find largest contour
   for (int i = 0; i < contours.size(); i++) {
-    double a = contourArea(contours[i], false);
-    if (a > largest_area) {
-      largest_area = a;
+    double area = contourArea(contours[i], false);
+    if (area > largest_area) {
+      largest_area = area;
       largest_contour_index = i;
     }
   }
@@ -93,10 +108,10 @@ void TorpedoTargeter::imageCallback(const sensor_msgs::Image::ConstPtr& msg) {
 
 
   // extract information only from within largest contour
-  Mat cropped = Mat::zeros(gray.size(), CV_8U);
-  Mat mask_image(gray.size(), CV_8U, Scalar(0));
+  Mat cropped = Mat::zeros(out_contour_img.size(), CV_8U);
+  Mat mask_image(out_contour_img.size(), CV_8U, Scalar(0));
   drawContours(mask_image, contours, largest_contour_index, Scalar(255), CV_FILLED);
-  gray.copyTo(cropped, mask_image);
+  out_contour_img.copyTo(cropped, mask_image);
 
 
   vector<vector<Point> > inner_contours;
@@ -104,34 +119,37 @@ void TorpedoTargeter::imageCallback(const sensor_msgs::Image::ConstPtr& msg) {
   // extract contours of inside target
   findContours(cropped, inner_contours, inner_hierarchy, CV_RETR_TREE, CV_CHAIN_APPROX_SIMPLE, Point(0, 0));
 
-  // sort contours by area
-  vector<pair<double, int> > contour_areas;
+// ==========================
+// === Auguste's Old Code ===
+// ==========================
+  // // sort contours by area
+  // vector<pair<double, int> > contour_areas;
 
-  for (int i = 0; i < inner_contours.size(); i++) {
-    double a = contourArea(inner_contours[i], false);
-    contour_areas.push_back(make_pair(a, i));
-  }
+  // for (int i = 0; i < inner_contours.size(); i++) {
+  //   double a = contourArea(inner_contours[i], false);
+  //   contour_areas.push_back(make_pair(a, i));
+  // }
 
-  if (contour_areas.size() < 2) {
-    ROS_WARN("No hole detected!");
-    return;
-  }
+  // if (contour_areas.size() < 2) {
+  //   ROS_WARN("No hole detected!");
+  //   return;
+  // }
 
-  sort(contour_areas.rbegin(), contour_areas.rend());
-  int target_ind = contour_areas[1].second;
+  // sort(contour_areas.rbegin(), contour_areas.rend());
+  // int target_ind = contour_areas[1].second;
 
-  rect = minAreaRect(Mat(inner_contours[target_ind]));
-  // TODO check that min area rect is similar to contour area
+  // rect = minAreaRect(Mat(inner_contours[target_ind]));
+  // // TODO check that min area rect is similar to contour area
 
-  Moments M = moments(inner_contours[target_ind], false);
-  int cx = M.m10 / M.m00;
-  int cy = M.m01 / M.m00;
+  // Moments M = moments(inner_contours[target_ind], false);
+  // int cx = M.m10 / M.m00;
+  // int cy = M.m01 / M.m00;
 
-  circle(small_img, Point(cx, cy), 7, Scalar(0, 0, 255), 7);
+  // circle(small_img, Point(cx, cy), 7, Scalar(0, 0, 255), 7);
 
-  torpedoTarget.hole_detected = true;
-  torpedoTarget.x_hole = cx / scale_factor;
-  torpedoTarget.y_hole = cy / scale_factor;
+  // torpedoTarget.hole_detected = true;
+  // torpedoTarget.x_hole = cx / scale_factor;
+  // torpedoTarget.y_hole = cy / scale_factor;
 
   // Point2f rect_points[4];
   // rect.points(rect_points);
@@ -141,12 +159,41 @@ void TorpedoTargeter::imageCallback(const sensor_msgs::Image::ConstPtr& msg) {
 
   // color = Scalar(255, 0, 0);
   // drawContours(filtered, contours, largest_contour_index, color, 2, 8, hierarchy, 0, Point());
+// =============================================================================
+
+  vector<Point2f> centres;
+  vector<float> radii;
+
+  for (int l = 0; l < inner_contours.size(); l++)
+  {
+    Point2f centre;
+    float radius;
+
+    minEnclosingCircle(contours[l], centre, radius);
+
+    centres.push_back(centre);
+    radii.push_back(radius);
+  }
+
+  Mat display_img = cropped.clone();
+
+  // Draw contours
+  for (int j = 0; j < inner_contours.size(); j++)
+  {
+    drawContours(display_img, contours, j, Scalar(255, 0, 0), 2, 8, hierarchy, 0, Point());
+  }
+
+  // Draw centres
+  for (int k = 0; k < centres.size(); k++)
+  {
+    circle(display_img, centres[k], 5, Scalar(0, 0, 255), -1, 8);
+  }
 
   namedWindow("Torpedo", WINDOW_NORMAL);
-  imshow("Torpedo", small_img);
+  imshow("Torpedo", display_img);
   waitKey(10);
 
-  torpedo_pub_.publish(torpedoTarget);
+  //torpedo_pub_.publish(torpedoTarget);
 }
 
 int main(int argc, char **argv) {
