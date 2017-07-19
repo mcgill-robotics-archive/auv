@@ -2,7 +2,7 @@
 
 """Controls package."""
 
-from servo_controller import DepthMaintainer, YawMaintainer, ServoController
+from servo_controller import DepthMaintainer, YawMaintainer
 
 __author__ = "Justin Bell, Jana Pavlasek"
 

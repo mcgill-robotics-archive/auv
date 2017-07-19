@@ -2,6 +2,7 @@
 import rospy
 from math import fabs
 from std_msgs.msg import Float64
+from controls.servo_controller import YawMaintainer
 
 """
 TODO: Jana
@@ -31,6 +32,8 @@ class Move(object):
         start = rospy.Time.now()
 
         self.surge_pub.publish(self.VELOCITY * self.VEL_COEFFICIENT)
+        yaw_maintainer = YawMaintainer()
+        yaw_maintainer.start()
 
         # Send surge commands.
         # Should run RATE * TIME times. For example, if we send cmds at
@@ -40,12 +43,13 @@ class Move(object):
                 "Sending cmd {}s / {}s".format(float(i) / self.RATE, time))
 
             if self.preempted:
-                self.surge_pub.publish(0)
+                yaw_maintainer.stop()
                 return
 
+            self.surge_pub.publish(self.VELOCITY * self.VEL_COEFFICIENT)
             rate.sleep()
 
-        self.surge_pub.publish(0)
+        yaw_maintainer.stop()
         rospy.loginfo(
             "Done move in time {}".format((rospy.Time.now() - start).to_sec()))
 
