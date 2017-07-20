@@ -1,0 +1,12 @@
+<launch>
+    <node
+        name="depth_maintainer"
+        pkg="controls"
+        type="maintain_depth.py"
+        respawn="false"
+        output="screen">
+    </node>
+    <group ns="PID">
+        <rosparam command="load" file="$(find controls)/config/sim_gains.yaml" />
+    </group>
+</launch>

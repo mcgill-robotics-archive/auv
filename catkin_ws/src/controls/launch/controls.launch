@@ -1,7 +1,11 @@
 <launch>
+    <arg name="gains_file" default="$(find controls)/config/pid_gains.yaml" />
+
+    <rosparam command="load" file="$(arg gains_file)" ns="PID" />
+
     <!-- Launch both nodes -->
-    <node name="controls" pkg="controls" type="controls" respawn="false" output="screen">
-    	<rosparam command="load" file="$(find controls)/config/params.yaml" />
+    <node name="controls" pkg="controls" type="superimposer.py" respawn="false" output="screen">
+      <param name="thrust_decay" value="0.8" />
     </node>
     <node name="thrust_mapper" pkg="controls" type="thrust_mapper" respawn="false" output="screen">
       <remap from="thrust_cmds" to="electrical_interface/motor"/>

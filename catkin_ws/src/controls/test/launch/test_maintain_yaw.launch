@@ -1,0 +1,12 @@
+<launch>
+    <node
+        name="yaw_maintainer"
+        pkg="controls"
+        type="maintain_yaw.py"
+        respawn="false"
+        output="screen">
+    </node>
+    <group ns="PID">
+        <rosparam command="load" file="$(find controls)/config/sim_gains.yaml" />
+    </group>
+</launch>

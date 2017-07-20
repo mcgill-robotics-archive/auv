@@ -7,6 +7,7 @@ import rospy
 import numpy
 from auv_msgs.msg import Signals
 from matplotlib import pyplot as plt
+import time
 
 FS = 1028571.4286
 
@@ -37,7 +38,7 @@ def plot(msg):
     plt.title(FS * (numpy.argmax(freq[10:]) + 10) / 2 / (len(freq)))
 
     plt.draw()
-
+    plt.pause(0.001)
 
 if __name__ == '__main__':
     rospy.init_node("plotter")

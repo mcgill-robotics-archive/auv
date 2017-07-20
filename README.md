@@ -14,6 +14,17 @@ properly. If you have already installed and run `compsys` and you wish to manual
 ./setup.sh
 ```
 
+### Teensyduino
+
+If you wish to compile code for Teensy, you will need to manually install
+Teensyduino Arduino addon by running and choose `/opt/arduino` as install
+location:
+
+```bash
+wget https://www.pjrc.com/teensy/td_137/TeensyduinoInstall.linux64
+chmod +x TeensyduinoInstall.linux64
+sudo ./TeensyduinoInstall.linux64
+```
 
 ## Cloning & Updating the Repository
 
@@ -48,11 +59,11 @@ cable directly to your computer.
 
 ## Build Status
 
-[master]: http://dev.mcgillrobotics.com:8080/buildStatus/icon?job=auv_master
-[master url]: http://dev.mcgillrobotics.com:8080/job/auv_master
+[master]: http://dev.mcgillrobotics.com/buildStatus/icon?job=auv_master
+[master url]: http://dev.mcgillrobotics.com/job/auv_master
 
-[dev]: http://dev.mcgillrobotics.com:8080/buildStatus/icon?job=auv_dev
-[dev url]: http://dev.mcgillrobotics.com:8080/job/auv_dev
+[dev]: http://dev.mcgillrobotics.com/buildStatus/icon?job=auv_dev
+[dev url]: http://dev.mcgillrobotics.com/job/auv_dev
 
 | Branch   | Status                  |
 |:--------:|:-----------------------:|
