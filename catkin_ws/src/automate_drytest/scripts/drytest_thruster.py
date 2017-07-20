@@ -12,6 +12,8 @@ from auv_msgs.msg import MotorCommands
 
 
 def drytest_thrusters():
+    pub = Publisher("electrical_interface/motor", MotorCommands, queue_size=5)
+
     """Cycles through each thruster and asks for user confirmation"""
 
     # Keeps track of which thrusters are functional, index matches that of thrusters
@@ -60,11 +62,7 @@ def create_command(thruster):
     return cmd
 
 
-if __name__ == "__main__":
-    rospy.init_node("drytest_thruster")
-
-    pub = Publisher("/electrical_interface/motor", MotorCommands, queue_size=5)
-
+def run_test():
     functional, thrusters = drytest_thrusters()
 
     # prints a list of functional and non-functional thrusters
@@ -77,4 +75,9 @@ if __name__ == "__main__":
         if functional[i] == 'N':
             print "\t", thrusters[i]
 
-    rospy.spin()
+    print "\nFinished thruster test."
+
+
+if __name__ == "__main__":
+    rospy.init_node("drytest_thruster")
+    run_test()
