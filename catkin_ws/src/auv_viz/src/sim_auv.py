@@ -7,6 +7,7 @@ from std_msgs.msg import Float64
 from geometry_msgs.msg import Wrench
 from geometry_msgs.msg import Vector3
 from tf.transformations import quaternion_from_euler
+from controls.utils import normalize_angle
 
 
 class FakeAUV(object):
@@ -73,7 +74,7 @@ class FakeAUV(object):
         # Brodcast floating horizon and initial horizon.
         self.broadcaster.sendTransform(
             (0, 0, 0),
-            (0, 0, 0, 1),
+            quaternion_from_euler(np.pi, 0, 0),
             rospy.Time.now(),
             "initial_horizon",
             self.map_frame
@@ -149,9 +150,9 @@ class FakeAUV(object):
 
 
 def add(vec1, vec2):
-    result = Vector3(vec1.x + vec2.x,
-                     vec1.y + vec2.y,
-                     vec1.z + vec2.z)
+    result = Vector3(normalize_angle(vec1.x + vec2.x),
+                     normalize_angle(vec1.y + vec2.y),
+                     normalize_angle(vec1.z + vec2.z))
     return result
 
 

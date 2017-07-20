@@ -1,11 +1,11 @@
 import tf
 import rospy
-import math
 from std_msgs.msg import Float64
 from tf.transformations import euler_from_quaternion
 
 from PID import PID, trans_gains, rot_gains
-from utils import normalize_angle, get_current_yaw
+from utils import normalize_angle
+
 
 class SyncServoController(object):
     """
@@ -91,7 +91,7 @@ class SyncServoController(object):
 class AsyncServoController(object):
     """
     ASyncServoController is a convenience class for updating a PID with an
-    error function and publishing the result to some topic in response to a 
+    error function and publishing the result to some topic in response to a
     subscription from a topic
 
     Use this when you have a topic that you wish to respond to with a
@@ -179,7 +179,7 @@ class AsyncServoController(object):
 class DepthMaintainer(AsyncServoController):
     def __init__(self, setpoint=None):
         pid = PID(*trans_gains['heave'])
-        pub = rospy.Publisher('controls/superimposer/heave', Float64, 
+        pub = rospy.Publisher('controls/superimposer/heave', Float64,
                               queue_size=1)
 
         if setpoint is None:
