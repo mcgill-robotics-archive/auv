@@ -3,10 +3,7 @@ Panels:
     Help Height: 78
     Name: Displays
     Property Tree Widget:
-      Expanded:
-        - /Global Options1
-        - /Status1
-        - /RobotModel1
+      Expanded: ~
       Splitter Ratio: 0.5
     Tree Height: 775
   - Class: rviz/Selection
@@ -93,6 +90,10 @@ Visualization Manager:
           Show Axes: false
           Show Trail: false
           Value: true
+        robot:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
         starboard_bow_heave_thruster:
           Alpha: 1
           Show Axes: false
@@ -128,6 +129,14 @@ Visualization Manager:
       Enabled: true
       Marker Topic: /sim/fake_lane
       Name: Lane
+      Namespaces:
+        "": true
+      Queue Size: 100
+      Value: true
+    - Class: rviz/Marker
+      Enabled: true
+      Marker Topic: /sim/fake_buoy
+      Name: Buoy
       Namespaces:
         "": true
       Queue Size: 100

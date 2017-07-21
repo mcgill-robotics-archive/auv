@@ -7,3 +7,6 @@
 [submodule "catkin_ws/src/darknet_ros"]
 	path = catkin_ws/src/darknet_ros
 	url = git@github.com:leggedrobotics/darknet_ros.git
+[submodule "catkin_ws/src/rosserial"]
+	path = catkin_ws/src/rosserial
+	url = git@github.com:mcgill-robotics/rosserial.git

@@ -3,6 +3,8 @@
 import rospy
 from move import Move
 from shoot import Shoot
+from turn import Turn
+from dive import Dive
 from initialize import Initializer
 from acoustic_servo import AcousticServo
 from actionlib import SimpleActionServer
@@ -16,6 +18,8 @@ current_task.action = TaskStatus.ACTION_IDLE
 
 # Maps to the objects and states.
 action_object_map = {"move": Move,
+                     "turn": Turn,
+                     "dive": Dive,
                      "shoot": Shoot,
                      "initialize": Initializer,
                      "acoustic_servo": AcousticServo}
@@ -23,7 +27,9 @@ action_object_map = {"move": Move,
 action_state_map = {"move": TaskStatus.MOVE,
                     "shoot": TaskStatus.SHOOT,
                     "initialize": TaskStatus.INITIALIZE,
-                    "acoustic_servo": TaskStatus.OCTAGON}
+                    "acoustic_servo": TaskStatus.OCTAGON,
+                    "turn": TaskStatus.MOVE,
+                    "dive": TaskStatus.MOVE}
 
 
 class Task(object):
@@ -64,15 +70,7 @@ class Task(object):
         for actions in data["actions"]:
             # There should only be one top level key so one iteration of this inner loop.
             for (key, value) in actions.iteritems():
-                if key == "maintain_depth":
-                    depth = DepthMaintainer(value)
-                    depth.start()
-                    self.running_actions.append(depth)
-                elif key == "maintain_yaw":
-                    yaw = YawMaintainer(value)
-                    yaw.start()
-                    self.running_actions.append(yaw)
-                elif key in action_object_map and key in action_state_map:
+                if key in action_object_map and key in action_state_map:
                     # Get the correct object and state from the dictionaries.
                     current_task.action = action_state_map[key]
                     action = action_object_map[key](value)

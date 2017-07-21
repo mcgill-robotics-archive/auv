@@ -1,6 +1,3 @@
-#!/usr/bin/env python
-
-
 import rospy
 
 trans_gains = rospy.get_param('PID/translation_gains')

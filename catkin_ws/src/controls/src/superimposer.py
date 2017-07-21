@@ -1,7 +1,11 @@
 #!/usr/bin/env python
+
 import rospy
 from geometry_msgs.msg import Wrench, Vector3
 from std_msgs.msg import Float64
+
+
+thrust_decay = rospy.get_param('controls/thrust_decay')
 
 
 class SuperImposer:
@@ -36,6 +40,16 @@ class SuperImposer:
     def update(self, _):
         thrust_wrench = Wrench(self.force, self.torque)
         self.thrust_pub.publish(thrust_wrench)
+
+        # Time decaying forces
+        self.force.x = self.force.x * thrust_decay
+        self.force.y = self.force.y * thrust_decay
+        self.force.z = self.force.z * thrust_decay
+
+        self.torque.x = self.torque.x * thrust_decay
+        self.torque.y = self.torque.y * thrust_decay
+        self.torque.z = self.torque.z * thrust_decay
+        
 
     def reset(self):
         self.force = Vector3(0, 0, 0)

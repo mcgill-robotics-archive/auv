@@ -43,7 +43,19 @@ octagon:
 # Represents any series of actions for testing purposes.
 square:
   actions:
-    - maintain_yaw: 0.0
-    - maintain_depth: 1.0
     - move:
-        distance: 10.0
+        distance: 1.0
+    - turn:
+        angle: 1.5708
+    - move:
+        distance: 1.0
+    - turn:
+        angle: 3.1416
+    - move:
+        distance: 1.0
+    - turn:
+        angle: -1.5708
+    - move:
+        distance: 1.0
+    - turn:
+        angle: 0.0
