@@ -184,7 +184,8 @@ class DepthMaintainer(AsyncServoController):
         self.error = None
 
         if setpoint is None:
-            setpoint = 0.0
+            setpoint = rospy.wait_for_message('state_estimation/depth',
+                                              Float64, timeout=5.0).data
 
         super(DepthMaintainer, self).__init__(
             pid, pub, 'state_estimation/depth', Float64, setpoint)
