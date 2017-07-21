@@ -58,7 +58,7 @@ class ScanStitcher(object):
         publish the full scan."""
         # If there is no config data, nothing can be done.
         if not self.scan_config:
-            rospy.logerr_throttle(60, "No sonar config is present, cannot stitch")
+            rospy.logerr("No sonar config is present, cannot stitch")
             return
 
         # Check if scan is full.
