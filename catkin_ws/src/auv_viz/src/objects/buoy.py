@@ -43,8 +43,10 @@ class Buoy(object):
         self.im_height = 964
 
         # Start timers.
-        self.timer = rospy.Timer(rospy.Duration(0.1), self.pub_buoy)
         self.br_timer = rospy.Timer(rospy.Duration(0.1), self.broadcast_buoy)
+        self.listener.waitForTransform("robot", "buoy", rospy.Time(0), rospy.Duration(1.0))
+
+        self.timer = rospy.Timer(rospy.Duration(0.1), self.pub_buoy)
 
     def broadcast_buoy(self, _):
         # Create the tf.

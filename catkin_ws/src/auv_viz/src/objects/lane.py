@@ -48,8 +48,10 @@ class Lane(object):
         self.im_height = 964
 
         # Start timers.
-        self.timer = rospy.Timer(rospy.Duration(0.1), self.pub_lane)
         self.br_timer = rospy.Timer(rospy.Duration(0.1), self.broadcast_lane)
+        self.listener.waitForTransform("robot", "lane", rospy.Time(0), rospy.Duration(1.0))
+
+        self.timer = rospy.Timer(rospy.Duration(0.1), self.pub_lane)
 
     def broadcast_lane(self, _):
         # Create the tf.
@@ -66,8 +68,8 @@ class Lane(object):
     def pub_lane(self, _):
         # Get the transform between the lane and the robot.
         try:
-            self.listener.waitForTransform("lane", "robot", rospy.Time.now(), rospy.Duration(1.0))
-            trans, rot = self.listener.lookupTransform("lane", "robot", rospy.Time())
+            self.listener.waitForTransform("robot", "lane", rospy.Time.now(), rospy.Duration(1.0))
+            trans, rot = self.listener.lookupTransform("robot", "lane", rospy.Time())
         except Exception:
             rospy.logerr_throttle(30, "Can't get tranform between lane and robot")
             return
