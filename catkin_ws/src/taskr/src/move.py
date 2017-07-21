@@ -32,8 +32,11 @@ class Move(object):
         start = rospy.Time.now()
 
         self.surge_pub.publish(self.VELOCITY * self.VEL_COEFFICIENT)
+
         yaw_maintainer = YawMaintainer()
         yaw_maintainer.start()
+        depth_maintainer = DepthMaintainer()
+        depth_maintainer.start()
 
         # Send surge commands.
         # Should run RATE * TIME times. For example, if we send cmds at
@@ -44,12 +47,14 @@ class Move(object):
 
             if self.preempted:
                 yaw_maintainer.stop()
+                depth_maintainer.stop()
                 return
 
             self.surge_pub.publish(self.VELOCITY * self.VEL_COEFFICIENT)
             rate.sleep()
 
         yaw_maintainer.stop()
+        depth_maintainer.stop()
         rospy.loginfo(
             "Done move in time {}".format((rospy.Time.now() - start).to_sec()))
 

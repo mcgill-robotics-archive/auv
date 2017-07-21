@@ -20,6 +20,9 @@ class Dive(object):
         depth_maintainer = DepthMaintainer(self.depth)
         depth_maintainer.start()
 
+        yaw_maintainer = YawMaintainer()
+        yaw_maintainer.start()
+
         stable_counts = 0
         while stable_counts < 30:
             rospy.loginfo("{} / 30 stable periods achieved".format(
@@ -27,6 +30,7 @@ class Dive(object):
 
             if self.preempted:
                 depth_maintainer.stop()
+                yaw_maintainer.stop()
                 return
 
             err = depth_maintainer.error
@@ -40,6 +44,7 @@ class Dive(object):
 
 
         depth_maintainer.stop()
+        yaw_maintainer.stop()
         rospy.loginfo("Done dive acion")
 
     def stop(self):
