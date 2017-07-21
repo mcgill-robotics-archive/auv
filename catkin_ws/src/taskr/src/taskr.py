@@ -4,6 +4,7 @@ import rospy
 from move import Move
 from shoot import Shoot
 from turn import Turn
+from dive import Dive
 from initialize import Initializer
 from actionlib import SimpleActionServer
 from auv_msgs.msg import TaskStatus
@@ -17,13 +18,15 @@ current_task.action = TaskStatus.ACTION_IDLE
 # Maps to the objects and states.
 action_object_map = {"move": Move,
                      "turn": Turn,
+                     "dive": Dive,
                      "shoot": Shoot,
                      "initialize": Initializer}
 
 action_state_map = {"move": TaskStatus.MOVE,
                     "shoot": TaskStatus.SHOOT,
                     "initialize": TaskStatus.INITIALIZE,
-                    "turn": TaskStatus.MOVE}
+                    "turn": TaskStatus.MOVE,
+                    "dive": TaskStatus.MOVE}
 
 
 class Task(object):
