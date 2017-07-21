@@ -16,6 +16,7 @@ class AcousticServo(ASyncServoController):
         pid = PID(*rot_gains['yaw'])
         pub = rospy.Publisher('controls/superimposer/yaw', PoseStamped,
                               queue_size=1)
+        self.error = None
 
         super(YawMaintainer, self).__init__(pid, pub, 'hydrophones/heading',
                                             PoseStamped, 0)
@@ -27,5 +28,7 @@ class AcousticServo(ASyncServoController):
             msg.orientation.z,
             msg.orientation.w)
         (_, _, yaw) = euler_from_quaternion(quaternion)
+
         normalized_yaw_error = normalize_angle(yaw)
-        return normalized_yaw_error
+        self.error = normalized_yaw_error
+        return self.error
