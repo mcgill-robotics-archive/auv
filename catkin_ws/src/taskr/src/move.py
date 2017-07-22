@@ -2,7 +2,7 @@
 import rospy
 from math import fabs
 from std_msgs.msg import Float64
-from controls.servo_controller import YawMaintainer
+from controls.servo_controller import YawMaintainer, DepthMaintainer
 
 """
 TODO: Jana
@@ -34,6 +34,8 @@ class Move(object):
         self.surge_pub.publish(self.VELOCITY * self.VEL_COEFFICIENT)
         yaw_maintainer = YawMaintainer()
         yaw_maintainer.start()
+        depth_maintainer = DepthMaintainer()
+        depth_maintainer.start()
 
         # Send surge commands.
         # Should run RATE * TIME times. For example, if we send cmds at
@@ -44,12 +46,17 @@ class Move(object):
 
             if self.preempted:
                 yaw_maintainer.stop()
+                depth_maintainer.stop()
                 return
 
             self.surge_pub.publish(self.VELOCITY * self.VEL_COEFFICIENT)
             rate.sleep()
 
+        # Sleep is needed to allow robot to stop before other actions are done.
+        rospy.sleep(2)
+
         yaw_maintainer.stop()
+        depth_maintainer.stop()
         rospy.loginfo(
             "Done move in time {}".format((rospy.Time.now() - start).to_sec()))
 

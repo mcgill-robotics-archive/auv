@@ -1,8 +1,6 @@
 #!/usr/bin/env python
 import rospy
-from math import fabs
-from std_msgs.msg import Float64
-from controls.servo_controller import DepthMaintainer
+from controls.servo_controller import YawMaintainer, DepthMaintainer
 
 
 class Dive(object):
@@ -17,6 +15,8 @@ class Dive(object):
     def start(self, server, feedback_msg):
         rospy.loginfo("Starting dive action")
 
+        yaw_maintainer = YawMaintainer()
+        yaw_maintainer.start()
         depth_maintainer = DepthMaintainer(self.depth)
         depth_maintainer.start()
 
@@ -27,6 +27,7 @@ class Dive(object):
 
             if self.preempted:
                 depth_maintainer.stop()
+                yaw_maintainer.stop()
                 return
 
             err = depth_maintainer.error
@@ -38,8 +39,8 @@ class Dive(object):
                 stable_counts = 0
             rospy.sleep(0.1)
 
-
         depth_maintainer.stop()
+        yaw_maintainer.stop()
         rospy.loginfo("Done dive acion")
 
     def stop(self):
