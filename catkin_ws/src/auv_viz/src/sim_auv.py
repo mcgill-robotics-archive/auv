@@ -17,11 +17,7 @@ class FakeAUV(object):
         self.robot_frame = "robot"
         self.map_frame = "map"
 
-        self.window = 2
-        self.period = 0.1  # We know that controls publishes at this freq.
-        # self.vel_history = [Vector3(), Vector3()]
-        # self.ang_vel_history = [Vector3(), Vector3()]
-
+        self.period = 0.1   # We know that controls publishes at this freq.
         self.surface = 0.0  # Surface of the water.
 
         self.current_pose = Pose()
@@ -36,10 +32,10 @@ class FakeAUV(object):
         self.V = self.V * 0.001     # m^3
         self.rho = 1000             # kg/m^3
 
-        self.drag_coeff_x = 10      # all drag coeffs together
+        self.drag_coeff_x = 22      # all drag coeffs together
         self.drag_coeff_y = 30      # all drag coeffs together
         self.drag_coeff_z = 20      # all drag coeffs together
-        self.drag_coeff_theta = 3   # all drag coeffs together
+        self.drag_coeff_theta = 8   # all drag coeffs together
         self.rot_coeff = 0.1        # r / I
 
         # We'll ignore these for now for simplicity.
@@ -70,7 +66,7 @@ class FakeAUV(object):
             self.map_frame
         )
 
-        # Brodcast floating horizon and initial horizon.
+        # Brodcast floating horizon.
         self.broadcaster.sendTransform(
             (0, 0, 0),
             (0, 0, 0, 1),
@@ -79,7 +75,7 @@ class FakeAUV(object):
             self.map_frame
         )
 
-        # Brodcast floating horizon and initial horizon.
+        # Brodcast initial horizon, which is upside down compared to map.
         self.broadcaster.sendTransform(
             (0, 0, 0),
             quaternion_from_euler(np.pi, 0, 0),
@@ -88,21 +84,21 @@ class FakeAUV(object):
             self.map_frame
         )
 
-        # Publish the depth on a topic as well.
-        self.depth_pub.publish(self.current_pose.position.z)
+        # Publish the depth on a topic.
+        self.depth_pub.publish(-self.current_pose.position.z)
 
+        # Reset the twist to zero if we haven't gotten a message in too long.
         if (rospy.Time.now() - self.last_time).to_sec() > 2 * self.period:
             self.last_twist = Twist()
 
     def control_cb(self, msg):
         twist = self.wrench_to_twist(msg)
 
-        # Integrate to get distance change.
+        # Integrate to update position.
         self.integrateAll(twist)
-        # self.current_pos = add(self.current_pos, self.integrateAll(self.vel_history))
-        # self.current_angle = add(self.current_angle, self.integrateAll(self.ang_vel_history))
 
-        if self.current_pose.position.z < self.surface:
+        # Ensure that the robot doesn't go above the water surface.
+        if self.current_pose.position.z > self.surface:
             self.current_pose.position.z = self.surface
 
         self.last_twist = twist
@@ -132,16 +128,12 @@ class FakeAUV(object):
 
         dx = self.period * (twist.linear.x * np.cos(yaw) - twist.linear.y * np.sin(yaw))
         dy = self.period * (twist.linear.y * np.cos(yaw) + twist.linear.x * np.sin(yaw))
+        dz = self.period * twist.linear.z
         dtheta = self.period * twist.angular.z
 
-        dz = self.period * twist.linear.z
-
-        self.current_pose.position.x = self.current_pose.position.x + dx
-        self.current_pose.position.y = -self.current_pose.position.y + dy
-        self.current_pose.position.z = -self.current_pose.position.z + dz
-
-        self.current_pose.position.z *= -1
-        self.current_pose.position.y *= -1
+        self.current_pose.position.x += dx
+        self.current_pose.position.y -= dy
+        self.current_pose.position.z -= dz
 
         quat = quaternion_from_euler(0, 0, -normalize_angle(yaw + dtheta))
         self.current_pose.orientation.x = quat[0]
