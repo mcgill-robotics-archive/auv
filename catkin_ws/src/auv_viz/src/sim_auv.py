@@ -33,7 +33,7 @@ class FakeAUV(object):
         self.rho = 1000             # kg/m^3
 
         self.drag_coeff_x = 22      # all drag coeffs together
-        self.drag_coeff_y = 30      # all drag coeffs together
+        self.drag_coeff_y = 25      # all drag coeffs together
         self.drag_coeff_z = 20      # all drag coeffs together
         self.drag_coeff_theta = 8   # all drag coeffs together
         self.rot_coeff = 0.1        # r / I
