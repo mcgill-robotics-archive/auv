@@ -31,7 +31,13 @@ class Move(object):
         time = self.get_time(fabs(self.distance))
         start = rospy.Time.now()
 
-        self.surge_pub.publish(self.VELOCITY * self.VEL_COEFFICIENT)
+        surge = self.VELOCITY * self.VEL_COEFFICIENT
+
+        # If the distance is negative, we want to go backwards.
+        if self.distance < 0:
+            surge *= -1
+
+        self.surge_pub.publish(surge)
         yaw_maintainer = YawMaintainer()
         yaw_maintainer.start()
         depth_maintainer = DepthMaintainer()
@@ -49,7 +55,7 @@ class Move(object):
                 depth_maintainer.stop()
                 return
 
-            self.surge_pub.publish(self.VELOCITY * self.VEL_COEFFICIENT)
+            self.surge_pub.publish(surge)
             rate.sleep()
 
         # Sleep is needed to allow robot to stop before other actions are done.
