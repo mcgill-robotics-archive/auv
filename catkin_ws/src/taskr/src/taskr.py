@@ -9,7 +9,6 @@ from initialize import Initializer
 from actionlib import SimpleActionServer
 from auv_msgs.msg import TaskStatus
 from planner.msg import TaskFeedback, TaskResult, TaskAction
-from controls.servo_controller import DepthMaintainer, YawMaintainer
 
 current_task = TaskStatus()
 current_task.task = TaskStatus.TASK_IDLE

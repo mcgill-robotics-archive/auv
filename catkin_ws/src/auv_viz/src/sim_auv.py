@@ -17,11 +17,7 @@ class FakeAUV(object):
         self.robot_frame = "robot"
         self.map_frame = "map"
 
-        self.window = 2
-        self.period = 0.1  # We know that controls publishes at this freq.
-        # self.vel_history = [Vector3(), Vector3()]
-        # self.ang_vel_history = [Vector3(), Vector3()]
-
+        self.period = 0.1   # We know that controls publishes at this freq.
         self.surface = 0.0  # Surface of the water.
 
         self.current_pose = Pose()
@@ -36,10 +32,10 @@ class FakeAUV(object):
         self.V = self.V * 0.001     # m^3
         self.rho = 1000             # kg/m^3
 
-        self.drag_coeff_x = 10      # all drag coeffs together
-        self.drag_coeff_y = 30      # all drag coeffs together
+        self.drag_coeff_x = 22      # all drag coeffs together
+        self.drag_coeff_y = 25      # all drag coeffs together
         self.drag_coeff_z = 20      # all drag coeffs together
-        self.drag_coeff_theta = 3   # all drag coeffs together
+        self.drag_coeff_theta = 8   # all drag coeffs together
         self.rot_coeff = 0.1        # r / I
 
         # We'll ignore these for now for simplicity.
@@ -70,7 +66,7 @@ class FakeAUV(object):
             self.map_frame
         )
 
-        # Brodcast floating horizon and initial horizon.
+        # Brodcast floating horizon.
         self.broadcaster.sendTransform(
             (0, 0, 0),
             (0, 0, 0, 1),
@@ -79,7 +75,7 @@ class FakeAUV(object):
             self.map_frame
         )
 
-        # Brodcast floating horizon and initial horizon.
+        # Brodcast initial horizon, which is upside down compared to map.
         self.broadcaster.sendTransform(
             (0, 0, 0),
             quaternion_from_euler(np.pi, 0, 0),
@@ -88,27 +84,41 @@ class FakeAUV(object):
             self.map_frame
         )
 
-        # Publish the depth on a topic as well.
-        self.depth_pub.publish(self.current_pose.position.z)
+        # Publish the depth on a topic.
+        self.depth_pub.publish(-self.current_pose.position.z)
 
+        # Reset the twist to zero if we haven't gotten a message in too long.
         if (rospy.Time.now() - self.last_time).to_sec() > 2 * self.period:
             self.last_twist = Twist()
 
     def control_cb(self, msg):
         twist = self.wrench_to_twist(msg)
 
-        # Integrate to get distance change.
-        self.integrateAll(twist)
-        # self.current_pos = add(self.current_pos, self.integrateAll(self.vel_history))
-        # self.current_angle = add(self.current_angle, self.integrateAll(self.ang_vel_history))
+        # Integrate to update position.
+        self.current_pose = self.updatePose(twist, self.current_pose)
 
-        if self.current_pose.position.z < self.surface:
+        # Ensure that the robot doesn't go above the water surface.
+        if self.current_pose.position.z > self.surface:
             self.current_pose.position.z = self.surface
 
         self.last_twist = twist
         self.last_time = rospy.Time.now()
 
     def wrench_to_twist(self, wrench):
+        """Approximates the twist command associated with each drag.
+
+        The robot's velocity is derived as follows:
+
+            F_applied - F_drag = m * a = m * (v - v_0) / dt
+            v = (F_applied - F_drag) * dt / m + v_0
+
+        Drag is calculated as a function of velocity. Buoyancy is ignored for
+        now, for simplicity. It is also assumed that the robot will never pitch
+        or roll.
+
+        Args:
+            wrench: The wrench command sent to the robot.
+        """
         twist = Twist()
 
         # Do force to velocity conversion. Assume the only angular velocity is yaw.
@@ -124,32 +134,67 @@ class FakeAUV(object):
 
         return twist
 
-    def integrateAll(self, twist):
-        yaw = -euler_from_quaternion([self.current_pose.orientation.x,
-                                      self.current_pose.orientation.y,
-                                      self.current_pose.orientation.z,
-                                      self.current_pose.orientation.w])[2]
+    def updatePose(self, twist, pose):
+        """Updates the pose of the robot over a single period using the given
+        twist.
+
+        The motion model of the robot is simplified greatly. It is treated as
+        an omnidirectional robot in the x-y plane, with added ability to move
+        vertically in the z direction. The motion model in the x-y plane is:
+
+            x_dot = dx / dt = v_x * cos(theta) - v_y * sin(theta)
+            y_dot = dy / dt = v_y * cos(theta) + v_x * sin(theta)
+            theta_dot = dtheta / dt = v_theta
+
+        and in the z direction is:
+
+            z_dot = dz / dt = v_z
+
+        where the vs are applied velocities.
+
+        Args:
+            twist: The current twist of the robot.
+            pose: The current pose of the robot.
+
+        Returns:
+            The updated pose of the robot.
+        """
+        shifted_pose = Pose()
+        yaw = -euler_from_quaternion([pose.orientation.x,
+                                      pose.orientation.y,
+                                      pose.orientation.z,
+                                      pose.orientation.w])[2]
 
         dx = self.period * (twist.linear.x * np.cos(yaw) - twist.linear.y * np.sin(yaw))
         dy = self.period * (twist.linear.y * np.cos(yaw) + twist.linear.x * np.sin(yaw))
+        dz = self.period * twist.linear.z
         dtheta = self.period * twist.angular.z
 
-        dz = self.period * twist.linear.z
-
-        self.current_pose.position.x = self.current_pose.position.x + dx
-        self.current_pose.position.y = -self.current_pose.position.y + dy
-        self.current_pose.position.z = -self.current_pose.position.z + dz
-
-        self.current_pose.position.z *= -1
-        self.current_pose.position.y *= -1
+        shifted_pose.position.x = pose.position.x + dx
+        shifted_pose.position.y = pose.position.y - dy
+        shifted_pose.position.z = pose.position.z - dz
 
         quat = quaternion_from_euler(0, 0, -normalize_angle(yaw + dtheta))
-        self.current_pose.orientation.x = quat[0]
-        self.current_pose.orientation.y = quat[1]
-        self.current_pose.orientation.z = quat[2]
-        self.current_pose.orientation.w = quat[3]
+        shifted_pose.orientation.x = quat[0]
+        shifted_pose.orientation.y = quat[1]
+        shifted_pose.orientation.z = quat[2]
+        shifted_pose.orientation.w = quat[3]
+
+        return shifted_pose
 
     def drag(self, v, axis):
+        """Calculates the drag force as a function of velocity.
+
+        The drag coefficients are simplified to a single coefficient which is
+        tuned. Drag in pitch and roll are not supported.
+
+        Args:
+            v: The velocity of the robot in the given axis.
+            axis: The axis in which the robot is moving.
+
+        Returns:
+            The drag force.
+        """
         if axis == "x":
             return self.drag_coeff_x * v
         if axis == "y":
