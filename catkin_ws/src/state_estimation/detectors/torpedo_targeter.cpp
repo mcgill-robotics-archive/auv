@@ -4,7 +4,7 @@
  * @author Auguste Lalande , Jeremy Mallette
  */
 
-#include "torpedoTargeter.h"
+#include "torpedo_targeter.h"
 
 TorpedoTargeter::TorpedoTargeter(ros::NodeHandle& nh) :
     m_detect(true),
