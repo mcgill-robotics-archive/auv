@@ -17,8 +17,10 @@ class Dive(object):
     def start(self, server, feedback_msg):
         rospy.loginfo("Starting dive action")
 
-        self.yaw_maintainer.start()
-        self.depth_maintainer.start()
+        if not self.yaw_maintainer.is_active():
+            self.yaw_maintainer.start()
+        if not self.depth_maintainer.is_active():
+            self.depth_maintainer.start()
 
         stable_counts = 0
         while stable_counts < 30:
@@ -37,11 +39,12 @@ class Dive(object):
                 stable_counts = 0
             rospy.sleep(0.1)
 
-        self.depth_maintainer.stop()
-        self.yaw_maintainer.stop()
         rospy.loginfo("Done dive acion")
 
     def stop(self):
         self.preempted = True
-        self.depth_maintainer.stop()
-        self.yaw_maintainer.stop()
+
+        if self.depth_maintainer.is_active():
+            self.depth_maintainer.stop()
+        if self.yaw_maintainer.is_active():
+            self.yaw_maintainer.stop()

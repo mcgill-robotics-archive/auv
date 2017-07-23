@@ -52,8 +52,10 @@ class Move(object):
             self.sway_pub.publish(sway)
 
         # We want to maintain both yaw and depth as we move.
-        self.yaw_maintainer.start()
-        self.depth_maintainer.start()
+        if not self.yaw_maintainer.is_active():
+            self.yaw_maintainer.start()
+        if not self.depth_maintainer.is_active():
+            self.depth_maintainer.start()
 
         # Send surge commands.
         # Should run RATE * TIME times. For example, if we send cmds at
@@ -74,8 +76,6 @@ class Move(object):
         # Sleep is needed to allow robot to stop before other actions are done.
         rospy.sleep(2)
 
-        self.yaw_maintainer.stop()
-        self.depth_maintainer.stop()
         rospy.loginfo(
             "Done move in time {}".format((rospy.Time.now() - start).to_sec()))
 
@@ -86,7 +86,11 @@ class Move(object):
 
     def stop(self):
         self.preempted = True
+
         self.surge_pub.publish(0)
         self.sway_pub.publish(0)
-        self.yaw_maintainer.stop()
-        self.depth_maintainer.stop()
+
+        if self.depth_maintainer.is_active():
+            self.depth_maintainer.stop()
+        if self.yaw_maintainer.is_active():
+            self.yaw_maintainer.stop()
