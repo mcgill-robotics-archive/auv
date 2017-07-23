@@ -1,8 +1,6 @@
 #!/usr/bin/env python
 import rospy
-from math import fabs
-from std_msgs.msg import Float64
-from controls.servo_controller import YawMaintainer
+from controls.servo_controller import YawMaintainer, DepthMaintainer
 
 
 class Turn(object):
@@ -15,6 +13,8 @@ class Turn(object):
 
         yaw_maintainer = YawMaintainer(self.angle)
         yaw_maintainer.start()
+        depth_maintainer = DepthMaintainer()
+        depth_maintainer.start()
 
         depth_maintainer = DepthMaintainer()
         depth_maintainer.start()
@@ -35,7 +35,6 @@ class Turn(object):
             else:
                 stable_counts = 0
             rospy.sleep(0.1)
-
 
         yaw_maintainer.stop()
         depth_maintainer.stop()
