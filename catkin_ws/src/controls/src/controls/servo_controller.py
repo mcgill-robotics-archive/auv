@@ -42,6 +42,10 @@ class SyncServoController(object):
         res = self.pid.update(error, duration)
         self.pub.publish(res)
 
+    def set_setpoint(self, setpoint):
+        self.setpoint = setpoint
+        self.pid.reset()
+
     def get_error(self):
         """
         get_error is the method implemented to report the error from the
@@ -134,6 +138,10 @@ class AsyncServoController(object):
         error = self.get_error(msg)
         res = self.pid.update(error, last_duration)
         self.pub.publish(res)
+
+    def set_setpoint(self, setpoint):
+        self.setpoint = setpoint
+        self.pid.reset()
 
     def get_error(self, msg):
         """

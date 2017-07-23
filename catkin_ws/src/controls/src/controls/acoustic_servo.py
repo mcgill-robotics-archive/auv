@@ -4,10 +4,10 @@ from tf.transformations import euler_from_quaternion
 
 from PID import PID, rot_gains
 from utils import normalize_angle
-from servo_controller import ASyncServoController
+from servo_controller import AsyncServoController, YawMaintainer
 
 
-class AcousticServo(ASyncServoController):
+class AcousticServo(AsyncServoController):
     '''
     AcousticServo provides a controller to minimize the error between the
     robot's current heading and the heading of the pinger

@@ -46,10 +46,10 @@ class Pinger(object):
 
         # Start timers.
         self.br_timer = rospy.Timer(rospy.Duration(0.1), self.broadcast_pinger)
-        self.listener.waitForTransform("map", "pinger", rospy.Time(0), rospy.Duration(1.0))
+        self.listener.waitForTransform("robot", "pinger", rospy.Time(0), rospy.Duration(1.0))
 
         self.sub = rospy.Subscriber("robot_state", Vector3Stamped, self.attitude_cb, queue_size=1)
-        self.timer = rospy.Timer(rospy.Duration(0.1), self.pub_pinger)
+        self.timer = rospy.Timer(rospy.Duration(2), self.pub_pinger)
 
     def broadcast_pinger(self, _):
         # Create the tf.

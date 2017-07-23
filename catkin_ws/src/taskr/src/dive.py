@@ -1,12 +1,6 @@
 #!/usr/bin/env python
 import rospy
-<<<<<<< HEAD
-from math import fabs
-from std_msgs.msg import Float64
-from controls.servo_controller import DepthMaintainer
-=======
 from controls.servo_controller import YawMaintainer, DepthMaintainer
->>>>>>> dev
 
 
 class Dive(object):

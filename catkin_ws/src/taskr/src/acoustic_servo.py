@@ -3,7 +3,7 @@ import rospy
 from math import fabs
 from std_msgs.msg import Float64
 from geometry_msgs.msg import Vector3Stamped
-from controls.servo_controller import YawMaintainer
+from controls.servo_controller import YawMaintainer, DepthMaintainer
 
 
 class AcousticServo(object):
@@ -27,6 +27,7 @@ class AcousticServo(object):
         self.last_heading = None
 
         self.yaw_maintainer = YawMaintainer()
+        self.depth_maintainer = DepthMaintainer()
 
         self.pinger_heading_log = []
         self.pinger_heading = 0
@@ -58,6 +59,11 @@ class AcousticServo(object):
             feedback_msg:   Feedback message to populate.
         """
         rospy.loginfo("Starting AcousticServo Action")
+
+        if not self.yaw_maintainer.is_active():
+            self.yaw_maintainer.start()
+        if not self.depth_maintainer.is_active():
+            self.depth_maintainer.start()
 
         self.server = server
         self.feedback_msg = feedback
@@ -94,6 +100,11 @@ class AcousticServo(object):
     def stop(self):
         self.preempted = True
         self.surge_pub.publish(0)
+
+        if self.yaw_maintainer.is_active():
+            self.yaw_maintainer.stop()
+        if self.depth_maintainer.is_active():
+            self.depth_maintainer.stop()
 
     def state_cb(self, msg):
         self.robot_heading = msg.vector.z

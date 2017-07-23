@@ -35,27 +35,28 @@ torpedo:
 # OCTAGON TASK
 # Search for octogon using hydrophones.
 octagon:
-  actions:
-    - maintain_depth: 1.0
-    - acoustic_servo: "hydrophones"
+  actions: []
 
 # TEST TASK
 # Represents any series of actions for testing purposes.
 square:
   actions:
-    - move:
-        distance: 1.0
-    - turn:
-        angle: 1.5708
-    - move:
-        distance: 1.0
-    - turn:
-        angle: 3.1416
-    - move:
-        distance: 1.0
-    - turn:
-        angle: -1.5708
-    - move:
-        distance: 1.0
-    - turn:
-        angle: 0.0
+    - dive:
+        depth: 1.0
+    - acoustic_servo: "hydrophones"
+    # - move:
+    #     distance: 1.0
+    # - turn:
+    #     angle: 1.5708
+    # - move:
+    #     distance: 1.0
+    # - turn:
+    #     angle: 3.1416
+    # - move:
+    #     distance: 1.0
+    # - turn:
+    #     angle: -1.5708
+    # - move:
+    #     distance: 1.0
+    # - turn:
+    #     angle: 0.0
