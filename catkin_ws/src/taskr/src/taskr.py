@@ -11,7 +11,6 @@ from actionlib import SimpleActionServer
 from auv_msgs.msg import TaskStatus
 from std_msgs.msg import Float64
 from planner.msg import TaskFeedback, TaskResult, TaskAction
-from controls.servo_controller import DepthMaintainer, YawMaintainer
 from taskr.action import HydrophonesAction, HydrophonesFeedback, HydrophonesResult
 
 current_task = TaskStatus()
