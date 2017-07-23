@@ -12,6 +12,7 @@
   <node name="mean_shift" pkg="sonar_proc" type="mean_shift.py" output="screen"></node>
   <node name="task_point" pkg="sonar_proc" type="task_point.py" output="screen">
     <param name="manuever_length" value="5.0" />
+    <param name="buoy_size" value="5.0" />
   </node>
 
   <!-- Needed because the driver publishes the scan in the "sonar" frame. -->
