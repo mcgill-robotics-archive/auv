@@ -1,207 +1,171 @@
 /**
  * torpedoTargeter.cpp
  * @description A class to detect the torpedo target using OpenCV filters.
- * @authors Auguste Lalande
+ * @author Auguste Lalande , Jeremy Mallette
  */
 
 #include "torpedoTargeter.h"
 
-#define THRESHOLD_VALUE 128
-
-RNG rng(12345);
-
-
-TorpedoTargeter::TorpedoTargeter(ros::NodeHandle& nh) {
-  image_sub_ = nh.subscribe<sensor_msgs::Image>(
-    "camera_front/image_color", 1, &TorpedoTargeter::imageCallback, this);
-  torpedo_pub_ = nh.advertise<auv_msgs::TorpedoTarget>("state_estimation/torpedo_target", 10);
+TorpedoTargeter::TorpedoTargeter(ros::NodeHandle& nh) :
+    m_detect(true),
+    m_visualize(true)
+{
+    image_sub_   = nh.subscribe<sensor_msgs::Image>("camera_front/image_color", 1, &TorpedoTargeter::imageCallback, this);
+    torpedo_pub_ = nh.advertise<auv_msgs::TorpedoTarget>("state_estimation/torpedo_target", 10);
 }
 
-
-void TorpedoTargeter::imageCallback(const sensor_msgs::Image::ConstPtr& msg) {
-
-  auv_msgs::TorpedoTarget torpedoTarget;
-  cv_bridge::CvImageConstPtr cv_ptr;
-
-  try
-  {
-    cv_ptr = cv_bridge::toCvShare(msg, enc::BGR8);
-  }
-  catch (cv_bridge::Exception& e)
-  {
-    ROS_ERROR("cv_bridge exception: %s", e.what());
-    return;
-  }
-
-  Mat img = cv_ptr->image;  // Converting from ROS image to openCV image
-
-  if(!img.data) {
-    ROS_WARN("No data!");
-    return;
-  }
-
-  Mat small_img;
-  Mat filtered;
-  Mat gray;               // New
-  Mat thresholded;        // New
-  Mat out_contour_img;    // New
-
-  float scale_factor = 0.5;
-
-  // downsample and apply blur filter
-  resize(img, small_img, Size(), scale_factor, scale_factor, INTER_CUBIC);
-  medianBlur(small_img, filtered, 25);
-
-// ==========================
-// === Auguste's Old Code ===
-// ==========================
-  // uint8_t* pixelPtr = (uint8_t*)filtered.data;
-  // int cn = filtered.channels();
-  // int nRows = filtered.rows;
-  // int nCols = filtered.cols;
-
-  // Mat gray(nRows, nCols, CV_8UC1, Scalar(0));
-  // uint8_t* grayPtr = (uint8_t*)gray.data;
-
-  // // create grayscale based on the rule that pixels where blue channel is less then green channel
-  // // should be black. And the inverse should be white
-  // for(int i = 0; i < nRows; i++) {
-  //   for(int j = 0; j < nCols; j++) {
-  //     if (pixelPtr[i * nCols * cn + j * cn] < pixelPtr[i * nCols * cn + j * cn + 1]) // B < G
-  //       grayPtr[i * nCols + j] = 255;
-  //   }
-  // }
-
-  // Mat grayCopy = gray.clone();
-  // vector<vector<Point> > contours;
-  // vector<Vec4i> hierarchy;
-  // // extract contours of apparent objects
-// =============================================================================
-
-  cvtColor(filtered, gray, CV_BGR2GRAY);
-  threshold(gray, thresholded, THRESHOLD_VALUE, 255, CV_THRESH_BINARY);
-  out_contour_img = gray.clone();
-
-  vector<vector<Point> > contours;
-  vector<Vec4i> hierarchy;
-  findContours(out_contour_img, contours, hierarchy, CV_RETR_TREE, CV_CHAIN_APPROX_SIMPLE, Point(0, 0));
-
-  int largest_area = 0;
-  int largest_contour_index = 0;
-  // find largest contour
-  for (int i = 0; i < contours.size(); i++) {
-    double area = contourArea(contours[i], false);
-    if (area > largest_area) {
-      largest_area = area;
-      largest_contour_index = i;
+void TorpedoTargeter::imageCallback(const sensor_msgs::Image::ConstPtr& msg)
+{
+    if (!m_detect)
+    {
+        return;
     }
-  }
 
-  if (!largest_area) {
-    ROS_WARN("No significant object in frame");
-    return;
-  }
+    // I/O
+    cv_bridge::CvImageConstPtr cv_ptr;
+    auv_msgs::TorpedoTarget torpedoTarget;
 
+    // Images
+    Mat input_img,
+        filter_img,
+        small_img,
+        gray_img,
+        thresh_img,
+        border_contour_img,
+        border_img,
+        disp_img;
 
-  RotatedRect rect = minAreaRect(Mat(contours[largest_contour_index]));
-  // TODO check that min area rect is similar to contour area
+    // Contours
+    vector<vector<Point> > border_contours;
+    vector<Vec4i> border_hierarchy;
+    vector<vector<Point> > target_contours;
+    vector<Vec4i> target_hierarchy;
 
+    // Detection
+    RotatedRect border;
+    vector<Point2f> centres;
+    vector<float> radii;
 
-  // extract information only from within largest contour
-  Mat cropped = Mat::zeros(out_contour_img.size(), CV_8U);
-  Mat mask_image(out_contour_img.size(), CV_8U, Scalar(0));
-  drawContours(mask_image, contours, largest_contour_index, Scalar(255), CV_FILLED);
-  out_contour_img.copyTo(cropped, mask_image);
+    try
+    {
+        cv_ptr = cv_bridge::toCvShare(msg, enc::BGR8);
+    }
+    catch (cv_bridge::Exception& e)
+    {
+        ROS_ERROR("cv_bridge exception: %s", e.what());
+        return;
+    }
 
+    // Ros Image -> OpenCV Image
+    input_img = cv_ptr->image;
 
-  vector<vector<Point> > inner_contours;
-  vector<Vec4i> inner_hierarchy;
-  // extract contours of inside target
-  findContours(cropped, inner_contours, inner_hierarchy, CV_RETR_TREE, CV_CHAIN_APPROX_SIMPLE, Point(0, 0));
+    if(!input_img.data)
+    {
+        ROS_WARN("No data!");
+        return;
+    }
 
-// ==========================
-// === Auguste's Old Code ===
-// ==========================
-  // // sort contours by area
-  // vector<pair<double, int> > contour_areas;
+    // Remove Blue Channel
+    Mat bgrChannels[3];
+    split(input_img, bgrChannels);
+    bgrChannels[0] = Mat::zeros(input_img.rows, input_img.cols, CV_8UC1);
+    merge(bgrChannels, 3, input_img);   // Repack into the input_img
 
-  // for (int i = 0; i < inner_contours.size(); i++) {
-  //   double a = contourArea(inner_contours[i], false);
-  //   contour_areas.push_back(make_pair(a, i));
-  // }
+    // Filtering (Downsample and Blur)
+    resize(input_img, small_img, Size(), SCALE_FACTOR, SCALE_FACTOR, INTER_CUBIC);
+    medianBlur(small_img, filter_img, BLUR_VALUE);
 
-  // if (contour_areas.size() < 2) {
-  //   ROS_WARN("No hole detected!");
-  //   return;
-  // }
+    // Convert to Grayscale
+    cvtColor(filter_img, gray_img, CV_BGR2GRAY);
 
-  // sort(contour_areas.rbegin(), contour_areas.rend());
-  // int target_ind = contour_areas[1].second;
+    // Threshold and Find Contours
+    threshold(gray_img, thresh_img, THRESHOLD_VALUE, 255, CV_THRESH_BINARY);
+    findContours(border_contour_img, border_contours, border_hierarchy, CV_RETR_EXTERNAL, CV_CHAIN_APPROX_SIMPLE, Point(0, 0));
 
-  // rect = minAreaRect(Mat(inner_contours[target_ind]));
-  // // TODO check that min area rect is similar to contour area
+    int largest_area = 0;
+    int largest_contour_index = 0;
+    // find largest contour
+    for (int i = 0; i < border_contours.size(); i++)
+    {
+        double area = contourArea(border_contours[i], false);
+        if (area > largest_area)
+        {
+            largest_area = area;
+            largest_contour_index = i;
+        }
+    }
 
-  // Moments M = moments(inner_contours[target_ind], false);
-  // int cx = M.m10 / M.m00;
-  // int cy = M.m01 / M.m00;
+    if (!largest_area)  // Maybe put in an actual min value
+    {
+        ROS_WARN("No significant object in frame");
+        return;
+    }
 
-  // circle(small_img, Point(cx, cy), 7, Scalar(0, 0, 255), 7);
+    // TODO Either during the for loop or after, use color/size ratios to do validation...
+    border = minAreaRect(Mat(border_contours[largest_contour_index]));
 
-  // torpedoTarget.hole_detected = true;
-  // torpedoTarget.x_hole = cx / scale_factor;
-  // torpedoTarget.y_hole = cy / scale_factor;
+    // Copy all pixels within the largest contour to another image
+    border_img = Mat::zeros(border_contour_img.size(), CV_8U);
+    Mat mask_image(border_contour_img.size(), CV_8U, Scalar(0));
+    drawContours(mask_image, border_contours, largest_contour_index, Scalar(255), CV_FILLED);
+    border_contour_img.copyTo(border_img, mask_image);
 
-  // Point2f rect_points[4];
-  // rect.points(rect_points);
-  // Scalar color = Scalar(0, 0, 255);
-  // for(int i = 0; i < 4; i++)
-  //   line(filtered, rect_points[i], rect_points[(i+1)%4], color, 2, 8 );
+    // Find contours within this largest contour
+    findContours(border_contour_img, target_contours, target_hierarchy, CV_RETR_TREE, CV_CHAIN_APPROX_SIMPLE, Point(0, 0));
 
-  // color = Scalar(255, 0, 0);
-  // drawContours(filtered, contours, largest_contour_index, color, 2, 8, hierarchy, 0, Point());
-// =============================================================================
+    for (int j = 0; j < target_contours.size(); j++)
+    {
+        Point2f centre;
+        float radius;
 
-  vector<Point2f> centres;
-  vector<float> radii;
+        minEnclosingCircle(target_contours[j], centre, radius);
 
-  for (int l = 0; l < inner_contours.size(); l++)
-  {
-    Point2f centre;
-    float radius;
+        if (radius > RADIUS_ACCEPTANCE_LIMIT)
+        {
+            centres.push_back(centre);
+            radii.push_back(radius);
+        }
+    }
 
-    minEnclosingCircle(contours[l], centre, radius);
+    // Draw Visulize Output
+    if (m_visualize)
+    {
+        disp_img = border_contour_img.clone();
 
-    centres.push_back(centre);
-    radii.push_back(radius);
-  }
+        for (int k = 0; k < target_contours.size(); k++)
+        {
+            drawContours(disp_img, target_contours, k, Scalar(255, 0, 0), 2, 8, target_hierarchy, 0, Point());
+        }
 
-  Mat display_img = cropped.clone();
+        for (int l = 0; l < centres.size(); l++)
+        {
+            circle(disp_img, centres[l], 5, Scalar(0, 0, 255), -1, 8);
+        }
 
-  // Draw contours
-  for (int j = 0; j < inner_contours.size(); j++)
-  {
-    drawContours(display_img, contours, j, Scalar(255, 0, 0), 2, 8, hierarchy, 0, Point());
-  }
+        namedWindow("~ Torpedo ~", WINDOW_NORMAL);
+        imshow("~ Torpedo ~", disp_img);
+    }
 
-  // Draw centres
-  for (int k = 0; k < centres.size(); k++)
-  {
-    circle(display_img, centres[k], 5, Scalar(0, 0, 255), -1, 8);
-  }
+    waitKey(10);
 
-  namedWindow("Torpedo", WINDOW_NORMAL);
-  imshow("Torpedo", display_img);
-  waitKey(10);
-
-  //torpedo_pub_.publish(torpedoTarget);
+    if (!centres.empty())
+    {
+        ROS_DEBUG("Possible targets identified.");
+        //torpedo_pub_.publish(TODO);
+    }
+    else
+    {
+        ROS_DEBUG("No possible targets identified.");
+        //torpedo_pub_.publish(TODO)
+    }
 }
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
+    ros::init(argc, argv, "torpedo_targeter");
+    ros::NodeHandle nh;
+    TorpedoTargeter TorpedoTargeter(nh);
 
-  ros::init(argc, argv, "torpedo_targeter");
-  ros::NodeHandle nh;
-  TorpedoTargeter TorpedoTargeter(nh);
-
-  ros::spin();
-  return 0;
+    ros::spin();
+    return 0;
 }

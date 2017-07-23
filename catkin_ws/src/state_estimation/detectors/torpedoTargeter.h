@@ -33,15 +33,24 @@ namespace enc = sensor_msgs::image_encodings;
 
 class TorpedoTargeter
 {
+
 public:
-  TorpedoTargeter(ros::NodeHandle& nh);
+    TorpedoTargeter(ros::NodeHandle& nh);
 
 private:
-  ros::Subscriber image_sub_;
-  ros::Publisher torpedo_pub_;
+    ros::Subscriber image_sub_;
+    ros::Publisher  torpedo_pub_;
 
-  void imageCallback(const sensor_msgs::Image::ConstPtr& msg);
+    // Params
+    bool m_detect;
+    bool m_visualize;
+
+    const static double SCALE_FACTOR = 0.5;
+    const static int BLUR_VALUE = 25;
+    const static int THRESHOLD_VALUE = 128;
+    const static float RADIUS_ACCEPTANCE_LIMIT = 0;
+
+    void imageCallback(const sensor_msgs::Image::ConstPtr& msg);
 };
 
-
-#endif
+#endif //END TORPEDO_TARGET_H
