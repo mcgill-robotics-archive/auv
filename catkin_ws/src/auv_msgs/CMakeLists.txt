@@ -46,6 +46,7 @@ add_action_files(
   FILES
     SetVelocity.action  # Deprecated
     InitializeHorizon.action
+    Hydrophones.action
 )
 
 generate_messages(DEPENDENCIES
