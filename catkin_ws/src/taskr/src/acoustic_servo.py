@@ -4,7 +4,7 @@ from math import fabs
 from std_msgs.msg import Float64
 
 from controls.servo_controller import DepthMaintainer
-from controls.acoustic_servo import AcousticServo as AcousticController
+from controls.acoustic_servo import AcousticServoController
 
 
 class AcousticServo(object):
@@ -20,8 +20,11 @@ class AcousticServo(object):
     SURGE_ERROR = 10.0
 
     def __init__(self, data):
-        self.acoustic_servo_controller = AcousticController()
+        self.acoustic_servo_controller = AcousticServoController()
         self.depth_maintainer = DepthMaintainer()
+
+        self.surge_pub = rospy.Publisher('/controls/superimposer/surge', Float64,
+                                         queue_size=1)
 
         self.preempted = False
 
@@ -33,8 +36,10 @@ class AcousticServo(object):
         """
         rospy.loginfo("Starting AcousticServo Action")
 
-        self.acoustic_servo_controller.start()
-        self.depth_maintainer.start()
+        if not self.acoustic_servo_controller.is_active():
+            self.acoustic_servo_controller.start()
+        if not self.depth_maintainer.is_active():
+            self.depth_maintainer.start()
 
         rate = rospy.Rate(self.PREEMPT_CHECK_FREQUENCY)
 
@@ -62,8 +67,6 @@ class AcousticServo(object):
         rospy.loginfo("Approaching pinger")
 
         # Keep approaching the pinger until we've gone past it
-        surge_pub = rospy.Publisher('/controls/superimposer/surge', Float64,
-                                    queue_size=1)
         while not self.preempted:
             err = self.acoustic_servo_controller.get_error()
             # If angle is greater than 90, we have reached the pinger.
@@ -71,19 +74,16 @@ class AcousticServo(object):
                 rospy.loginfo("Pinger has been reached! Ending")
                 break
             else:
-                surge_pub.publish(self.SURGE_ERROR)
+                self.surge_pub.publish(self.SURGE_ERROR)
 
             rate.sleep()
-
-        surge_pub.publish(0)
-        surge_pub.unregister()
-        self.acoustic_servo_controller.stop()
-        self.depth_maintainer.stop()
-
 
     def stop(self):
         self.preempted = True
 
         self.surge_pub.publish(0)
-        self.acoustic_servo_controller.stop()
-        self.depth_maintainer.stop()
+
+        if self.acoustic_servo_controller.is_active():
+            self.acoustic_servo_controller.stop()
+        if self.depth_maintainer.is_active():
+            self.depth_maintainer.stop()
