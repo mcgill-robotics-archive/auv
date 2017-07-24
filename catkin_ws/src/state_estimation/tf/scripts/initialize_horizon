@@ -270,7 +270,7 @@ class InitializeHorizonActionServer(object):
 
         # Only initialize horizon's yaw.
         global horizon
-        horizon = RPY(0, 0, median.yaw)
+        horizon = RPY(0, 0, -median.yaw)
 
         # If there is yaw drift, an empty result is returned.
         if self.check_yaw_drift(goal.drift_check):
