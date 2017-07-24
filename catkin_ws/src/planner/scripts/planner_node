@@ -8,7 +8,7 @@ from threading import Thread
 from std_msgs.msg import Bool
 from smach_ros import SimpleActionState
 from planner.msg import TaskGoal, TaskAction
-from taskr.msg import HydrophonesGoal, HydrophonesAction
+from auv_msgs.msg import HydrophonesGoal, HydrophonesAction
 
 TASKS_PATH = rospy.get_param("planner/tasks")
 MISSION_TOPIC = rospy.get_param("planner/mission_topic")

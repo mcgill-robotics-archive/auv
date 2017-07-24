@@ -11,7 +11,7 @@ from actionlib import SimpleActionServer
 from auv_msgs.msg import TaskStatus
 from std_msgs.msg import Float64
 from planner.msg import TaskFeedback, TaskResult, TaskAction
-from taskr.action import HydrophonesAction, HydrophonesFeedback, HydrophonesResult
+from auv_msgs.msg import HydrophonesAction, HydrophonesFeedback, HydrophonesResult
 
 current_task = TaskStatus()
 current_task.task = TaskStatus.TASK_IDLE
