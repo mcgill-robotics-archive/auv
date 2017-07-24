@@ -4,7 +4,7 @@ from math import fabs
 from std_msgs.msg import Float64
 
 from controls.servo_controller import DepthMaintainer
-from controls.servo_controller import AcousticServo as AcousticController
+from controls.acoustic_servo import AcousticServo as AcousticController
 
 
 class AcousticServo(object):
@@ -17,9 +17,11 @@ class AcousticServo(object):
 
     PREEMPT_CHECK_FREQUENCY = 1  # Hz
     TIMEOUT = 300  # Seconds = 5 min
-    SURGE_ERROR = 3.0
+    SURGE_ERROR = 10.0
 
     def __init__(self, data):
+        self.acoustic_servo_controller = AcousticController()
+        self.depth_maintainer = DepthMaintainer()
 
         self.preempted = False
 
@@ -31,25 +33,23 @@ class AcousticServo(object):
         """
         rospy.loginfo("Starting AcousticServo Action")
 
-        acoustic_servo_controller = AcousticController()
-        depth_maintainer = DepthMaintainer()
-
-        acoustic_servo_controller.start()
-        depth_maintainer.start()
+        self.acoustic_servo_controller.start()
+        self.depth_maintainer.start()
 
         rate = rospy.Rate(self.PREEMPT_CHECK_FREQUENCY)
 
         # Wait until the robot has stabilized towards the robot
+        stable_counts = 0
         while stable_counts < 30:
             rospy.loginfo("{} / 30 consecutive stable periods achieved".format(
                 stable_counts))
 
             if self.preempted:
-                acoustic_servo_controller.stop()
-                depth_maintainer.stop()
+                self.acoustic_servo_controller.stop()
+                self.depth_maintainer.stop()
                 return
 
-            err = acoustic_servo_controller.error
+            err = self.acoustic_servo_controller.get_error()
             if err is None:
                 pass
             elif abs(err) < 0.1:
@@ -62,23 +62,22 @@ class AcousticServo(object):
         rospy.loginfo("Approaching pinger")
 
         # Keep approaching the pinger until we've gone past it
+        surge_pub = rospy.Publisher('/controls/superimposer/surge', Float64,
+                                    queue_size=1)
         while not self.preempted:
-            err = acoustic_servo_controller.error
+            err = self.acoustic_servo_controller.get_error()
             # If angle is greater than 90, we have reached the pinger.
             if fabs(err) > 1.57:
                 rospy.loginfo("Pinger has been reached! Ending")
                 break
-            # otherwise, keep approaching
-            elif (rospy.Time.now() - self.start_time).to_sec() > self.TIMEOUT:
-                rospy.loginfo("Acoustic servo has timed out.")
-                return
             else:
-                self.surge_pub.publish(self.SURGE_ERROR)
+                surge_pub.publish(self.SURGE_ERROR)
 
             rate.sleep()
 
-        self.surge_pub.publish(0)
-        self.yaw_maintainer.stop()
+        surge_pub.publish(0)
+        surge_pub.unregister()
+        self.acoustic_servo_controller.stop()
         self.depth_maintainer.stop()
 
 
@@ -86,5 +85,5 @@ class AcousticServo(object):
         self.preempted = True
 
         self.surge_pub.publish(0)
-        self.yaw_maintainer.stop()
+        self.acoustic_servo_controller.stop()
         self.depth_maintainer.stop()
