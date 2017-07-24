@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 import rospy
+import numpy as np
 from move import Move
 from shoot import Shoot
 from turn import Turn
@@ -9,7 +10,9 @@ from initialize import Initializer
 from acoustic_servo import AcousticServo
 from actionlib import SimpleActionServer
 from auv_msgs.msg import TaskStatus
+from std_msgs.msg import Float64
 from planner.msg import TaskFeedback, TaskResult, TaskAction
+from taskr.action import HydrophonesAction, HydrophonesFeedback, HydrophonesResult
 
 current_task = TaskStatus()
 current_task.task = TaskStatus.TASK_IDLE
@@ -218,6 +221,104 @@ class Square(Task):
     def execute_cb(self, goal):
         current_task.task = TaskStatus.SQUARE
         self.action_sequence(self.data)
+
+
+class Wait(object):
+
+    SLEEP_TIME = rospy.get_param("taskr/wait_time", default=20)
+    MOVE_RATE = rospy.get_param("taskr/wait_move_rate", default=1)
+
+    def __init__(self):
+        self._action_name = "wait"
+        self._as = SimpleActionServer(
+            self._action_name, TaskAction,
+            execute_cb=self.execute_cb,
+            auto_start=False
+        )
+        self._as.start()
+
+    def execute_cb(self, goal):
+        start_time = rospy.Time.now()
+        rospy.loginfo("Sleeping for {} secs".format(self.SLEEP_TIME))
+
+        rate = rospy.Rate(self.MOVE_RATE)
+        feedback = TaskFeedback()
+
+        while (rospy.Time.now() - start_time) < rospy.Duration(self.SLEEP_TIME):
+            move_cmd = {"distance": 0}
+            move_action = Move(move_cmd)
+            move_action.start(self._as, feedback)
+
+            if self._as.is_preempt_requested():
+                rospy.logerr("Wait preempted")
+                self._as.set_preempted()
+                return
+
+            rate.sleep()
+
+        rospy.loginfo("Done sleeping")
+
+        result = TaskResult()
+        result.success = True
+        self._as.set_succeeded(result)
+
+
+class ChooseTask(object):
+    """Choose which task to do based on hydrophones."""
+
+    WINDOW_GOAL = 1
+
+    def __init__(self):
+        self._action_name = "hydro_choose_task"
+        self._as = SimpleActionServer(
+            self._action_name, HydrophonesAction,
+            execute_cb=self.execute_cb,
+            auto_start=False
+        )
+        self.goals = []
+
+        self.hydro_sub = rospy.Subscriber("hydrophones/heading", Float64, self.hydro_cb)
+
+        self._as.start()
+
+    def execute_cb(self, goal):
+
+        rate = rospy.Rate(2)
+        rospy.loginfo("Collecting data!")
+        while len(self.goals) < self.WINDOW_GOAL:
+            if self._as.is_preempt_requested():
+                rospy.logerr("Hydrophones preempted")
+                self._as.set_preempted()
+                return
+
+            feedback = HydrophonesFeedback()
+            feedback.hydro_heading = np.mean(self.goals) if self.goals else 0
+            self._as.publish_feedback(feedback)
+            move_cmd = {"distance": 0.5}
+            move_action = Move(move_cmd)
+            move_action.start(self._as, feedback)
+
+            rate.sleep()
+
+        rospy.loginfo("Enough data has been collected.")
+
+        hydro_heading = np.mean(self.goals)
+
+        rospy.loginfo("Got heading {}".format(hydro_heading))
+
+        result = HydrophonesResult()
+
+        if hydro_heading > 0:  # Positive angle
+            rospy.loginfo("Hydrophones are to the right.")
+            result.quadrant = "right"
+        else:
+            rospy.loginfo("Hydrophones are to the left.")
+            result.quadrant = "left"
+
+        self._as.set_succeeded(result)
+
+    def hydro_cb(self, msg):
+        self.goals.append(msg.data)
 
 
 def publish_task(event):

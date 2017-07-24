@@ -19,6 +19,7 @@ add_message_files(
   # Added by State Estimation
   RangeBearingElevation.msg
   SlamEstimate.msg
+  TorpedoTarget.msg
 
   # Added by IO
   RadioCommands.msg
