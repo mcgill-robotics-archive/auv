@@ -31,6 +31,8 @@ class SyncServoController(object):
 
         self._update_timer = None
 
+        self.active = False
+
     def _update(self, timer_event):
         if timer_event.last_expected is None:
             duration = 0.1
@@ -71,10 +73,11 @@ class SyncServoController(object):
         """
         if self._update_timer is not None:
             raise ValueError("Tried to start %s but it was already started" %
-                          self.__class__.__name__)
+                             self.__class__.__name__)
 
+        self.active = True
         self._update_timer = rospy.Timer(rospy.Duration(period),
-                                        self._update)
+                                         self._update)
 
     def stop(self):
         """
@@ -87,9 +90,14 @@ class SyncServoController(object):
             raise ValueError("Tried to stop %s but it hasn't been started" %
                              self.__class__.__name__)
 
+        self.active = False
         self.pub.publish(0.0)
         self._update_timer.shutdown()
         self._update_timer = None
+
+    def is_active(self):
+        """Returns True if active, False if stopped."""
+        return self.active
 
 
 class AsyncServoController(object):
@@ -127,6 +135,8 @@ class AsyncServoController(object):
 
         self._sub = None
         self._last_event = None
+
+        self.active = False
 
     def _update(self, msg):
         now = rospy.Time.now().to_sec()
@@ -166,8 +176,9 @@ class AsyncServoController(object):
             raise ValueError("Tried to start %s but it was already started" %
                              self.__class__.__name__)
 
+        self.active = True
         self._sub = rospy.Subscriber(self.sub_topic, self.sub_data_class,
-                                    self._update, queue_size=1)
+                                     self._update, queue_size=1)
 
     def stop(self):
         """
@@ -180,8 +191,13 @@ class AsyncServoController(object):
             raise ValueError("Tried to stop %s but it wasn't started" %
                              self.__class__.__name__)
 
+        self.active = False
         self.pub.publish(0.0)
         self._sub.unregister()
+
+    def is_active(self):
+        """Returns True if active, False if stopped."""
+        return self.active
 
 
 class DepthMaintainer(AsyncServoController):
@@ -223,7 +239,7 @@ class YawMaintainer(SyncServoController):
         while not rospy.is_shutdown():
             try:
                 trans, rot = self._listener.lookupTransform(
-                        'initial_horizon', 'robot', rospy.Time())
+                    'initial_horizon', 'robot', rospy.Time())
                 (roll, pitch, yaw) = euler_from_quaternion(rot)
                 return yaw
             except (tf.LookupException, tf.ConnectivityException,
