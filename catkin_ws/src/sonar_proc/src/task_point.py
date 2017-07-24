@@ -44,6 +44,7 @@ BUOY_APPROACH = [TaskStatus.BUOYS]
 MANEUVER_LENGTH = rospy.get_param("~manuever_length", default=2.4)
 BUOY_SIZE = rospy.get_param("~buoy_size", default=2.0)
 GATE_LENGTH = rospy.get_param("~gate_length", default=3.05)
+GATE_ERROR = rospy.get_param("~gate_error", default=0.40)
 
 
 def update_state(data):
@@ -99,13 +100,17 @@ def gate_approach_point(data):
     significant_combo = [data.clusters[0], data.clusters[1]]
     error = centroid_distance(significant_combo[0], significant_combo[1])
     min_error = get_distance(error, POLE_LENGTH)
+    error_test = 0.0
     for combo in itertools.combinations(data.clusters, 2):
         temp = centroid_distance(combo[0], combo[1])
         error = get_distance(temp, POLE_LENGTH)
         if error < min_error:
             significant_combo = combo
             min_error = error
+            error_test = min_error
 
+    if error_test > GATE_ERROR:
+        return TaskPointsArray()
     # Return the point in between the gate posts
     centroids = (
         significant_combo[0].centroid,
@@ -129,13 +134,15 @@ def task_point(data):
     point = None
     if state.task in DIRECT_APPROACH:
         point = direct_approach_point(data)
+        rospy.loginfo("Sonar found task point at: {%.2f, %.2f}" %
+                      (point.task.x, point.task.y))
     elif state.task in GATE_APPROACH:
         point = gate_approach_point(data)
+        rospy.loginfo("Sonar found task point at: {%.2f, %.2f}" %
+                      (point.task.x, point.task.y))
     else:
-        return
+        point = TaskPointsArray()
 
-    rospy.loginfo("Sonar found task point at: {%.2f, %.2f}" %
-                  (point.task.x, point.task.y))
     pub_goal.publish(point)
 
 
