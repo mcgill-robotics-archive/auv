@@ -1,34 +1,27 @@
 import rospy
-from geometry_msgs.msg import PoseStamped
-from tf.transformations import euler_from_quaternion
+from std_msgs.msg import Float64
 
-from PID import PID, rot_gains
 from utils import normalize_angle
-from servo_controller import AsyncServoController, YawMaintainer
+from servo_controller import YawMaintainer
 
 
-class AcousticServo(AsyncServoController):
+class AcousticServo(YawMaintainer):
     '''
     AcousticServo provides a controller to minimize the error between the
     robot's current heading and the heading of the pinger
     '''
     def __init__(self):
-        pid = PID(*rot_gains['yaw'])
-        pub = rospy.Publisher('controls/superimposer/yaw', PoseStamped,
-                              queue_size=1)
-        self.error = None
+        super(AcousticServo, self).__init__()
 
-        super(YawMaintainer, self).__init__(pid, pub, 'hydrophones/heading',
-                                            PoseStamped, 0)
+    def start(self):
+        super(AcousticServo, self).start()
+        self.sub = rospy.Subscriber('/hydrophones/heading', Float64,
+            self._update_pinger_header)
 
-    def get_error(self, msg):
-        quaternion = (
-            msg.orientation.x,
-            msg.orientation.y,
-            msg.orientation.z,
-            msg.orientation.w)
-        (_, _, yaw) = euler_from_quaternion(quaternion)
+    def stop(self):
+        super(AcousticServo, self).stop()
+        self.sub.unregister()
 
-        normalized_yaw_error = normalize_angle(yaw)
-        self.error = normalized_yaw_error
-        return self.error
+    def _update_pinger_header(self, msg):
+        current_yaw = self.get_current_yaw()
+        self.setpoint = normalize_angle(current_yaw + msg.data)
