@@ -24,23 +24,27 @@ publishes:
 
 """
 import math
+import itertools
 
 import rospy
 from geometry_msgs.msg import Point
 from auv_msgs.msg import TaskStatus
 from sonar_proc.msg import ClusterArray
-from visualization_msgs.msg import Marker
-from std_msgs.msg._ColorRGBA import ColorRGBA
 from auv_msgs.msg import TaskPointsArray
 
 state = None
-DIRECT_APPROACH = [TaskStatus.GATE, TaskStatus.BUOYS, TaskStatus.OCTAGON, TaskStatus.SQUARE, TaskStatus.TORPEDO]
+DIRECT_APPROACH = [TaskStatus.OCTAGON, TaskStatus.SQUARE, TaskStatus.TORPEDO]
+GATE_APPROACH = [TaskStatus.GATE, TaskStatus.MANEUVER]
+BUOY_APPROACH = [TaskStatus.BUOYS]
 
 # TODO: this is a completely made-up value
 # needs adjusting to the real thing
 # this is the distance between the "manuever centroids"
 
-MANEUVER_LENGTH = rospy.get_param("~manuever_length", default=5)
+MANEUVER_LENGTH = rospy.get_param("~manuever_length", default=2.4)
+BUOY_SIZE = rospy.get_param("~buoy_size", default=2.0)
+GATE_LENGTH = rospy.get_param("~gate_length", default=3.05)
+GATE_ERROR = rospy.get_param("~gate_error", default=0.40)
 
 
 def update_state(data):
@@ -53,72 +57,99 @@ def get_distance(x, y):
 
 
 def centroid_distance(c1, c2):
-    return math.sqrt(abs(c1.centroid.x - c2.centroid.x)**2 + abs(c1.centroid.y - c2.centroid.y)**2)
+    return math.sqrt(abs(c1.centroid.x - c2.centroid.x)**2 +
+                     abs(c1.centroid.y - c2.centroid.y)**2)
+
+
+def get_size_error(test_size, perf_size):
+    return abs(perf_size - test_size)
+
+
+def direct_approach_point(data):
+    # search for cluster closest to y axis
+    significant_cluster = data.clusters[0]
+    min_distance = get_distance(data.clusters[0].centroid.y, 0)
+    for cluster in data.clusters:
+        distance = get_distance(cluster.centroid.y, 0)
+        if distance < min_distance:
+            significant_cluster = cluster
+            min_distance = distance
+    taskArr = TaskPointsArray()
+    taskArr.task = Point(
+        significant_cluster.centroid.x,
+        significant_cluster.centroid.y,
+        0
+    )
+    taskArr.pole1 = Point(0, 0, 0)
+    taskArr.pole2 = Point(0, 0, 0)
+
+    return taskArr
+
+
+def gate_approach_point(data):
+    # Creates correct length
+    if state.task in [TaskStatus.GATE]:
+        POLE_LENGTH = GATE_LENGTH
+    elif state.task in [TaskStatus.MANEUVER]:
+        POLE_LENGTH = MANEUVER_LENGTH
+    else:
+        POLE_LENGTH = 1.0
+
+    # Search for the pair of clusters whose distances are closest to the
+    # distance between the gate posts
+    significant_combo = [data.clusters[0], data.clusters[1]]
+    error = centroid_distance(significant_combo[0], significant_combo[1])
+    min_error = get_distance(error, POLE_LENGTH)
+    error_test = 0.0
+    for combo in itertools.combinations(data.clusters, 2):
+        temp = centroid_distance(combo[0], combo[1])
+        error = get_distance(temp, POLE_LENGTH)
+        if error < min_error:
+            significant_combo = combo
+            min_error = error
+            error_test = min_error
+
+    if error_test > GATE_ERROR:
+        return TaskPointsArray()
+    # Return the point in between the gate posts
+    centroids = (
+        significant_combo[0].centroid,
+        significant_combo[1].centroid
+    )
+    taskArr = TaskPointsArray()
+    taskArr.task = Point(
+        (centroids[0].x + centroids[1].x) / 2,
+        (centroids[0].y + centroids[1].y) / 2,
+        0
+    )
+    taskArr.pole1 = Point(centroids[0].x, centroids[0].y, 0)
+    taskArr.pole2 = Point(centroids[1].x, centroids[1].y, 0)
+    return taskArr
 
 
 def task_point(data):
-
     if not state:
         return
 
-    yaxis_index = None
-    distance = None
-    significant_cluster = None
-
-    marker = Marker()
-    marker.header.frame_id = "robot"
-    marker.header.stamp = rospy.get_rostime()
-    marker.type = Marker.POINTS
-    marker.scale.x = 0.2
-    marker.scale.y = 0.2
-    marker.scale.z = 0.2
-    marker.lifetime.secs = 8
-
-    taskArr = TaskPointsArray()
-    dummyPoint = Point(0, 0, 0)
-
+    point = None
     if state.task in DIRECT_APPROACH:
-        for i, cluster in enumerate(data.clusters):
-            if not yaxis_index or get_distance(cluster.centroid.y, 0) < yaxis_index[1]:
-                yaxis_index = (i, get_distance(cluster.centroid.y, 0))
-        significant_cluster = data.clusters[yaxis_index[0]]
-        point = Point(significant_cluster.centroid.x, significant_cluster.centroid.y, 0)
-        marker.points = [point]
-        marker.color = ColorRGBA(1, 0, 0, 1)
-        taskArr.task = point
-        taskArr.pole1 = dummyPoint
-        taskArr.pole2 = dummyPoint
-
-    elif state.task == TaskStatus.MANEUVER:
-        for i, cluster in enumerate(data.clusters):
-            if i == (len(data.clusters)) - 1:
-                continue
-            for c in data.clusters[(i + 1):]:
-                if not distance or get_distance(centroid_distance(cluster, c), MANEUVER_LENGTH) < distance[1]:
-                    distance = (i, get_distance(centroid_distance(cluster, c), MANEUVER_LENGTH), c)
-        clusterOne = data.clusters[distance[0]].centroid
-        clusterTwo = distance[2].centroid
-        point = Point(((clusterOne.x + clusterTwo.x) / 2), ((clusterOne.y + clusterTwo.y) / 2), 0)
-        pointc1 = Point(clusterOne.x, clusterOne.y, 0)
-        pointc2 = Point(clusterTwo.x, clusterTwo.y, 0)
-        marker.points = [pointc1, point, pointc2]
-        marker.color = ColorRGBA(0, 1, 0, 1)
-        taskArr.task = point
-        taskArr.pole1 = pointc1
-        taskArr.pole2 = pointc2
-
+        point = direct_approach_point(data)
+        rospy.loginfo("Sonar found task point at: {%.2f, %.2f}" %
+                      (point.task.x, point.task.y))
+    elif state.task in GATE_APPROACH:
+        point = gate_approach_point(data)
+        rospy.loginfo("Sonar found task point at: {%.2f, %.2f}" %
+                      (point.task.x, point.task.y))
     else:
-        return
+        point = TaskPointsArray()
 
-    rospy.loginfo(point)
-    marker_task.publish(marker)
-    pub_goal.publish(taskArr)
+    pub_goal.publish(point)
 
 
 if __name__ == '__main__':
     rospy.init_node("task_point")
-    rospy.Subscriber("sonar_proc/cluster_data", ClusterArray, task_point, queue_size=1)
-    rospy.Subscriber("/task", TaskStatus, update_state, queue_size=1)
-    marker_task = rospy.Publisher("sonar_proc/task_viz", Marker, queue_size=1)
-    pub_goal = rospy.Publisher("sonar_proc/task_point", TaskPointsArray, queue_size=1)
+    rospy.Subscriber("sonar_proc/cluster_data", ClusterArray, task_point,
+                     queue_size=10)
+    rospy.Subscriber("/task", TaskStatus, update_state, queue_size=10)
+    pub_goal = rospy.Publisher("sonar_proc/task_point", TaskPointsArray, queue_size=10)
     rospy.spin()
