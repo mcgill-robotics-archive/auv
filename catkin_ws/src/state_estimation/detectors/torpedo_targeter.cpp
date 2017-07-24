@@ -16,9 +16,9 @@ TorpedoTargeter::TorpedoTargeter(ros::NodeHandle& nh) :
     ros::param::param<int>("~torpedo_targeter/threshold_value", threshold_value, 128);
     ros::param::param<float>("~torpedo_targeter/radius_acceptance_limit", radius_acceptance_limit, 0);
 
-    image_sub_   = nh.subscribe<sensor_msgs::Image>("camera_front/image_color", 1, &TorpedoTargeter::imageCallback, this);
-    torpedo_pub_ = nh.advertise<auv_msgs::TorpedoTarget>("state_estimation/torpedo_target", 10);
-    toggle_      = nh.advertiseService("torpedo_targeter/set_state", &TorpedoTargeter::setStateCallback, this);
+    image_sub = nh.subscribe<sensor_msgs::Image>("camera_front/image_color", 1, &TorpedoTargeter::imageCallback, this);
+    /*FOR COMP*/torpedo_pub = nh.advertise<geometry_msgs::PolygonStamped>("geometry_msgs/PolygonStamped", 10);
+    toggle = nh.advertiseService("torpedo_targeter/set_state", &TorpedoTargeter::setStateCallback, this);
 }
 
 bool TorpedoTargeter::setStateCallback(std_srvs::SetBool::Request &req, std_srvs::SetBool::Response &res)
@@ -47,7 +47,8 @@ void TorpedoTargeter::imageCallback(const sensor_msgs::Image::ConstPtr& msg)
 
     // I/O
     cv_bridge::CvImageConstPtr cv_ptr;
-    auv_msgs::TorpedoTarget torpedoTarget;
+    geometry_msgs::PolygonStamped target;                      // FOR COMP
+    //auv_msgs::TorpedoTarget torpedoTarget;
 
     // Images
     Mat input_img,
@@ -129,6 +130,23 @@ void TorpedoTargeter::imageCallback(const sensor_msgs::Image::ConstPtr& msg)
     // TODO Either during the for loop or after, use color/size ratios to do validation...
     border = minAreaRect(Mat(border_contours[largest_contour_index]));
 
+    // FOR COMP
+    Size contour_img_size = border_contour_img.size();
+    target.header.stamp = ros::Time::now();
+    target.header.frame_id = "camera_front";
+    target.polygon.points = extractLanePoints(contour_img_size, border);
+    torpedo_pub.publish(target);
+
+    return;
+
+    // DEAD CODE FOR NOW =======================================================
+    //
+    //    |
+    //    |
+    //    |
+    //   \ /
+    //    '
+
     // Copy all pixels within the largest contour to another image
     border_img = Mat::zeros(border_contour_img.size(), CV_8U);
     Mat mask_image(border_contour_img.size(), CV_8U, Scalar(0));
@@ -183,6 +201,24 @@ void TorpedoTargeter::imageCallback(const sensor_msgs::Image::ConstPtr& msg)
         ROS_DEBUG("No possible targets identified.");
         //torpedo_pub_.publish(TODO)
     }
+}
+
+vector<geometry_msgs::Point32> TorpedoTargeter::extractLanePoints(Size& img_size, RotatedRect& lane_rect)
+{
+    // Get the points of the rectangle.
+    Point2f rect_points[4];
+    lane_rect.points(rect_points);
+    vector<geometry_msgs::Point32> pts;
+
+    for(int i = 0; i < 4; i++)
+    {
+        geometry_msgs::Point32 pt;
+        pt.x = rect_points[i].x;
+        pt.y = rect_points[i].y;
+        pts.push_back(pt);
+    }
+
+    return pts;
 }
 
 int main(int argc, char **argv)

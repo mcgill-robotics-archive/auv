@@ -9,7 +9,8 @@
 
 #include <ros/ros.h>
 #include <sensor_msgs/Image.h>
-#include <auv_msgs/TorpedoTarget.h>
+#include <geometry_msgs/PolygonStamped.h>
+//#include <auv_msgs/TorpedoTarget.h>
 
 #include <cv_bridge/cv_bridge.h>
 #include <image_transport/image_transport.h>
@@ -39,9 +40,9 @@ public:
     TorpedoTargeter(ros::NodeHandle& nh);
 
 private:
-    ros::Subscriber image_sub_;
-    ros::Publisher  torpedo_pub_;
-    ros::ServiceServer toggle_;
+    ros::Subscriber image_sub;
+    ros::Publisher  torpedo_pub;
+    ros::ServiceServer toggle;
 
     // Params
     bool m_detect;
@@ -54,6 +55,7 @@ private:
 
     bool setStateCallback(std_srvs::SetBool::Request &req, std_srvs::SetBool::Response &res);
     void imageCallback(const sensor_msgs::Image::ConstPtr& msg);
+    vector<geometry_msgs::Point32> extractLanePoints(Size& img_size, RotatedRect& border_rect);
 };
 
 #endif //END TORPEDO_TARGET_H
