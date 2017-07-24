@@ -123,7 +123,11 @@ void TorpedoTargeter::imageCallback(const sensor_msgs::Image::ConstPtr& msg)
     if (!largest_area)  // Maybe put in an actual min value
     {
         ROS_WARN("No significant object in frame");
-        //torpedo_pub_.publish(TODO)
+        vector<geometry_msgs::Point32> empty_pts;
+        target.header.stamp = ros::Time::now();
+        target.header.frame_id = "camera_front";
+        target.polygon.points = empty_pts;
+        torpedo_pub.publish(target);
         return;
     }
 
