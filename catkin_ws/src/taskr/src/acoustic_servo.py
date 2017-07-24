@@ -2,8 +2,9 @@
 import rospy
 from math import fabs
 from std_msgs.msg import Float64
-from geometry_msgs.msg import Vector3Stamped
-from controls.servo_controller import YawMaintainer, DepthMaintainer
+
+from controls.servo_controller import DepthMaintainer
+from controls.acoustic_servo import AcousticServo as AcousticController
 
 
 class AcousticServo(object):
@@ -14,43 +15,15 @@ class AcousticServo(object):
     the pinger.
     """
 
-    SURGE_STEP = 0.7
     PREEMPT_CHECK_FREQUENCY = 1  # Hz
-    MAX_AGE = 6  # Seconds
     TIMEOUT = 300  # Seconds = 5 min
-    SURGE_ERROR = 3.0
+    SURGE_ERROR = 10.0
 
     def __init__(self, data):
-        # Keep track of current IMU and last 10 Hydrophones heading
-        self.robot_heading = None
-        self.heading = None
-        self.last_heading = None
-
-        self.yaw_maintainer = YawMaintainer()
+        self.acoustic_servo_controller = AcousticController()
         self.depth_maintainer = DepthMaintainer()
 
-        self.pinger_heading_log = []
-        self.pinger_heading = 0
-
-        # Keep track of ping timestamps
-        self.heading_time = rospy.Time.now()
-        self.last_heading_time = 0
-
-        self.heading_error = 0
-
-        self.server = None
-        self.feedback_msg = None
-
-        self.start_time = rospy.Time.now()
-
         self.preempted = False
-
-        self.heading_sub = rospy.Subscriber(
-            "hydrophones/heading", Float64, self.proc_estim_head)
-        self.pose_sub = rospy.Subscriber(
-            'robot_state', Vector3Stamped, self.state_cb)
-        self.surge_pub = rospy.Publisher(
-            'controls/superimposer/surge', Float64, queue_size=1)
 
     def start(self, server, feedback):
         """Servo toward the pinger.
@@ -60,71 +33,57 @@ class AcousticServo(object):
         """
         rospy.loginfo("Starting AcousticServo Action")
 
-        if not self.yaw_maintainer.is_active():
-            self.yaw_maintainer.start()
-        if not self.depth_maintainer.is_active():
-            self.depth_maintainer.start()
-
-        self.server = server
-        self.feedback_msg = feedback
+        self.acoustic_servo_controller.start()
+        self.depth_maintainer.start()
 
         rate = rospy.Rate(self.PREEMPT_CHECK_FREQUENCY)
 
-        while not self.preempted:
-            # We have not yet received a heading. Do not move.
-            if self.heading is None:
-                rospy.loginfo("No pinger command. Staying still and waiting.")
-                self.surge_pub.publish(self.SURGE_ERROR)
-                continue
+        # Wait until the robot has stabilized towards the robot
+        stable_counts = 0
+        while stable_counts < 30:
+            rospy.loginfo("{} / 30 consecutive stable periods achieved".format(
+                stable_counts))
 
-            # If we don't have a last heading, we can't determine if done.
-            if self.last_heading is not None:
-                # If angle is greater than 90, we have reached the pinger.
-                if fabs(self.heading - self.last_heading) > 1.57:
-                    rospy.loginfo("Pinger has been reached! Ending")
-                    break
-
-            if (rospy.Time.now() - self.heading_time).to_sec() < self.MAX_AGE:
-                rospy.loginfo("Setting heading towards pinger {}".format(self.heading))
-                self.yaw_maintainer.set_setpoint(self.heading)
-            else:
-                rospy.loginfo("Pinger message is too old. Sending surge forward")
-                self.surge_pub.publish(self.SURGE_ERROR)
-
-            if (rospy.Time.now() - self.start_time).to_sec() > self.TIMEOUT:
-                rospy.loginfo("Acoustic servo has timed out.")
+            if self.preempted:
+                self.acoustic_servo_controller.stop()
+                self.depth_maintainer.stop()
                 return
+
+            err = self.acoustic_servo_controller.get_error()
+            if err is None:
+                pass
+            elif abs(err) < 0.1:
+                stable_counts += 1
+            else:
+                stable_counts = 0
+            rospy.sleep(0.1)
+
+        rospy.loginfo("Stabilized towards pinger")
+        rospy.loginfo("Approaching pinger")
+
+        # Keep approaching the pinger until we've gone past it
+        surge_pub = rospy.Publisher('/controls/superimposer/surge', Float64,
+                                    queue_size=1)
+        while not self.preempted:
+            err = self.acoustic_servo_controller.get_error()
+            # If angle is greater than 90, we have reached the pinger.
+            if fabs(err) > 1.57:
+                rospy.loginfo("Pinger has been reached! Ending")
+                break
+            else:
+                surge_pub.publish(self.SURGE_ERROR)
 
             rate.sleep()
 
+        surge_pub.publish(0)
+        surge_pub.unregister()
+        self.acoustic_servo_controller.stop()
+        self.depth_maintainer.stop()
+
+
     def stop(self):
         self.preempted = True
+
         self.surge_pub.publish(0)
-
-        if self.yaw_maintainer.is_active():
-            self.yaw_maintainer.stop()
-        if self.depth_maintainer.is_active():
-            self.depth_maintainer.stop()
-
-    def state_cb(self, msg):
-        self.robot_heading = msg.vector.z
-
-    def proc_estim_head(self, msg):
-        """Update the estimated pinger heading, and send control commands.
-        Args:
-            data: ROS message data object containing the estimated heading of
-                  the pinger (i.e. -pi to pi).
-        """
-        if self.robot_heading is None:
-            rospy.logerr("No robot heading. Panic.")
-            return
-
-        self.last_heading = self.heading
-        self.last_heading_time = self.heading_time
-
-        self.heading_time = rospy.Time.now()
-        self.pinger_heading = msg.data
-        self.pinger_heading_log.append(self.pinger_heading)
-
-        self.heading = self.robot_heading + self.pinger_heading
-        self.heading_error = self.robot_heading - self.pinger_heading
+        self.acoustic_servo_controller.stop()
+        self.depth_maintainer.stop()
