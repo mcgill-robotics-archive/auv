@@ -10,8 +10,32 @@ TorpedoTargeter::TorpedoTargeter(ros::NodeHandle& nh) :
     m_detect(true),
     m_visualize(true)
 {
+    ros::param::param<bool>("~visualize_torpedo", m_visualize, true);
+    ros::param::param<double>("~torpedo_targeter/scale_factor", scale_factor, 0.5);
+    ros::param::param<int>("~torpedo_targeter/blur_value", blur_value, 25);
+    ros::param::param<int>("~torpedo_targeter/threshold_value", threshold_value, 128);
+    ros::param::param<float>("~torpedo_targeter/radius_acceptance_limit", radius_acceptance_limit, 0);
+
     image_sub_   = nh.subscribe<sensor_msgs::Image>("camera_front/image_color", 1, &TorpedoTargeter::imageCallback, this);
     torpedo_pub_ = nh.advertise<auv_msgs::TorpedoTarget>("state_estimation/torpedo_target", 10);
+    toggle_      = nh.advertiseService("torpedo_targeter/set_state", &TorpedoTargeter::setStateCallback, this);
+}
+
+bool TorpedoTargeter::setStateCallback(std_srvs::SetBool::Request &req, std_srvs::SetBool::Response &res)
+{
+  m_detect = req.data;
+  res.success = true;
+
+  if (req.data)
+  {
+    res.message = "Torpedo targeter turned on.";
+  }
+  else
+  {
+    res.message = "Torpedo targeter turned off.";
+  }
+
+  return true;
 }
 
 void TorpedoTargeter::imageCallback(const sensor_msgs::Image::ConstPtr& msg)
@@ -72,14 +96,14 @@ void TorpedoTargeter::imageCallback(const sensor_msgs::Image::ConstPtr& msg)
     merge(bgrChannels, 3, input_img);   // Repack into the input_img
 
     // Filtering (Downsample and Blur)
-    resize(input_img, small_img, Size(), SCALE_FACTOR, SCALE_FACTOR, INTER_CUBIC);
-    medianBlur(small_img, filter_img, BLUR_VALUE);
+    resize(input_img, small_img, Size(), scale_factor, scale_factor, INTER_CUBIC);
+    medianBlur(small_img, filter_img, blur_value);
 
     // Convert to Grayscale
     cvtColor(filter_img, gray_img, CV_BGR2GRAY);
 
     // Threshold and Find Contours
-    threshold(gray_img, thresh_img, THRESHOLD_VALUE, 255, CV_THRESH_BINARY);
+    threshold(gray_img, thresh_img, threshold_value, 255, CV_THRESH_BINARY);
     findContours(border_contour_img, border_contours, border_hierarchy, CV_RETR_EXTERNAL, CV_CHAIN_APPROX_SIMPLE, Point(0, 0));
 
     int largest_area = 0;
@@ -121,7 +145,7 @@ void TorpedoTargeter::imageCallback(const sensor_msgs::Image::ConstPtr& msg)
 
         minEnclosingCircle(target_contours[j], centre, radius);
 
-        if (radius > RADIUS_ACCEPTANCE_LIMIT)
+        if (radius > radius_acceptance_limit)
         {
             centres.push_back(centre);
             radii.push_back(radius);

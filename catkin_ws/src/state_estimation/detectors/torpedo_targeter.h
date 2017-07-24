@@ -1,7 +1,7 @@
 /**
  * torpedoTargeter.h
  * @description A class to detect the torpedo target using OpenCV filters.
- * @authors Auguste Lalande
+ * @authors Auguste Lalande , Jeremy Mallette
  */
 
 #ifndef TORPEDO_TARGETER_H_
@@ -14,6 +14,7 @@
 #include <cv_bridge/cv_bridge.h>
 #include <image_transport/image_transport.h>
 #include <sensor_msgs/image_encodings.h>
+#include <std_srvs/SetBool.h>
 
 #include <vector>
 #include <opencv2/core/core.hpp>
@@ -40,16 +41,18 @@ public:
 private:
     ros::Subscriber image_sub_;
     ros::Publisher  torpedo_pub_;
+    ros::ServiceServer toggle_;
 
     // Params
     bool m_detect;
     bool m_visualize;
 
-    const static double SCALE_FACTOR = 0.5;
-    const static int BLUR_VALUE = 25;
-    const static int THRESHOLD_VALUE = 128;
-    const static float RADIUS_ACCEPTANCE_LIMIT = 0;
+    double scale_factor;
+    int blur_value;
+    int threshold_value ;
+    float radius_acceptance_limit;
 
+    bool setStateCallback(std_srvs::SetBool::Request &req, std_srvs::SetBool::Response &res);
     void imageCallback(const sensor_msgs::Image::ConstPtr& msg);
 };
 
