@@ -128,13 +128,13 @@ if __name__ == "__main__":
                              MONITOR MISSION   (Just listens for START then moves on)
                                     |
                            -------------------- (concurrent container)
-            MONITOR KILL                          TASK SEQUENCE
-                 |                                      |   (when any of these
-                 |                                    TASK   concurrent processes
-                 |                                      |    ends, state jumps to
-                 |                                    TASK   top again)
-                 |                                      |
-                 |                                    TASK
+            MONITOR KILL            ^              TASK SEQUENCE
+                 |                  |                    |   (when any of these
+                 |                  |<-----------------TASK   concurrent processes
+                 |                  |                    |    ends, state jumps to
+                 |                  |<-----------------TASK   top again)
+                 |                  |                    |
+                 |                  |<-----------------TASK
                   ______                          ______
                         \                        /
                            GOTO MONITOR MISSION

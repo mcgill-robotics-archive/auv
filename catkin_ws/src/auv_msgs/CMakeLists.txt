@@ -12,19 +12,14 @@ find_package(catkin REQUIRED COMPONENTS
 add_message_files(
   FILES
   # Added by Controls
-  SetPosition.msg
-  SetVelocity.msg
   MotorCommands.msg
   SolenoidCommands.msg
-  VisualServoCommand.msg
+  SetVelocity.msg
 
   # Added by State Estimation
   RangeBearingElevation.msg
   SlamEstimate.msg
   TorpedoTarget.msg
-
-  # Added by CV
-  CVTarget.msg
 
   # Added by IO
   RadioCommands.msg
@@ -38,7 +33,6 @@ add_message_files(
 
   # Added by Sonar
   TaskPointsArray.msg
-
 )
 
 add_service_files(FILES
@@ -49,11 +43,9 @@ add_service_files(FILES
 
 add_action_files(
   DIRECTORY action
-  FILES SetVelocity.action
-  SetPosition.action
-  SetCVTarget.action
-  InitializeHorizon.action
-  VisualServo.action
+  FILES
+    SetVelocity.action  # Deprecated
+    InitializeHorizon.action
 )
 
 generate_messages(DEPENDENCIES

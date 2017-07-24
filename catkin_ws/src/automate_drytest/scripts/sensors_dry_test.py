@@ -5,6 +5,32 @@ from std_msgs.msg import Float64
 
 # Eventually we will import more msg type
 
+
+def check_depth_sensor():
+    print("We will begin with the Depth Sensor dry test.")
+    check_depth_raw()
+    check_depth_pressure()
+    print("Depth sensor dry test completed")
+
+
+def check_depth_raw():
+    try:
+        wait_for_message("/raw_depth", Float64, 3)
+
+    except Exception:
+        print ("> /raw_depth is not being published.")
+        pass
+
+
+def check_depth_pressure():
+    try:
+        wait_for_message("/depth/pressure", Float64, 3)
+
+    except Exception:
+        print ("> /depth/pressure is not being published.")
+        pass
+
+
 if __name__ == "__main__":
 
     """Calls function wait_for_message which creates an object for each sensor
@@ -18,22 +44,15 @@ if __name__ == "__main__":
     rospy.init_node("Testing")
     print("Are you ready to begin the dry test? Yes? No?")
 
-    Agreement = raw_input()
+    agree.lower() = raw_input()
 
-    if Agreement == 'no' or Agreement == 'No':
+    if agree.lower() == 'no' or agree.lower() == 'n':
         print ("Maybe later. Goodbye!")
 
-    elif Agreement == 'yes' or Agreement == 'Yes':
+    elif agree.lower() == 'yes' or agree.lower() == 'y':
         print("Excellent choice!")
         time.sleep(1)
-        print("We will begin with the Depth Sensor dry test.")
-
-        try:
-            wait_for_message("/raw_depth", Float64, 3)
-
-        except Exception:
-            print ("> The Depth Sensor is not connected.")
-            pass
+        check_depth_sensor()
 
         time.sleep(1)
 
