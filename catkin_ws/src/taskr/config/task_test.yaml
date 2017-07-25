@@ -1,0 +1,59 @@
+# File containing task definitions.
+
+# INITIALIZE.
+initialize:
+  actions:
+    - initialize:
+        countdown: 10
+        drift_check: 3
+
+# GATE TASK
+# The gate is a purely dead reckoning task.
+gate:
+  actions: []
+
+# BUOY TASK
+buoy:
+  actions: []
+
+# MANEUVER TASK
+# Maneuver with feedback. Might want to do something fancy at the end for
+# style points!
+maneuver:
+  actions: []
+
+# BINS TASK
+# Drop marker in bins.
+bins:
+  actions: []
+
+# TORPEDO TASK
+# Move to torpedos and then shoot.
+torpedo:
+  actions: []
+
+# OCTAGON TASK
+# Search for octogon using hydrophones.
+octagon:
+  actions: []
+
+# TEST TASK
+# Represents any series of actions for testing purposes.
+square:
+  actions:
+    - move:
+        distance: 1.0
+    - turn:
+        angle: 1.5708
+    - move:
+        distance: 1.0
+    - turn:
+        angle: 3.1416
+    - move:
+        distance: 1.0
+    - turn:
+        angle: -1.5708
+    - move:
+        distance: 1.0
+    - turn:
+        angle: 0.0

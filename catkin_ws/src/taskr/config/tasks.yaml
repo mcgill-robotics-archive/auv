@@ -10,53 +10,64 @@ initialize:
 # GATE TASK
 # The gate is a purely dead reckoning task.
 gate:
-  actions: []
+  actions:
+    - dive:
+        depth: 2.0
+    - move:
+        distance: 15.0
 
 # BUOY TASK
 buoy:
-  actions: []
+  actions:
+    - turn:
+        angle: -0.2
+    - move:
+        distance: 10.0
 
 # MANEUVER TASK
 # Maneuver with feedback. Might want to do something fancy at the end for
 # style points!
 maneuver:
-  actions: []
+  actions:
+    - turn:
+        angle: -0.4
+    - move:
+        distance: 12.0
 
 # BINS TASK
 # Drop marker in bins.
 bins:
-  actions: []
+  actions:
+    - acoustic_servo: hydrophones
+    - visual_servo_down: bins
+    - shoot: starboard_dropper
+    - shoot: port_dropper
 
 # TORPEDO TASK
 # Move to torpedos and then shoot.
 torpedo:
-  actions: []
+  actions:
+    - turn:
+        angle: 0.1
+    - visual_servo_front: torpedo
+    - shoot: starboard_torpedo
+    - shoot: port_torpedo
 
 # OCTAGON TASK
 # Search for octogon using hydrophones.
 octagon:
-  actions: []
+  actions:
+    - acostic_servo: hydrophones
+    - move:
+        distance: -2.0
 
 # TEST TASK
 # Represents any series of actions for testing purposes.
 square:
   actions:
-    - dive:
-        depth: 1.0
-    - acoustic_servo: "hydrophones"
-    # - move:
-    #     distance: 1.0
+    # - dive:
+    #     depth: 1.0
+    - move:
+        distance: 1.0
     # - turn:
     #     angle: 1.5708
-    # - move:
-    #     distance: 1.0
-    # - turn:
-    #     angle: 3.1416
-    # - move:
-    #     distance: 1.0
-    # - turn:
-    #     angle: -1.5708
-    # - move:
-    #     distance: 1.0
-    # - turn:
-    #     angle: 0.0
