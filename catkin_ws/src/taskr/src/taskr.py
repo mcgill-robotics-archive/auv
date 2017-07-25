@@ -252,6 +252,7 @@ class Wait(object):
                 return
 
             rate.sleep()
+            move_action.stop()
 
         rospy.loginfo("Done sleeping")
 
@@ -279,7 +280,6 @@ class ChooseTask(object):
         self._as.start()
 
     def execute_cb(self, goal):
-
         rate = rospy.Rate(2)
         rospy.loginfo("Collecting data!")
         while len(self.goals) < self.WINDOW_GOAL:
@@ -296,6 +296,7 @@ class ChooseTask(object):
             move_action.start(self._as, feedback)
 
             rate.sleep()
+            move_action.stop()
 
         rospy.loginfo("Enough data has been collected.")
 
@@ -342,5 +343,8 @@ if __name__ == '__main__':
     Octagon("octagon_task")
     Torpedo("torpedo_task")
     Square("square_task")
+
+    Wait()
+    ChooseTask()
 
     rospy.spin()
