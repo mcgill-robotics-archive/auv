@@ -7,6 +7,7 @@ from shoot import Shoot
 from turn import Turn
 from dive import Dive
 from initialize import Initializer
+from acoustic_servo import AcousticServo
 from actionlib import SimpleActionServer
 from auv_msgs.msg import TaskStatus
 from std_msgs.msg import Float64
@@ -22,11 +23,13 @@ action_object_map = {"move": Move,
                      "turn": Turn,
                      "dive": Dive,
                      "shoot": Shoot,
-                     "initialize": Initializer}
+                     "initialize": Initializer,
+                     "acoustic_servo": AcousticServo}
 
 action_state_map = {"move": TaskStatus.MOVE,
                     "shoot": TaskStatus.SHOOT,
                     "initialize": TaskStatus.INITIALIZE,
+                    "acoustic_servo": TaskStatus.OCTAGON,
                     "turn": TaskStatus.MOVE,
                     "dive": TaskStatus.MOVE}
 

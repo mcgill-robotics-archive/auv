@@ -46,10 +46,10 @@ class Pinger(object):
 
         # Start timers.
         self.br_timer = rospy.Timer(rospy.Duration(0.1), self.broadcast_pinger)
-        self.listener.waitForTransform("map", "pinger", rospy.Time(0), rospy.Duration(1.0))
+        self.listener.waitForTransform("robot", "pinger", rospy.Time(0), rospy.Duration(1.0))
 
         self.sub = rospy.Subscriber("robot_state", Vector3Stamped, self.attitude_cb, queue_size=1)
-        self.timer = rospy.Timer(rospy.Duration(0.1), self.pub_pinger)
+        self.timer = rospy.Timer(rospy.Duration(2), self.pub_pinger)
 
     def broadcast_pinger(self, _):
         # Create the tf.
@@ -69,13 +69,17 @@ class Pinger(object):
             return
 
         try:
-            self.listener.waitForTransform("robot", "pinger", rospy.Time.now(), rospy.Duration(1.0))
-            trans, rot = self.listener.lookupTransform("robot", "pinger", rospy.Time())
+            now = rospy.Time.now()
+            self.listener.waitForTransform("robot", "initial_horizon", now, rospy.Duration(1.0))
+            trans, rot = self.listener.lookupTransform("robot", "initial_horizon", now)
         except Exception:
             rospy.logerr_throttle(30, "Can't get tranform between pinger and robot")
             return
 
-        self.pinger_pub.publish(normalize_angle(np.arctan2(-trans[1], trans[0]) - self.yaw))
+        relative_x = self.pinger_pos[0] - trans[0]
+        relative_y = -self.pinger_pos[1] - trans[1]
+
+        self.pinger_pub.publish(normalize_angle(np.arctan2(relative_y, relative_x) - self.yaw))
 
     def attitude_cb(self, msg):
         self.yaw = msg.vector.z

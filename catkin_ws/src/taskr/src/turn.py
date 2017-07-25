@@ -18,6 +18,9 @@ class Turn(object):
         if not self.depth_maintainer.is_active():
             self.depth_maintainer.start()
 
+        depth_maintainer = DepthMaintainer()
+        depth_maintainer.start()
+
         stable_counts = 0
         while stable_counts < 30:
             rospy.loginfo("{} / 30 stable periods achieved".format(

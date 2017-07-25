@@ -4,12 +4,6 @@ from math import fabs
 from std_msgs.msg import Float64
 from controls.servo_controller import YawMaintainer, DepthMaintainer
 
-"""
-TODO: Jana
-- Make this work for move backwards and in sway.
-- Publish feedback
-"""
-
 
 class Move(object):
     """Move action."""
@@ -86,7 +80,6 @@ class Move(object):
 
     def stop(self):
         self.preempted = True
-
         self.surge_pub.publish(0)
         self.sway_pub.publish(0)
 
