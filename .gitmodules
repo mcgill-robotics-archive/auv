@@ -10,3 +10,6 @@
 [submodule "catkin_ws/src/rosserial"]
 	path = catkin_ws/src/rosserial
 	url = git@github.com:mcgill-robotics/rosserial.git
+[submodule "catkin_ws/src/dcdc_nuc"]
+	path = catkin_ws/src/dcdc_nuc
+	url = git@github.com:mcgill-robotics/ros-dcdc-nuc.git
