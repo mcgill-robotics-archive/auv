@@ -70,5 +70,6 @@ octagon:
 # Represents any series of actions for testing purposes.
 square:
   actions:
-    - bins_servo:
-        depth: 1.5
+    - move_all:
+        distance: -8.0
+        depth: 0.3

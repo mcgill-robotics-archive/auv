@@ -1,10 +1,24 @@
-import tf
 import rospy
+
+import tf
+import numpy as np
 from std_msgs.msg import Float64
+from geometry_msgs.msg import PolygonStamped, Polygon
+from darknet_ros_msgs.msg import BoundingBoxes
 from tf.transformations import euler_from_quaternion
+from geometry_msgs.msg import Point
 
 from PID import PID, trans_gains, rot_gains
 from utils import normalize_angle
+
+CAM_OFFSET = 1.18
+
+PROB_THRESH = 0.5
+
+IMAGE_WIDTH = 1296
+IMAGE_HEIGHT = 964
+IMAGE_CENTER_X = IMAGE_WIDTH / 2
+IMAGE_CENTER_Y = IMAGE_HEIGHT / 2
 
 
 class SyncServoController(object):
@@ -72,12 +86,12 @@ class SyncServoController(object):
             controller response. Defaults to None
         """
         if self._update_timer is not None:
-            raise ValueError("Tried to start %s but it was already started" %
-                             self.__class__.__name__)
+            raise ValueError(
+                "Tried to start %s but it was already started" %
+                self.__class__.__name__)
 
-        self.active = True
-        self._update_timer = rospy.Timer(rospy.Duration(period),
-                                         self._update)
+        self._update_timer = rospy.Timer(
+            rospy.Duration(period), self._update)
 
     def stop(self):
         """
@@ -87,8 +101,9 @@ class SyncServoController(object):
         SyncServoController before it has been started
         """
         if self._update_timer is None:
-            raise ValueError("Tried to stop %s but it hasn't been started" %
-                             self.__class__.__name__)
+            raise ValueError(
+                "Tried to stop %s but it hasn't been started" %
+                self.__class__.__name__)
 
         self.active = False
         self.pub.publish(0.0)
@@ -146,6 +161,12 @@ class AsyncServoController(object):
         self._last_event = now
 
         error = self.get_error(msg)
+
+        if error is None:
+            self.pid.reset()
+            self.pub.publish(0)
+            return
+
         res = self.pid.update(error, last_duration)
         self.pub.publish(res)
 
@@ -200,6 +221,9 @@ class AsyncServoController(object):
         return self.active
 
 
+""" -------------------------- DEPTH MAINTAINER -------------------------- """
+
+
 class DepthMaintainer(AsyncServoController):
     def __init__(self, setpoint=None):
         pid = PID(*trans_gains['heave'])
@@ -219,10 +243,14 @@ class DepthMaintainer(AsyncServoController):
         return self.error
 
 
+""" --------------------------- YAW MAINTAINER --------------------------- """
+
+
 class YawMaintainer(SyncServoController):
     def __init__(self, setpoint=None):
         pid = PID(*rot_gains['yaw'])
-        pub = rospy.Publisher('controls/superimposer/yaw', Float64, queue_size=1)
+        pub = rospy.Publisher(
+            'controls/superimposer/yaw', Float64, queue_size=1)
 
         self._listener = tf.TransformListener()
 
@@ -246,3 +274,251 @@ class YawMaintainer(SyncServoController):
                     tf.ExtrapolationException) as e:
                 continue
         raise rospy.ROSInterruptException()
+
+
+""" -------------------------------- BUOYS -------------------------------- """
+
+
+class BuoyVisualServoMaintainer(object):
+    def __init__(self, setpoint):
+        self.servo_sway = BuoyServoSway()
+        self.servo_heave = BuoyServoHeave()
+
+    def start(self):
+        self.servo_sway.start()
+        self.servo_heave.start()
+
+    def stop(self):
+        self.servo_sway.stop()
+        self.servo_heave.stop()
+
+    def get_error(self):
+        return (self.servo_sway.error, self.servo_heave.error)
+
+
+class BuoyServoSway(AsyncServoController):
+    def __init__(self, setpoint=IMAGE_CENTER_X):
+        self.pid = PID(*trans_gains['sway'])
+        self.pub = rospy.Publisher(
+            'controls/superimposer/sway', Float64, queue_size=1)
+
+        self.error = None
+        self.aimed = IMAGE_CENTER_X
+
+        super(BuoyServoSway, self).__init__(
+            self.pid, self.pub, '/darknet_ros_topic',
+            BoundingBoxes, setpoint)
+
+    def get_error(self, boxes):
+        # Assumes that buoys will occupy the first index
+        box = boxes[0]
+
+        if box.probability > PROB_THRESH:
+            gravity_x = (box.xmin + box.xmax) / 2
+            self.error = gravity_x - self.aimed
+        else:
+            self.error = None
+
+        return self.error
+
+
+class BuoyServoHeave(AsyncServoController):
+    def __init__(self, setpoint=IMAGE_CENTER_Y):
+        self.pid = PID(*trans_gains['heave'])
+        self.pub = rospy.Publisher(
+            'controls/superimposer/heave', Float64, queue_size=1)
+
+        self.error = None
+        self.aimed = IMAGE_CENTER_Y
+
+        super(BuoyServoHeave, self).__init__(
+            self.pid, self.pub, '/darknet_ros_topic',
+            BoundingBoxes, setpoint)
+
+    def get_error(self, boxes):
+        # Assumes that buoys will occupy the first index
+        box = boxes[0]
+
+        if box.probability > PROB_THRESH:
+            gravity_y = (box.ymin + box.ymax) / 2
+            self.error = gravity_y - self.aimed
+        else:
+            self.error = None
+
+        return self.error
+
+
+""" --------------------------- TORPEDO TARGET --------------------------- """
+
+
+class TorpedoVisualServoMaintainer(object):
+    def __init__(self, setpoint):
+        self.servo_sway = TorpedoServoSway()
+        self.servo_heave = TorpedoServoHeave()
+
+    def start(self):
+        self.servo_sway.start()
+        self.servo_heave.start()
+
+    def stop(self):
+        self.servo_sway.stop()
+        self.servo_heave.stop()
+
+    def get_error(self):
+        return (self.servo_sway.error, self.servo_heave.error)
+
+
+class TorpedoServoSway(AsyncServoController):
+    def __init__(self, setpoint=IMAGE_CENTER_X):
+        self.pid = PID(*trans_gains['sway'])
+        self.pub = rospy.Publisher(
+            'controls/superimposer/sway', Float64, queue_size=1)
+
+        self.error = None
+        self.aimed = setpoint
+
+        super(BuoyServoSway, self).__init__(
+            self.pid, self.pub, '/state_estimation/torpedo_targeter',
+            PolygonStamped, setpoint)
+
+    def get_error(self, msg):
+        poly = msg.polygon
+
+        gravity_x = (poly[0].x + poly[1].x + poly[2].x + poly[3].x) / 4
+        self.error = gravity_x - self.aimed
+
+        return self.error
+
+
+class TorpedoServoHeave(AsyncServoController):
+    def __init__(self, setpoint=IMAGE_CENTER_Y):
+        self.pid = PID(*trans_gains['heave'])
+        self.pub = rospy.Publisher(
+            'controls/superimposer/heave', Float64, queue_size=1)
+
+        self.error = None
+        self.aimed_y = setpoint
+
+        super(BuoyServoSway, self).__init__(
+            self.pid, self.pub, '/state_estimation/torpedo_targeter',
+            PolygonStamped, setpoint)
+
+    def get_error(self, msg):
+        poly = msg.polygon
+
+        gravity_y = (poly[0].y + poly[1].y + poly[2].y + poly[3].y) / 4
+        self.error = gravity_y - self.aimed
+
+        return self.error
+
+
+""" -------------------------------- BINS -------------------------------- """
+
+
+class BinsVisualServoMaintainer(object):
+    def __init__(self, setpoint=None):
+        self.servo_sway = BinsServoSway()
+        self.servo_surge = BinsServoSurge()
+        self.active = False
+
+    def start(self):
+        self.servo_sway.start()
+        self.servo_surge.start()
+        self.active = True
+
+    def stop(self):
+        self.servo_sway.stop()
+        self.servo_surge.stop()
+        self.active = False
+
+    def get_error(self):
+        if (self.servo_sway.error is None) or (self.servo_surge.error is None):
+            return (None, None)
+
+        x_0 = self.servo_sway.error
+        y_0 = self.servo_surge.error
+
+        x_n = (np.cos(CAM_OFFSET) * x_0) - (np.sin(CAM_OFFSET) * y_0)
+        y_n = (np.sin(CAM_OFFSET) * x_0) + (np.cos(CAM_OFFSET) * y_0)
+
+        return (x_n, y_n)
+
+    def is_active(self):
+        return self.active
+
+
+class BinsServoSway(AsyncServoController):
+    def __init__(self, setpoint=IMAGE_CENTER_X):
+        self.pid = PID(*trans_gains['sway'])
+        self.pub = rospy.Publisher(
+            'controls/superimposer/sway', Float64, queue_size=1)
+
+        self.error = None
+        self.aimed_x = setpoint
+
+        super(BinsServoSway, self).__init__(
+            self.pid, self.pub, '/state_estimation/bins',
+            PolygonStamped, setpoint)
+
+    def get_error(self, msg):
+        poly = msg.polygon.points
+
+        if len(poly) == 0:
+            return None
+
+        gravity_x = (poly[0].x + poly[1].x + poly[2].x + poly[3].x) / 4
+        self.error = gravity_x - self.aimed_x
+
+        return self.error
+
+
+class BinsServoSurge(AsyncServoController):
+    def __init__(self, setpoint=IMAGE_CENTER_Y):
+        self.pid = PID(*trans_gains['surge'])
+        self.pub = rospy.Publisher(
+            'controls/superimposer/surge', Float64, queue_size=1)
+
+        self.error = None
+        self.aimed_y = setpoint
+
+        super(BinsServoSurge, self).__init__(
+            self.pid, self.pub, '/state_estimation/bins',
+            PolygonStamped, setpoint)
+
+    def get_error(self, msg):
+        poly = msg.polygon.points
+
+        if len(poly) == 0:
+            return None
+
+        for ele in poly:
+            ele.y = 964 - ele.y
+
+        gravity_y = (poly[0].y + poly[1].y + poly[2].y + poly[3].y) / 4
+        self.error = self.aimed_y - gravity_y
+
+        return self.error
+
+
+def transform_polygon(poly, x, y, yaw):
+    """Should be a utility function. Rotate a polygon as follows:
+
+        P_new = P * R
+
+    where P and P_new are of the form [[x1, x2 ... xn], [y1, y2 ... yn]]
+    and R is [[cos(yaw), -sin(yaw)], [sin(yaw), cos(yaw)]]."""
+    transformed = Polygon()
+
+    for ele in poly.points:
+        ele.y = 964 - ele.y
+        ele.x += x
+        ele.y += y
+
+    for ele in poly.points:
+        pt = Point()
+        pt.x = ele.x * np.cos(yaw) - ele.y * np.sin(yaw)
+        pt.y = ele.x * np.sin(yaw) + ele.y * np.cos(yaw)
+        transformed.points.append(pt)
+
+    # return poly
+    return transformed

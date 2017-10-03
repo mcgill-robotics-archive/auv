@@ -3,9 +3,9 @@
 # Setup McGill Robotics AUV workspace
 
 # Fail on first error
-echo "Welcome to McGill Robotics setup AUV setup script!"
-
 set -e
+
+echo "Welcome to McGill Robotics setup AUV setup script!"
 
 if [[ "$(whoami)" == "root" ]]; then
   echo "Please DO NOT run this as root!"
@@ -24,7 +24,7 @@ echo
 if [[ -x "$(command -v rosdep)" ]]; then
   rosdep update
   pushd catkin_ws
-  catkin clean -y
+  rm -rf build devel logs
   if [[ "$(lsb_release -cs)" == "xenial" ]]; then
     echo "Installing dependancies for Ubuntu 16.04..."
     rosdep install -r -y --from-paths src --rosdistro kinetic --ignore-src \
@@ -56,19 +56,13 @@ if [[ $(uname -m) == "x86_64" ]]; then
   sudo apt-get install -y libraw1394-11 libgtkmm-2.4-1v5 libglademm-2.4-1v5 \
     libglademm-2.4-dev libgtkglextmm-x11-1.2-dev libgtkglextmm-x11-1.2 \
     libusb-1.0-0
-  if [[ -z "$(dpkg -l | grep flycap)" ]]; then
-    pushd drivers/flycapture2-2.10.3.237-amd64
-    sudo sh install_flycapture.sh
-    popd
-    sudo udevadm trigger
-  fi
 fi
 
 
 # Symlink udev rules
 if [[ ! -e "/etc/udev/rules.d/9-auv.rules" ]]; then
   echo "Symlinking udev rules..."
-  sudo ln -s $(dirname $(readlink -f $0))/9-auv.rules \
+  sudo ln -s "$(dirname "$(readlink -f "$0")")"/9-auv.rules \
     /etc/udev/rules.d/
 
   echo "Reload udev rules..."
@@ -126,16 +120,16 @@ if [[ "$(uname -m)" == "x86_64" ]]; then
   fi
 fi
 
-# Symlink st-flash for hydrophpone
+# Copy st-flash for hydrophones
 if [[ ! -e /usr/bin/st-flash ]]; then
-  echo "Symlinking st-flash..."
-  st_flash_dir=$(dirname $(readlink -f $0))/catkin_ws/src/nucleo/drivers
-  sudo ln -s ${st_flash_dir}/st-flash /usr/bin/st-flash
+  echo "Adding st-flash to /usr/bin/..."
+  st_flash_dir="$(dirname "$(readlink -f "$0")")"/catkin_ws/src/nucleo/drivers
+  sudo cp "${st_flash_dir}/st-flash" /usr/bin/st-flash
 fi
 
-# Add user tp dialout to get access to devices
+# Add user to dialout to get access to devices
 echo "Adding user to groups..."
-sudo usermod -aG dialout robotics
+sudo usermod -aG dialout $(whoami)
 echo
 
 echo "Setup complete."

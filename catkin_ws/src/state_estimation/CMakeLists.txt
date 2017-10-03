@@ -30,6 +30,8 @@ find_package(OpenCV REQUIRED)
 ## find cmake_modules first
 find_package(Eigen3 REQUIRED)
 
+set_directory_properties(PROPERTIES COMPILE_OPTIONS "-std=c++11")
+
 catkin_package(
   CATKIN_DEPENDS
   roscpp

@@ -1,12 +1,12 @@
 <launch>
-  <arg name="task_file" default="$(find taskr)/config/tasks.yaml" />
+  <arg name="task_file" default="$(find taskr)/config/tasks_c.yaml" />
 
   <node name="taskr" pkg="taskr" type="taskr.py" output="screen">
     <rosparam command="load" file="$(arg task_file)" />
 
-    <param name="velocity" value="0.33" />
+    <param name="velocity" value="0.5" />
     <param name="vel_cmd_rate" value="10" />
-    <param name="vel_coefficient" value="27" />
+    <param name="vel_coefficient" value="65" />
     <param name="task_file" value="$(arg task_file)" />
   </node>
 </launch>

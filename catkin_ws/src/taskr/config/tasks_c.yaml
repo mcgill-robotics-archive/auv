@@ -12,17 +12,17 @@ initialize:
 gate:
   actions:
     - move_all:
-        depth: 1.5
+        depth: 1.2
         yaw: 0.0
-        distance: 25.0
+        distance: 30.0
 
 # BUOY TASK
 buoy:
   actions:
     - move_all:
-        yaw: -0.2
-        distance: 15.0
-        depth: 1.5
+        yaw: 0.35
+        distance: 20.0
+        depth: 1.2
 
 # MANEUVER TASK
 # Maneuver with feedback. Might want to do something fancy at the end for
@@ -30,19 +30,25 @@ buoy:
 maneuver:
   actions:
     - move_all:
-        yaw: -0.35
+        yaw: 0.31
         distance: 18.0
         depth: 1.5
     - move_all:
-        yaw: 0.70
+        yaw: 0.6
         depth: 1.5
 
 # BINS TASK
 # Drop marker in bins.
 bins:
   actions:
-    - acoustic_servo: hydrophones
-    - visual_servo_down: bins
+    - acoustic_servo:
+        depth: 1.2
+    - move_all:
+        distance: -0.1
+        depth: 1.2
+    - bins_servo:
+        depth: 1.2
+        yaw: -0.87
     - shoot: starboard_dropper
     - shoot: port_dropper
 
@@ -61,14 +67,25 @@ torpedo:
 octagon:
   actions:
     - acoustic_servo:
-        depth: 1.5
+        depth: 1.2
     - move_all:
-        distance: -0.3
-        depth: 1.5
+        distance: -0.1
+        depth: 1.2
+    - move_all:
+        depth: 0.0
+    - move_all:
+        depth: 1.2
 
 # TEST TASK
 # Represents any series of actions for testing purposes.
 square:
   actions:
-    - bins_servo:
-        depth: 1.5
+    - acoustic_servo:
+        depth: 0.7
+    - move_all:
+        distance: -0.1
+        depth: 0.7
+    - move_all:
+        depth: 0.0
+    - move_all:
+        depth: 0.7

@@ -33,7 +33,7 @@ class Dive(object):
             err = self.depth_maintainer.error
             if err is None:
                 pass
-            elif abs(err) < 0.1:
+            elif abs(err) < 0.3:
                 stable_counts += 1
             else:
                 stable_counts = 0

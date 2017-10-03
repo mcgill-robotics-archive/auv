@@ -13,17 +13,26 @@ class AcousticServoController(YawMaintainer):
     def __init__(self):
         super(AcousticServoController, self).__init__()
         self.sub = None
+        self.is_pinger_heard = False
+        self.heading = None
+        self.last_heading_time = None
 
     def start(self):
         super(AcousticServoController, self).start()
         self.sub = rospy.Subscriber('/hydrophones/heading', Float64,
-                                    self._update_pinger_header)
+                                    self._update_pinger_heading)
 
     def stop(self):
         super(AcousticServoController, self).stop()
         if self.sub is not None:
             self.sub.unregister()
 
-    def _update_pinger_header(self, msg):
+    def _update_pinger_heading(self, msg):
+        self.is_pinger_heard = True
+        self.heading = msg.data
+        self.last_heading_time = rospy.Time.now()
         current_yaw = self.get_current_yaw()
         self.set_setpoint(normalize_angle(current_yaw + msg.data))
+
+    def heard_pinger(self):
+        return self.is_pinger_heard

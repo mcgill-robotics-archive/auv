@@ -10,13 +10,14 @@ CYAN = RGB(0,189,189)
 ORANGE = RGB(255,80,0)
 GREEN = RGB(0,255,0)
 BLACK = RGB(0,0,0)
+RED = RGB(255,0,0)
 
 # Minimum and maximum battery voltage values in volts
 # Ask power section for accurate values
 
 MIN_COMPUTER_VOLTAGE = 21.0
 MAX_COMPUTER_VOLTAGE = 25.0
-MIN_MOTOR_VOLTAGE= 11.0
+MIN_MOTOR_VOLTAGE= 10.2
 MAX_MOTOR_VOLTAGE= 12.5
 
 LOW_BATTERY = False

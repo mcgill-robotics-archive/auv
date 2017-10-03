@@ -3,15 +3,19 @@
 import rospy
 import numpy as np
 from move import Move
+from move_all import MoveAll
 from shoot import Shoot
 from turn import Turn
 from dive import Dive
+from bin_servo import BinServo
 from initialize import Initializer
 from acoustic_servo import AcousticServo
+from sonar_servo import SonarServo
 from actionlib import SimpleActionServer
 from auv_msgs.msg import TaskStatus
 from std_msgs.msg import Float64
 from planner.msg import TaskFeedback, TaskResult, TaskAction
+from controls.servo_controller import DepthMaintainer
 from auv_msgs.msg import HydrophonesAction, HydrophonesFeedback, HydrophonesResult
 
 current_task = TaskStatus()
@@ -19,19 +23,26 @@ current_task.task = TaskStatus.TASK_IDLE
 current_task.action = TaskStatus.ACTION_IDLE
 
 # Maps to the objects and states.
-action_object_map = {"move": Move,
+action_object_map = {"move_all": MoveAll,
+                     "move": Move,
                      "turn": Turn,
                      "dive": Dive,
                      "shoot": Shoot,
+                     "bins_servo": BinServo,
                      "initialize": Initializer,
-                     "acoustic_servo": AcousticServo}
+                     "acoustic_servo": AcousticServo,
+                     "sonar_servo": SonarServo}
 
-action_state_map = {"move": TaskStatus.MOVE,
+action_state_map = {"move_all": TaskStatus.MOVE,
+                    "move": TaskStatus.MOVE,
                     "shoot": TaskStatus.SHOOT,
                     "initialize": TaskStatus.INITIALIZE,
-                    "acoustic_servo": TaskStatus.OCTAGON,
+                    "acoustic_servo": TaskStatus.ACOUSTIC_SERVO,
                     "turn": TaskStatus.MOVE,
-                    "dive": TaskStatus.MOVE}
+                    "dive": TaskStatus.MOVE,
+                    "bins_servo": TaskStatus.VISUAL_SERVO,
+                    "dive": TaskStatus.MOVE,
+                    "sonar_servo": TaskStatus.MOVE}
 
 
 class Task(object):
@@ -225,8 +236,9 @@ class Square(Task):
 
 class Wait(object):
 
-    SLEEP_TIME = rospy.get_param("taskr/wait_time", default=20)
+    SLEEP_TIME = rospy.get_param("taskr/wait_time", default=15)
     MOVE_RATE = rospy.get_param("taskr/wait_move_rate", default=1)
+    DEPTH = 1.2
 
     def __init__(self):
         self._action_name = "wait"
@@ -236,27 +248,24 @@ class Wait(object):
             auto_start=False
         )
         self._as.start()
+        self.depth_maintainer = DepthMaintainer(self.DEPTH)
 
     def execute_cb(self, goal):
         start_time = rospy.Time.now()
         rospy.loginfo("Sleeping for {} secs".format(self.SLEEP_TIME))
 
         rate = rospy.Rate(self.MOVE_RATE)
-        feedback = TaskFeedback()
 
+        self.depth_maintainer.start()
         while (rospy.Time.now() - start_time) < rospy.Duration(self.SLEEP_TIME):
-            move_cmd = {"distance": 0}
-            move_action = Move(move_cmd)
-            move_action.start(self._as, feedback)
-
             if self._as.is_preempt_requested():
                 rospy.logerr("Wait preempted")
                 self._as.set_preempted()
                 return
 
             rate.sleep()
-            move_action.stop()
 
+        self.depth_maintainer.stop()
         rospy.loginfo("Done sleeping")
 
         result = TaskResult()

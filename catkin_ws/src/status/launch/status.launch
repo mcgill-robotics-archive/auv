@@ -2,8 +2,8 @@
     <node name="temperature" type="temperature" pkg="status">
         <param name="max" value="70.0" />
     </node>
-    <node name="blinky_server" type="blinky_server" pkg="blinky" respawn="true"/>
+    <node name="blinky_server" type="blinky_server" pkg="blinky" respawn="true" respawn_delay="5" />
     <node name="battery_light" type="battery_lights" pkg="status"/>
     <node name="initialize_horizon_light" type="initialize_horizon_lights" pkg="status"/>
-    <node name="blinky_listener" pkg="blinky" type="blinky_node" respawn ="true"/>
+    <node name="blinky_listener" pkg="blinky" type="blinky_node" respawn ="true" respawn_delay="5"/>
 </launch>

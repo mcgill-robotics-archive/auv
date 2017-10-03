@@ -30,7 +30,7 @@ class FakeAUV(object):
         self.g = 9.81               # m / s2
         self.V = 40                 # volume - L
         self.V = self.V * 0.001     # m^3
-        self.rho = 1000             # kg/m^3
+        self.rho = 10               # kg/m^3
 
         self.drag_coeff_x = 22      # all drag coeffs together
         self.drag_coeff_y = 25      # all drag coeffs together
@@ -100,6 +100,7 @@ class FakeAUV(object):
         # Ensure that the robot doesn't go above the water surface.
         if self.current_pose.position.z > self.surface:
             self.current_pose.position.z = self.surface
+            twist.linear.z = 0
 
         self.last_twist = twist
         self.last_time = rospy.Time.now()
@@ -126,8 +127,8 @@ class FakeAUV(object):
                           self.drag(self.last_twist.linear.x, "x")) * self.period / self.m + self.last_twist.linear.x
         twist.linear.y = (wrench.force.y -
                           self.drag(self.last_twist.linear.y, "y")) * self.period / self.m + self.last_twist.linear.y
-        twist.linear.z = (wrench.force.z -
-                          self.drag(self.last_twist.linear.z, "z")) * self.period / self.m + self.last_twist.linear.z
+        twist.linear.z = (wrench.force.z - self.drag(self.last_twist.linear.z, "z") -
+                          self.Fb) * self.period / self.m + self.last_twist.linear.z
 
         twist.angular.z = ((wrench.torque.z - self.drag(self.last_twist.angular.z, "theta")) *
                            self.period * self.rot_coeff) + self.last_twist.angular.z

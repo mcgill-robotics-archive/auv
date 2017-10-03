@@ -3,7 +3,7 @@
 		name="XimuPublisher"
 		type="XimuPublisher"
 		pkg="state_estimation"
-    respawn="true"
+    respawn="true" respawn_delay="5"
 	/>
 
 	<node
@@ -29,4 +29,7 @@
 
   <node name="state_publisher" type="state_publisher" pkg="state_estimation">
   </node>
+
+  <node name="bin_detector" type="bin_detector" pkg="state_estimation" />
+  <node name="lane_detector" type="lane_detector" pkg="state_estimation" />
 </launch>

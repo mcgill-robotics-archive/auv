@@ -71,4 +71,4 @@ octagon:
 square:
   actions:
     - bins_servo:
-        depth: 1.5
+        depth: 0.3

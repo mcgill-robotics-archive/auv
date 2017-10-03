@@ -23,3 +23,4 @@ windows:
     - taskr: roslaunch taskr taskr.launch --wait
     - hydrophones: roslaunch hydrophones hydrophones.launch --wait
     - auto_shutdown: rosrun status auto_shutdown
+    - bag: /home/robotics/record.sh

@@ -49,7 +49,6 @@ class SuperImposer:
         self.torque.x = self.torque.x * thrust_decay
         self.torque.y = self.torque.y * thrust_decay
         self.torque.z = self.torque.z * thrust_decay
-        
 
     def reset(self):
         self.force = Vector3(0, 0, 0)
@@ -64,6 +63,9 @@ class SuperImposer:
 
     def set_heave(self, heave):
         self.force.z = heave
+
+        if self.force.z < 0:
+            self.force.z = 0.0
 
     # setters for rotational motion
     def set_roll(self, roll):

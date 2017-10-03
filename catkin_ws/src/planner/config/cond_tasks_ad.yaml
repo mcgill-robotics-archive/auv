@@ -17,13 +17,9 @@ tasks:
           server: wait
         - name: BIN
           server: bin_task
-        - name: TORPEDO
-          server: torpedo_task
       left_tasks:
         - name: BIN
           server: bin_task
-        - name: TORPEDO
-          server: torpedo_task
         - name: WAIT
           server: wait
         - name: OCTAGON

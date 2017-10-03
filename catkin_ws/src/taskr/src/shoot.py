@@ -20,7 +20,10 @@ class Shoot(object):
 
         # Set the attribute of solenoid_command specified in the yaml
         # file to True
-        setattr(solenoid_command, self.projectile_name, True)
+        if self.projectile_name == "starboard_dropper":
+            solenoid_command.port_torpedo = True
+        elif self.projectile_name == "port_dropper":
+            solenoid_command.starboard_torpedo = True
 
         while self.pub.get_num_connections() == 0:
             rospy.logdebug("Waiting for subscribers in Shoot")

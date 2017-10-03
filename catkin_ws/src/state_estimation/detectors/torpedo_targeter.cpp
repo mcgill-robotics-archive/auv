@@ -17,7 +17,7 @@ TorpedoTargeter::TorpedoTargeter(ros::NodeHandle& nh) :
     ros::param::param<float>("~torpedo_targeter/radius_acceptance_limit", radius_acceptance_limit, 0);
 
     image_sub = nh.subscribe<sensor_msgs::Image>("camera_front/image_color", 1, &TorpedoTargeter::imageCallback, this);
-    /*FOR COMP*/torpedo_pub = nh.advertise<geometry_msgs::PolygonStamped>("geometry_msgs/PolygonStamped", 10);
+    /*FOR COMP*/torpedo_pub = nh.advertise<geometry_msgs::PolygonStamped>("state_estimation/torpedo_target", 10);
     toggle = nh.advertiseService("torpedo_targeter/set_state", &TorpedoTargeter::setStateCallback, this);
 }
 

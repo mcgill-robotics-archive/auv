@@ -3,5 +3,3 @@ tasks:
     server: initialize_task  # name of the action server
   - name: SQUARE
     server: square_task
-  - name: WAIT
-    server: wait

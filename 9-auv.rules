@@ -1,4 +1,4 @@
-ATTRS{serial}=="545140", SYMLINK+="depth"
+ATTRS{serial}=="1340390", SYMLINK+="depth"
 ATTRS{serial}=="275200", SYMLINK+="game"
 ATTRS{serial}=="768190", SYMLINK+="teensy"
 KERNEL=="ttyACM*", ATTRS{idProduct}=="8036", ATTRS{idVendor}=="2341", SYMLINK+="blinky", MODE:="0666"

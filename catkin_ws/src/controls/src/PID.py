@@ -19,6 +19,7 @@ class PID(object):
         self.Integrator = Integrator
         self.Integrator_max = Integrator_max
         self.Integrator_min = Integrator_min
+        self.last_error = None
 
     def update(self, error, delta_time=0.1):
         """
@@ -28,11 +29,16 @@ class PID(object):
             return self.output
 
         # constant multiplier determined experimentally
-        delta_time = delta_time * 10
 
-        self.P_value = self.Kp * error * delta_time
-        self.D_value = self.Kd * (error - self.Differentiator) * delta_time
-        self.Differentiator = error * delta_time
+        self.P_value = self.Kp * error
+
+        if self.last_error is None:
+            self.D_value = 0
+        else:
+            derivative = (error - self.last_error) / delta_time
+            self.D_value = self.Kd * derivative
+
+        self.last_error = error
 
         self.Integrator = self.Integrator + error * delta_time
 
@@ -51,3 +57,4 @@ class PID(object):
     def reset(self):
         self.Differentiator = 0
         self.Integrator = 0
+        self.last_error = None
