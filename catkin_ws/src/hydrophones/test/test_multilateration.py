@@ -4,6 +4,7 @@
 """Tests hydrophones TDOA simulation."""
 
 import rosunit
+import numpy as np
 from unittest import TestCase
 from hydrophones import Mic
 from hydrophones.multilateration import solve
@@ -106,5 +107,6 @@ class TestMultilateration(TestCase):
 
 
 if __name__ == "__main__":
+    np.random.seed(1)
     rosunit.unitrun("test_hydrophones", "test_multilateration",
                     TestMultilateration)

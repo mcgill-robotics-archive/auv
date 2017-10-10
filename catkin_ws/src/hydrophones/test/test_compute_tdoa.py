@@ -4,6 +4,7 @@
 """Tests hydrophones TDOA simulation."""
 
 import rosunit
+import numpy as np
 from hydrophones import Mic
 from unittest import TestCase
 from hydrophones.sim import Pinger, compute_tdoa
@@ -33,4 +34,5 @@ class TestComputeTDOA(TestCase):
 
 
 if __name__ == "__main__":
+    np.random.seed(1)
     rosunit.unitrun("test_hydrophones", "test_compute_tdoa", TestComputeTDOA)
