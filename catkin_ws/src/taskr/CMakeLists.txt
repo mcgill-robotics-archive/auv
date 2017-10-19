@@ -8,6 +8,12 @@ find_package(catkin REQUIRED COMPONENTS
   std_msgs
 )
 
+###################
+## Catkin config ##
+###################
+
 catkin_package(
-  CATKIN_DEPENDS actionlib rospy std_msgs
+  CATKIN_DEPENDS
+  actionlib
+  rospy std_msgs
 )
