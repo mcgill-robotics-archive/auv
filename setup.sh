@@ -141,7 +141,7 @@ function _symlink {
 function symlink_file  {
   if [[ ! -e "${2}" ]]; then
     if [[ -L "${2}" ]]; then
-      echo 'Removing broken link '"$(_pretty_path "${2}")"'...'
+      echo 'Removing broken link '"${2}"'...'
       sudo rm -f "${2}"
     fi
     _symlink "${@}"
