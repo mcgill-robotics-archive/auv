@@ -1,5 +1,5 @@
 <launch>
-  <arg name="task_file" default="$(find taskr)/config/tasks_c.yaml" />
+  <arg name="task_file" default="$(find taskr)/config/sandbox.yaml" />
 
   <node name="taskr" pkg="taskr" type="taskr.py" output="screen">
     <rosparam command="load" file="$(arg task_file)" />
