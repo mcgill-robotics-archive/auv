@@ -1,0 +1,14 @@
+<launch>
+  <node 
+    pkg="tf"
+    type="static_transform_publisher"
+    name="front_camera_broadcaster"
+    args="0 1 0 0 0 0 front_camera base_link 100"
+  />
+  <node 
+    pkg="tf"
+    type="static_transform_publisher"
+    name="down_camera_broadcaster"
+    args="0 0 1 0 1.57079632679 0 down_camera base_link 100"
+  />
+</launch>
