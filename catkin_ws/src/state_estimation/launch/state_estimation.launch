@@ -27,11 +27,19 @@
     <param name="window" value="10" />
   </node>
 
+  <!-- tf2 static frame transform broadcasters -->
   <node
     pkg="tf2_ros"
     type="static_transform_publisher"
     name="depth_frame_broadcaster"
     args="0 0 0 0 0 0 base_link depth_sensor_frame"
+  />
+
+  <node
+    pkg="tf2_ros"
+    type="static_transform_publisher"
+    name="dvl_frame_broadcaster"
+    args="-7.51 2.956 -14.288 0 0 0 base_link dvl_frame"
   />
 
   <node name="state_publisher" type="state_publisher" pkg="state_estimation">
