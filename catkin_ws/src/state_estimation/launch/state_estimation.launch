@@ -28,10 +28,10 @@
   </node>
 
   <node
-    pkg="tf"
+    pkg="tf2_ros"
     type="static_transform_publisher"
-    name="depth_static_broadcaster"
-    args="0 0 0 0 0 0 depth_static_frame base_link 100"
+    name="depth_frame_broadcaster"
+    args="0 0 0 0 0 0 base_link depth_sensor_frame"
   />
 
   <node name="state_publisher" type="state_publisher" pkg="state_estimation">
