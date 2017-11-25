@@ -14,6 +14,7 @@ find_package(catkin REQUIRED COMPONENTS
   geometry_msgs
   sensor_msgs
   tf
+  tf2
   cv_bridge
   rospy
   auv_msgs
@@ -38,6 +39,7 @@ catkin_package(
   rospy
   std_msgs
   tf
+  tf2
   boost
   auv_msgs
   angles
