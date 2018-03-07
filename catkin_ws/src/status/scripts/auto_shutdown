@@ -6,6 +6,7 @@ from auv_msgs.msg import CPUTemperature
 import numpy as np
 import time
 
+
 class RingBuffer(object):
     def __init__(self, size):
         self.data = np.zeros(size)
@@ -14,61 +15,90 @@ class RingBuffer(object):
         self.data = np.roll(self.data, 1)
         self.data[0] = datum
 
-min_real_voltage = 5
-# Must be an odd size so median doesn't average
-computer_voltages = RingBuffer(51)
-computer_warn = 21.0
-computer_shutoff = 20
-motor_voltages = RingBuffer(51)
-motor_warn = 10
-motor_shutoff = 9.5
-temperature_values = RingBuffer(11)
-temperature_warn = 85
+warning_wait_period = 15;
+node_name = 'auto_shutdown'
 
+# Must be an odd size so median doesn't average
+computer_voltages = RingBuffer(21)
+motor_voltages = RingBuffer(21)
+temperature_values = RingBuffer(11)
 
 def motor_voltage_cb(msg):
     motor_voltages.push(msg.data)
-    if (np.all(motor_voltages.data > min_real_voltage) and
-            np.all(motor_voltages.data < motor_warn)):
-        warn('Motor voltage low! {} V'.format(np.average(motor_voltages.data)))
-    if (np.all(motor_voltages.data > min_real_voltage) and
-            np.all(motor_voltages.data < motor_shutoff)):
-        shutdown()
-
+    if np.all(motor_voltages.data > motor_present_threshold):
+        if np.all(motor_voltages.data < motor_warn):
+            warn('{}: Motor voltage low! {} V'
+                .format(node_name, np.average(motor_voltages.data)))
+        if np.all(motor_voltages.data < motor_hardoff):
+            shutdown()
+        else:
+            rospy.loginfo_throttle(5, '{}: Average motor voltage: {} V'
+                .format(node_name, np.average(motor_voltages.data)))
 
 def computer_voltage_cb(msg):
     computer_voltages.push(msg.data)
-    if (np.all(computer_voltages.data > min_real_voltage) and
-            np.all(computer_voltages.data < computer_warn)):
-        warn('Computer voltage low! {} V'
-             .format(np.average(computer_voltages.data)))
-    if (np.all(computer_voltages.data > min_real_voltage) and
-            np.all(computer_voltages.data < computer_shutoff)):
-        shutdown()
-
+    if np.all(computer_voltages.data > computer_present_threshold):
+        if np.all(computer_voltages.data < computer_warn):
+            warn('{}: Computer voltage low! {} V'
+                .format(node_name, np.average(computer_voltages.data)))
+        if np.all(computer_voltages.data < computer_hardoff):
+            shutdown()
+        else:
+            rospy.loginfo_throttle(5, '{}: Average computer voltage: {} V'
+                .format(node_name, np.average(computer_voltages.data)))
 
 def temperature_cb(msg):
     temperature_values.push(msg.temperature)
     if np.all(temperature_values.data > temperature_warn):
-        warn('Computer temperature high! {} V'
-             .format(np.average(temperature_values.data)))
-
+        warn('{}: Computer temperature high! {} V'
+             .format(node_name, np.average(temperature_values.data)))
+    else:
+        rospy.loginfo_throttle(5, '{}: Average CPU temperature: {} C'
+            .format(np.average(node_name, temprature_values.data)))
 
 def warn(msg):
-    rospy.logerr(msg)
-    os.system("echo '{}' | wall".format(msg))
-
+    global last_warning
+    global warning_wait_period
+    rospy.logerr_throttle(1, msg)
+    time_now = rospy.Time.now()
+    if (time_now - last_warning).to_sec() > warning_wait_period:
+        os.system('echo \'{}\' | wall'.format(msg))
+        last_warning = time_now
+        warning_wait_period = max(1, warning_wait_period - 1)
 
 def shutdown():
+    rospy.logfatal('{}: Shutting computer down!')
     os.system('shutdown -H -P now "Automatic shutdown now!"')
 
-
 if __name__ == '__main__':
+    global last_warning
     rospy.init_node('auto_shutdown')
+    computer_present_threshold = rospy.get_param('computer_present', 10)
+    computer_warn = rospy.get_param('computer_warn', 21)
+    computer_hardoff = rospy.get_param('computer_hardoff', 20)
+    computer_init = rospy.get_param('computer_init', 22)
+    motor_present_threshold = rospy.get_param('motor_present', 5)
+    motor_warn = rospy.get_param('motor_warn', 10)
+    motor_hardoff = rospy.get_param('motor_hardoff', 9)
+    temperature_warn = rospy.get_param('temperature_warn', 85)
+
+    rospy.loginfo('{}: Computer voltage warning at {} V'
+            .format(node_name, computer_warn))
+    rospy.loginfo('{}: Computer voltage hardoff at {} V'
+            .format(node_name, computer_hardoff))
+    rospy.loginfo('{}: Motor voltage is consider present at {} V'
+            .format(node_name, motor_present_threshold))
+    rospy.loginfo('{}: Motor voltage warning at {} V'
+            .format(node_name, motor_warn))
+    rospy.loginfo('{}: Motor voltage hardoff at {} V'
+            .format(node_name, motor_hardoff))
+    rospy.loginfo('{}: CPU Temperature warning at {} C'
+            .format(node_name, temperature_warn))
+    last_warning = rospy.Time.now()
     s1 = rospy.Subscriber(
         'electrical_interface/motor_voltage', Float32, motor_voltage_cb)
     s2 = rospy.Subscriber(
         'electrical_interface/computer_voltage', Float32, computer_voltage_cb)
-    s3 = rospy.Subscriber(
-        'temperature/temperature', CPUTemperature, temperature_cb)
+    rospy.loginfo('{}: node started.'.format(node_name))
     rospy.spin()
+
