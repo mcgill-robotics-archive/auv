@@ -58,7 +58,7 @@ class AcousticServo(object):
         while not self.acoustic_servo_controller.heard_pinger() and not self.preempted:
             if (rospy.Time.now() - start_time).to_sec() > self.TIMEOUT:
                 rospy.loginfo("Acoustic servo timed out!")
-                break
+                return
 
             rospy.loginfo("Waiting for pinger...")
             self.surge_pub.publish(self.SLOW_SURGE_ERROR)

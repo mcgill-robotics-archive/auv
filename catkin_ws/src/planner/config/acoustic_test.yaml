@@ -1,5 +1,0 @@
-tasks:
-  - name:  INITIALIZE  # name of the state
-    server: initialize_task  # name of the action server
-  - name: SQUARE
-    server: square_task
