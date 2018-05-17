@@ -1,0 +1,4 @@
+# McGill Robotics AUV RC File
+
+alias robosh='mosh robotics@auv'
+alias robotx='ssh -Y robotics@auv'

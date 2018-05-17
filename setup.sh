@@ -12,6 +12,8 @@ if [[ "$(whoami)" == "root" ]]; then
   exit -1
 fi
 
+DIR="$(cd "$(dirname "${BASH_SOURCE[0]}" )" && pwd)"
+
 # Ask for sudo power
 sudo -v
 
@@ -125,6 +127,41 @@ if [[ ! -e /usr/bin/st-flash ]]; then
   echo "Adding st-flash to /usr/bin/..."
   st_flash_dir="$(dirname "$(readlink -f "$0")")"/catkin_ws/src/nucleo/drivers
   sudo cp "${st_flash_dir}/st-flash" /usr/bin/st-flash
+fi
+
+function _symlink {
+  echo 'Symlinking '"${1}"' to '"${2}"'...'
+  if [[ "${3}" == "root" ]]; then
+    sudo ln -s "${1}" "${2}"
+  else
+    ln -s "${1}" "${2}"
+  fi
+}
+
+function symlink_file  {
+  if [[ ! -e "${2}" ]]; then
+    if [[ -L "${2}" ]]; then
+      echo 'Removing broken link '"${2}"'...'
+      sudo rm -f "${2}"
+    fi
+    _symlink "${@}"
+  fi
+}
+
+# Symlink tmuxinator config
+if [[ ! -d "${HOME}/.tmuxinator" ]]; then
+  mkdir -p "${HOME}/.tmuxinator"
+fi
+
+for file in $(ls config/mux); do
+  dest="${HOME}/.tmuxinator/${file}"
+  orig="${DIR}/config/mux/${file}"
+  symlink_file "${orig}" "${dest}"
+done
+
+# Add auv to hosts file
+if [[ ! $(cat /etc/hosts | grep auv) ]]; then
+  sudo sed -i "1 i 10.10.10.10\tauv" /etc/hosts
 fi
 
 # Add user to dialout to get access to devices
