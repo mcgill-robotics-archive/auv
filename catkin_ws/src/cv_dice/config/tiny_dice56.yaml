@@ -1,0 +1,18 @@
+image_view:
+
+  enable_opencv: true
+  use_darknet: false
+  wait_key_delay: 0.1
+
+yolo_model:
+
+  config_file:
+    name: tiny_dice56.cfg
+  weight_file:
+    name: tiny_dice56_10000.weights
+  threshold:
+    value: 0.3
+  detection_classes:
+    names:
+      - 5
+      - 6
