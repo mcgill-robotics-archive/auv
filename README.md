@@ -59,11 +59,11 @@ cable directly to your computer.
 
 ## Build Status
 
-[master]: https://dev.mcgillrobotics.com/buildStatus/icon?job=auv_master
-[master url]: https://dev.mcgillrobotics.com/job/auv_master
+[master]: https://dev.mcgillrobotics.com/buildStatus/icon?job=auv/master
+[master url]: https://dev.mcgillrobotics.com/job/auv/job/master
 
-[dev]: https://dev.mcgillrobotics.com/buildStatus/icon?job=auv_dev
-[dev url]: https://dev.mcgillrobotics.com/job/auv_dev
+[dev]: https://dev.mcgillrobotics.com/buildStatus/icon?job=auv/dev
+[dev url]: https://dev.mcgillrobotics.com/job/auv/job/dev
 
 | Branch   | Status                  |
 |:--------:|:-----------------------:|
