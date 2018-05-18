@@ -5,10 +5,15 @@
 # Fail on first error
 set -e
 
-echo "Welcome to McGill Robotics setup AUV setup script!"
+header=$(tput setab 1; tput setaf 0)
+section=$(tput bold; tput setaf 2)
+warning=$(tput bold; tput setaf 1)
+reset=$(tput sgr0)
+
+echo "${header}Welcome to McGill Robotics setup AUV setup script!${reset}"
 
 if [[ "$(whoami)" == "root" ]]; then
-  echo "Please DO NOT run this as root!"
+  echo "${warning}Please DO NOT run this as root!${reset}"
   exit -1
 fi
 
@@ -18,10 +23,12 @@ DIR="$(cd "$(dirname "${BASH_SOURCE[0]}" )" && pwd)"
 sudo -v
 
 # Update Git repo
-echo "Pulling latest chages..."
-git pull && git submodule update --init --recursive
+echo "${section}Update git repository...${reset}"
+  git submodule sync --recursive
+  git submodule update --init --recursive --force
 echo
 
+echo "${section}Update ROS dependencies${reset}"
 # ROS package dependencies
 if [[ -x "$(command -v rosdep)" ]]; then
   rosdep update
@@ -41,6 +48,7 @@ if [[ -x "$(command -v rosdep)" ]]; then
 fi
 
 # Increase USBFS buffer size
+echo "${section}Increase USBFS buffer size...${reset}"
 if [[ $(uname -m) == "x86_64" ]]; then
   if [[ -z $(grep 'usbcore.usbfs_memory_mb=1024' /etc/default/grub) ]]; then
     echo "Increasing USB3 buffer limit..."
@@ -52,19 +60,10 @@ if [[ $(uname -m) == "x86_64" ]]; then
   fi
 fi
 
-# PointGrey camera drivers
-echo "Installing PointGrey drivers..."
-if [[ $(uname -m) == "x86_64" ]]; then
-  sudo apt-get install -y libraw1394-11 libgtkmm-2.4-1v5 libglademm-2.4-1v5 \
-    libglademm-2.4-dev libgtkglextmm-x11-1.2-dev libgtkglextmm-x11-1.2 \
-    libusb-1.0-0
-fi
-
-
 # Symlink udev rules
-if [[ ! -e "/etc/udev/rules.d/9-auv.rules" ]]; then
-  echo "Symlinking udev rules..."
-  sudo ln -s "$(dirname "$(readlink -f "$0")")"/9-auv.rules \
+if [[ ! -f "/etc/udev/rules.d/9-auv.rules" ]]; then
+  echo "${section}Symlinking udev rules...${reset}"
+  sudo ln -sf "$(dirname "$(readlink -f "$0")")"/config/udev/9-auv.rules \
     /etc/udev/rules.d/
 
   echo "Reload udev rules..."
@@ -75,12 +74,11 @@ fi
 
 # Setup Arduino IDE on x64
 if [[ "$(uname -m)" == "x86_64" ]]; then
-  echo "Installing Arduino IDE..."
   if [[ ! -d /opt/arduino ]]; then
+    echo "${sestion}Installing Arduino IDE...${reset}"
     # Remove apt-get old version
     sudo apt-get purge -y arduino
 
-    echo "Installing Arduino IDE..."
     # Download and extract
     arduino_ver=arduino-1.6.5-r5
     arduino_tar=${arduino_ver}-linux64.tar.xz
@@ -124,7 +122,7 @@ fi
 
 # Copy st-flash for hydrophones
 if [[ ! -e /usr/bin/st-flash ]]; then
-  echo "Adding st-flash to /usr/bin/..."
+  echo "${section}Add st-flash to /usr/bin/...${reset}"
   st_flash_dir="$(dirname "$(readlink -f "$0")")"/catkin_ws/src/nucleo/drivers
   sudo cp "${st_flash_dir}/st-flash" /usr/bin/st-flash
 fi
@@ -165,7 +163,7 @@ if [[ ! $(cat /etc/hosts | grep auv) ]]; then
 fi
 
 # Add user to dialout to get access to devices
-echo "Adding user to groups..."
+echo "${section}Adding user to groups...${reset}"
 sudo usermod -aG dialout $(whoami)
 echo
 
