@@ -15,6 +15,7 @@ import serial
 
 
 class BlinkyTape(object):
+
     def __init__(self, port, ledCount=60, buffered=False):
         """Creates a BlinkyTape object and opens the port.
 
@@ -137,8 +138,12 @@ if __name__ == "__main__":
     import optparse
 
     parser = optparse.OptionParser()
-    parser.add_option("-p", "--port", dest="portname",
-                      help="serial port (ex: /dev/ttyUSB0)", default=None)
+    parser.add_option(
+        "-p",
+        "--port",
+        dest="portname",
+        help="serial port (ex: /dev/ttyUSB0)",
+        default=None)
     (options, args) = parser.parse_args()
 
     if options.portname is not None:
