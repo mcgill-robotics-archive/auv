@@ -3,62 +3,9 @@
 import rospy
 from rospkg import RosPack
 from geometry_msgs.msg import Wrench
-from auv_msgs.msg import MotorCommands
+from auv_msgs.msg import ThrusterCommands
 from numpy import matrix, interp, genfromtxt
 from numpy.linalg import pinv
-
-'''
-A note on notation:
-    A few shorthands have been used to keep the code readable.
-
-    The thrusters each start with T and are numbered as below
-
-    T1 = surge port             surges positive thrust towards stern
-    T2 = surge starboard        surges positive thrust towards stern
-    T3 = sway bow               positive thrust towards starboard
-    T4 = sway stern             positive thrust towards starboard
-    T5 = heave port bow         heaves positive thrust towards bottom
-    T6 = heave starboard bow    heaves positive thrust towards bottom
-    T7 = heave starboard stern  heaves positive thrust towards bottom
-    T8 = heave port stern       heaves positive thrust towards bottom
-
-
-    The length, in metres from each axis to each thruster is shown as
-    l_<thrustur_number><axis>
-    ex: l_1z is distance from T1 to z-axis.
-        z-axis is down, x-axis is towards bow
-
-    Forces and moments along axes are denoted by F<axis> and M<axis>
-    respectively
-'''
-
-# These provides distances (in metres) from thruster to axis.
-# e.g. l_5x is the distance of T5 from the x-axis
-l_1z = 0.207
-l_2z = 0.207
-l_3z = 0.488
-l_4z = 0.459
-
-l_5x = 0.207
-l_6x = 0.215
-l_7x = 0.215
-l_8x = 0.207
-
-l_5y = 0.372
-l_6y = 0.372
-l_7y = 0.327
-l_8y = 0.327
-
-# These provide mappings between thrusters and forces/moments.
-T1234_to_Fx_Fy_Mz = matrix([[1, 1, 0, 0],
-                            [0, 0, 1, 1],
-                            [l_1z, -l_2z, l_3z, -l_4z]])
-Fx_Fy_Mz_to_T1234 = pinv(T1234_to_Fx_Fy_Mz, rcond=1e-15)
-
-T5678_to_Fz_Mx_My = matrix([[1, 1, 1, 1],
-                            [-l_5x, l_6x, l_7x, -l_8x],
-                            [-l_5y, -l_6y, l_7y, l_8y]])
-Fz_Mx_My_to_T5678 = pinv(T5678_to_Fz_Mx_My, rcond=1e-15)
 
 
 def wrench_to_thrust(thrust_char):
@@ -66,24 +13,45 @@ def wrench_to_thrust(thrust_char):
     wrench_to_thrust returns a function, configured with thrust
     characterisations, that maps a Wrench into thrust voltages
     '''
+    thrusters = [
+        ThrusterCommands.SURGE_PORT,
+        ThrusterCommands.SURGE_STARBOARD,
+        ThrusterCommands.SWAY_BOW,
+        ThrusterCommands.SWAY_STERN,
+
+        ThrusterCommands.HEAVE_BOW_PORT,
+        ThrusterCommands.HEAVE_BOW_STARBOARD,
+        ThrusterCommands.HEAVE_STERN_PORT,
+        ThrusterCommands.HEAVE_STERN_STARBOARD
+    ]
+    thrusterToForce = matrix([
+        # Fx Fy Fz Mx My Mz
+        [1, 0, 0, 0, 0, 0.207],         # surge_port
+        [1, 0, 0, 0, 0, -0.207],        # surge_starboard
+        [0, 1, 0, 0, 0, 0.488],         # sway_bow
+        [0, 1, 0, 0, 0, -0.459],        # sway_stern
+
+        [0, 0, 1, -0.207, -0.372, 0],   # heave_bow_port
+        [0, 0, 1, 0.215, -0.372, 0],    # heave_bow_starboard
+        [0, 0, 1, -0.215, 0.327, 0],    # heave_stern_port
+        [0, 0, 1, 0.207, 0.327, 0]      # heave_stern_starboard
+    ]).T
+
+    forceToThruster = pinv(thrusterToForce)
+
     def helper(data):
-        Fx_Fy_Mz = matrix([data.force.x, data.force.y, data.torque.z]).T
-        Fz_Mx_My = matrix([data.force.z, data.torque.x, data.torque.y]).T
+        Fxyz_Mxyz = matrix(
+            [data.force.x, data.force.y, data.force.z,
+             data.torque.x, data.torque.y, data.torque.z]).T
 
-        T1234 = pwm(Fx_Fy_Mz_to_T1234 * Fx_Fy_Mz, thrust_char)
-        T5678 = pwm(Fz_Mx_My_to_T5678 * Fz_Mx_My, thrust_char)
+        thrusterCmds = pwm(forceToThruster * Fxyz_Mxyz, thrust_char).T
 
-        cmds_msg = MotorCommands()
-        cmds_msg.port_surge = T1234[0]
-        cmds_msg.starboard_surge = T1234[1]
-        cmds_msg.bow_sway = T1234[2]
-        cmds_msg.stern_sway = T1234[3]
-        cmds_msg.port_bow_heave = T5678[0]
-        cmds_msg.starboard_bow_heave = T5678[1]
-        cmds_msg.starboard_stern_heave = T5678[2]
-        cmds_msg.port_stern_heave = T5678[3]
+        msg = [0]*len(thrusters)
+        for t, x in zip(thrusters, thrusterCmds.tolist()[0]):
+            msg[t] = x
 
-        thrust_pub.publish(cmds_msg)
+        thrust_pub.publish(ThrusterCommands(msg))
+
     return helper
 
 
@@ -103,7 +71,7 @@ if __name__ == '__main__':
     t100_pwm = genfromtxt(char_file, delimiter=',')
     t100_pwm = t100_pwm[t100_pwm[:, 1].argsort()]
 
-    thrust_pub = rospy.Publisher('thrust_cmds', MotorCommands, queue_size=5)
+    thrust_pub = rospy.Publisher('thrust_cmds', ThrusterCommands, queue_size=5)
     sub = rospy.Subscriber('/controls/wrench', Wrench,
                            wrench_to_thrust(t100_pwm))
     rospy.spin()
