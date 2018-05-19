@@ -1,8 +1,8 @@
 <launch>
-  <arg name="rviz_config" default="$(find auv_viz)/config/robot.rviz" />
+  <arg name="rviz_config" default="$(find simulation)/config/robot.rviz" />
   <arg name="gains_file" default="$(find controls)/config/sim_gains.yaml" />
 
-  <include file="$(find auv_description)/launch/description.launch" />
+  <include file="$(find simulation)/launch/description.launch" />
 
   <include file="$(find controls)/launch/controls.launch" >
     <arg name="gains_file" value="$(arg gains_file)" />
@@ -10,7 +10,7 @@
 
   <node name="state_publisher" type="state_publisher" pkg="state_estimation" />
 
-  <node name="auv_rviz_sim" pkg="auv_viz" type="sim_auv.py"/>
+  <node name="rviz_sim" pkg="simulation" type="sim_auv.py"/>
 
   <node name="rviz" pkg="rviz" type="rviz" args="-d $(arg rviz_config)"/>
 </launch>
