@@ -1,9 +1,7 @@
-# Robot Package
+# Tools Package
 
 This package includes some auv-specific tools, hardware-interfaces, models,
 and messages.
-
-Not necessarily an auxiliary package... But pretty damn close to it right now...
 
 ## Dry Test:
 
