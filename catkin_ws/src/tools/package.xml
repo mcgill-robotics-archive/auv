@@ -1,8 +1,8 @@
 <?xml version="1.0"?>
 <package format="2">
-  <name>robot</name>
+  <name>tools</name>
   <version>0.0.0</version>
-  <description>The Robot package</description>
+  <description>The AUV Tools Package</description>
 
   <maintainer email="jeremy.mallette@mail.mcgill.ca">Jeremy</maintainer>
 
