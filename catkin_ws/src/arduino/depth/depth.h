@@ -1,19 +1,7 @@
 #ifndef DEPTH_H
 #define DEPTH_H
 
-#ifdef ARDUINO_AVR_FEATHER32U4
-#define USE_USBCON
-#endif
-
-#include <Arduino.h>
-#include <Wire.h>
-#include <avr/wdt.h>
-
-#include "ms5803_i2c.h"
-#include "ros.h"
-#include "std_msgs/Float32.h"
-
-#define MS5803_I2C_ADDR 0x77
+#define MS5803_I2C_ADDR 0x76
 #define PIN_LED 13
 #define MCUSR_WDRF 0b00001000
 #define TEMPERATURE_REPORT_INTERVAL 1000
