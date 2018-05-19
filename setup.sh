@@ -11,6 +11,7 @@ warning=$(tput bold; tput setaf 1)
 reset=$(tput sgr0)
 
 echo "${header}Welcome to McGill Robotics setup AUV setup script!${reset}"
+echo
 
 if [[ "$(whoami)" == "root" ]]; then
   echo "${warning}Please DO NOT run this as root!${reset}"
@@ -21,12 +22,6 @@ DIR="$(cd "$(dirname "${BASH_SOURCE[0]}" )" && pwd)"
 
 # Ask for sudo power
 sudo -v
-
-# Update Git repo
-echo "${section}Update git repository...${reset}"
-  git submodule sync --recursive
-  git submodule update --init --recursive --force
-echo
 
 echo "${section}Update ROS dependencies${reset}"
 # ROS package dependencies
@@ -48,15 +43,15 @@ if [[ -x "$(command -v rosdep)" ]]; then
 fi
 
 # Increase USBFS buffer size
-echo "${section}Increase USBFS buffer size...${reset}"
 if [[ $(uname -m) == "x86_64" ]]; then
   if [[ -z $(grep 'usbcore.usbfs_memory_mb=1024' /etc/default/grub) ]]; then
-    echo "Increasing USB3 buffer limit..."
+    echo "${section}Increase USBFS buffer size...${reset}"
     REBOOT="true"
     sudo sed -e 's/"quiet"/"quiet usbcore.usbfs_memory_mb=1024"/' \
       -e 's/"quiet splash"/"quiet splash usbcore.usbfs_memory_mb=1024"/' \
       -i /etc/default/grub
     sudo update-grub
+    echo
   fi
 fi
 
