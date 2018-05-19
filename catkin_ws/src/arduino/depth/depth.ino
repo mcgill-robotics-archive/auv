@@ -1,139 +1,83 @@
-#define USE_USBCON
-#include <ros.h>
-#include <std_msgs/Float32.h>
+#include "depth.h"
 
-#include <Wire.h>
-#include "defs.h"
-#include "MS5803_I2C.h"
-
-MS5803 depthSensor(ADDRESS_HIGH);
-ros::NodeHandle nh;
-
-bool depthSensorConnected = false;
-
-unsigned long depthSensorSchedule = 0;
-unsigned long externalTempSchedule = 0;
-
-std_msgs::Float32 pressure_m;
-std_msgs::Float32 external_temperature_m;
-
-ros::Publisher pressurePub("~pressure", &pressure_m);  // Publish the depth topic
-ros::Publisher externalTemperaturePub("~external_temperature", &external_temperature_m);
-
-void resetDepthSensor(){
-  for(int i = 0; i< 5 ; i++){ //to verify the bus condition multiple times in case it changes for better debugging
-    Wire.beginTransmission(MS5803_I2C_ADDR);
-    switch( Wire.endTransmission() ) {
-      case 0:
-        depthSensorConnected = true;
-        depthSensor.reset();
-        depthSensor.begin();
-        break;
-      case 1:
-        nh.logwarn("Depth Sensor DATA TOO LONG.");
-        //Serial.print("Depth Sensor DATA TOO LONG.");
-        break;
-      case 2:
-        nh.logwarn("Depth Sensor ADDR NANK.");
-        //Serial.print("Depth Sensor ADDR NANK.");
-        break;
-      case 3:
-        nh.logwarn("Depth Sensor DATA NANK.");
-        //Serial.print("Depth Sensor DATA NANK.");
-        break;
-      case 4:
-        nh.logwarn("Depth Sensor OTHER ERROR.");
-        //Serial.print("Depth Sensor OTHER ERROR.");
-        break;
-      default :
-        nh.logwarn("Depth Sensor UNKNOWN ERROR.");
-        //Serial.print("Depth Sensor UNKNOWN ERROR.");
-    }
+void resetPressureSensor() {
+  Wire.beginTransmission(MS5803_I2C_ADDR);
+  switch (Wire.endTransmission()) {
+    case 0:
+      pressure_sensor_connected = true;
+      pressure_sensor.reset();
+      pressure_sensor.begin();
+      break;
+    case 2:
+      nh.logfatal("Pressure sensor address not attack!");
+      break;
+    default:
+      nh.logfatal("Pressure sensor unknown error!");
   }
 }
 
-void reconnectDepthSensor(){
-
-  resetDepthSensor(); 
-
-  if(depthSensorConnected){
-    nh.logwarn("Depth sensor reset successfully!");
-    //Serial.print("Depth sensor reset successfully!");
+void reconnectPressureSensor() {
+  resetPressureSensor();
+  if (pressure_sensor_connected) {
+    nh.logwarn("Pressure sensor reconnected.");
   } else {
-    nh.logfatal("Depth sensor reset has failed!");
-    //Serial.print("Depth sensor reset has failed!");
-
-    delay(100);
-    CPU_RESET;
+    nh.logfatal("Pressure sensor disconnected!");
   }
 }
 
-void depthSensorInit(){
-  Wire.begin();
-  resetDepthSensor();
-  
+void sensorInit() { resetPressureSensor(); }
+
+void rosInit() {
+  nh.initNode();
+  nh.advertise(pressure_pub);
+  nh.advertise(temperature_pub);
 }
 
-void rosInit(){
-  //ros node initialization
-  nh.initNode();  
-  //ros publisher initialization
-  nh.advertise(pressurePub);        //depth sensor
-  nh.advertise(externalTemperaturePub);
-}
-
-void setup(){
-  depthSensorInit();
+void setup() {
+  sensorInit();
   rosInit();
+  pinMode(PIN_LED, OUTPUT);
+  if (MCUSR & MCUSR_WDRF) {
+    MCUSR ^= MCUSR_WDRF;
+    nh.logerror("Watchdog reset occurred!");
+    nh.spinOnce();
+  }
+  wdt_enable(WDTO_2S);
 }
-  
-void loop(){
-  unsigned long currentTime = millis();
-  
-  //Depth Sensing
-  if(depthSensorSchedule < currentTime){
-    if(depthSensorConnected){
-      //Get Readings
-      depthSensor.getMeasurements(ADC_4096);
 
-      //check status, reconnect if needed
-      if(depthSensor.getSensorStatus()){
+void loop() {
+  unsigned long time_now = millis();
+  wdt_reset();
+  // Depth Sensing
+  if (pressure_schedule < time_now) {
+    if (pressure_sensor_connected) {
+      // Get Readings
+      pressure_sensor.getMeasurements();
 
-        nh.logerror("Depth sensor communication error, attemping reset...");
-        //Serial.print("Depth sensor communication error, attemping reset...");
-        depthSensorConnected = false;
-        reconnectDepthSensor();
+      // check status, reconnect if needed
+      if (pressure_sensor.getStatus()) {
+        pressure_sensor_connected = false;
+        reconnectPressureSensor();
 
       } else {
-        // passed connection test, putting data to ros
-        pressure_m.data = depthSensor.getPressure();
-        pressurePub.publish(&pressure_m);
-        depthSensorSchedule += DEPTH_INTERVAL;
-
-        
-//        //print data
-//        Serial.println(depthSensor.getPressure());
+        pressure_m.data = pressure_sensor.getPressure();
+        pressure_pub.publish(&pressure_m);
+        pressure_schedule += PRESSURE_REPORT_INTERVAL;
       }
     } else {
-      nh.logerror("Depth sensor is NOT CONNECTED!!");
-      //Serial.print("Depth sensor is NOT CONNECTED!!");
-      depthSensorSchedule += DEPTH_DISCONNECT_INTERVAL;
-      reconnectDepthSensor();
+      pressure_schedule += PRESSURE_RECONNECT_INTERVAL;
+      reconnectPressureSensor();
     }
   }
-  
-  //external Temperature
-  if(externalTempSchedule < currentTime){
-    if(depthSensorConnected){
-      external_temperature_m.data = depthSensor.getTemperature(CELSIUS);
-      externalTemperaturePub.publish(&external_temperature_m);
-      externalTempSchedule += TEMPERATURE_INTERVAL;
 
-      //print data
-      //Serial.println(depthSensor.getTemperature(CELSIUS));
-    } else{
-      externalTempSchedule += TEMPERATURE_INTERVAL;
+  // external Temperature
+  if (temperature_schedule < time_now) {
+    if (pressure_sensor_connected) {
+      temperature_m.data = pressure_sensor.getTemperature();
+      temperature_pub.publish(&temperature_m);
+      digitalWrite(PIN_LED, !digitalRead(PIN_LED));
     }
+    temperature_schedule += TEMPERATURE_REPORT_INTERVAL;
   }
   nh.spinOnce();
 }
