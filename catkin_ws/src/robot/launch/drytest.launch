@@ -10,7 +10,6 @@
 		<remap from="image" to="front_image"/>
 	</node>
 
-	<node pkg="automate_drytest" name="full_dry_test.py" type="full_dry_test.py" output="screen">
+	<node name="full_test.py" pkg="robot" type="full_test.py" output="screen">
 	</node>
-
 </launch>

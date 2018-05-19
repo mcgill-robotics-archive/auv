@@ -8,16 +8,19 @@ confirm functionality.
 
 import rospy
 from rospy import Publisher
-from auv_msgs.msg import MotorCommands
+from auv_msgs.msg import ThrusterCommands
 
 
 def drytest_thrusters():
-    pub = Publisher("electrical_interface/motor", MotorCommands, queue_size=5)
+    pub = Publisher("electrical_interface/motor",
+                    ThrusterCommands,
+                    queue_size=5)
 
     """Cycles through each thruster and asks for user confirmation"""
 
-    # Keeps track of which thrusters are functional, index matches that of thrusters
+    # Keeps track of which thrusters are functional
     functional = ['N', 'N', 'N', 'N', 'N', 'N', 'N', 'N']
+
     # Thruster names
     thrusters = ['Port Bow Heave', 'Bow Sway', 'Starboard Bow Heave',
                  'Starboard Surge', 'Starboard Stern Heave', 'Stern Sway',
@@ -34,7 +37,8 @@ def drytest_thrusters():
             print '\nTesting:', thrusters[i]
             raw_input('Press any key to continue')
 
-            for j in range(0, freq):  # publish this command at the specified frequency
+            # publish this command at the specified frequency
+            for j in range(0, freq):
                 pub.publish(create_command(i))
                 rate.sleep()
             answer = raw_input('Is it running? y/n: ')
@@ -50,7 +54,7 @@ def drytest_thrusters():
 
 def create_command(thruster):
     """This function turns on one thruster and sets the rest to 0"""
-    cmd = MotorCommands()
+    cmd = ThrusterCommands()
     cmd.port_bow_heave = 300 if thruster == 0 else 0
     cmd.bow_sway = 300 if thruster == 1 else 0
     cmd.starboard_bow_heave = 300 if thruster == 2 else 0
