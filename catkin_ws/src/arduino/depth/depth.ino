@@ -1,4 +1,17 @@
+#include <Arduino.h>
+#include <Wire.h>
+#include <avr/wdt.h>
+
+#ifdef ARDUINO_AVR_FEATHER32U4
+#define USE_USBCON
+#endif
+
+#include "ms5803_i2c.h"
+#include "ros.h"
+#include "std_msgs/Float32.h"
+
 #include "depth.h"
+
 
 void resetPressureSensor() {
   Wire.beginTransmission(MS5803_I2C_ADDR);
@@ -20,8 +33,10 @@ void reconnectPressureSensor() {
   resetPressureSensor();
   if (pressure_sensor_connected) {
     nh.logwarn("Pressure sensor reconnected.");
+    pressure_schedule = millis();
   } else {
     nh.logfatal("Pressure sensor disconnected!");
+    pressure_schedule = millis() + PRESSURE_RECONNECT_INTERVAL;
   }
 }
 
@@ -62,10 +77,10 @@ void loop() {
       } else {
         pressure_m.data = pressure_sensor.getPressure();
         pressure_pub.publish(&pressure_m);
-        pressure_schedule += PRESSURE_REPORT_INTERVAL;
+        pressure_schedule = time_now + PRESSURE_REPORT_INTERVAL;
       }
     } else {
-      pressure_schedule += PRESSURE_RECONNECT_INTERVAL;
+      pressure_schedule = time_now + PRESSURE_RECONNECT_INTERVAL;
       reconnectPressureSensor();
     }
   }
@@ -77,7 +92,7 @@ void loop() {
       temperature_pub.publish(&temperature_m);
       digitalWrite(PIN_LED, !digitalRead(PIN_LED));
     }
-    temperature_schedule += TEMPERATURE_REPORT_INTERVAL;
+    temperature_schedule = time_now + TEMPERATURE_REPORT_INTERVAL;
   }
   nh.spinOnce();
 }
