@@ -1,7 +1,9 @@
 #!/usr/bin/env python
+
 import time
-from wait_for_message import *
 from std_msgs.msg import Float64
+
+from wait_for_message import *
 
 # Eventually we will import more msg type
 
@@ -33,14 +35,16 @@ def check_depth_pressure():
 
 if __name__ == "__main__":
 
-    """Calls function wait_for_message which creates an object for each sensor
-       being tested.
+    """
+    Calls function wait_for_message which creates an object for each sensor
+    being tested.
 
-       Waits for message:
-       - "None": Sensor is not connected
-       -  Data published to the topic : Sensor is connected
+    Waits for message:
+        - "None": Sensor is not connected
+        -  Data published to the topic : Sensor is connected
 
     """
+
     rospy.init_node("Testing")
     print("Are you ready to begin the dry test? Yes? No?")
 
