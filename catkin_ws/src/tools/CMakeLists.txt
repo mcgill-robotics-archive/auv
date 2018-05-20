@@ -5,6 +5,7 @@ project(tools)
 find_package(catkin REQUIRED COMPONENTS
   auv_msgs
   rospy
+  sensor_msgs
   std_msgs
 )
 
@@ -70,6 +71,7 @@ find_package(catkin REQUIRED COMPONENTS
 
 catkin_package(CATKIN_DEPENDS
   auv_msgs
+  sensor_msgs
   std_msgs
 )
 
@@ -87,6 +89,7 @@ catkin_install_python(PROGRAMS
   scripts/drytest/full_test.py
   scripts/drytest/sensors_test.py
   scripts/drytest/thrusters_test.py
+  scripts/drytest/camera_test.py
   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
 

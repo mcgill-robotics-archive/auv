@@ -12,6 +12,7 @@
 
   <depend>auv_msgs</depend>
   <depend>rospy</depend>
+  <depend>sensor_msgs</depend>
   <depend>std_msgs</depend>
 
   <!--   <test_depend>gtest</test_depend> -->

@@ -2,96 +2,225 @@
 
 import time
 from std_msgs.msg import Float64
+from sensor_msgs.msg import Imu, PointCloud
 
+from console_format import format
 from wait_for_message import *
-
-# Eventually we will import more msg type
 
 
 def check_depth_sensor():
-    print("We will begin with the Depth Sensor dry test.")
-    check_depth_raw()
-    check_depth_pressure()
-    print("Depth sensor dry test completed")
+    answer = 'y'
+    skip = 'x'
+
+    print('\n' + format.UNDERLINE + format.OKBLUE + 'Depth Sensor' +
+          format.ENDC)
+
+    skip = raw_input('About to test sensor, make sure it is launched, and '
+                     'press most keys to continue (s to skip): ')
+
+    if (skip.lower() == 's'):
+        print(format.WARNING + 'Skipped...' + format.ENDC)
+        return True
+
+    while (answer.lower() == 'y'):
+        isResponsive = True
+        print('Waiting for sensor feedback...')
+
+        # Test Raw Output of Depth Sensor
+        try:
+            wait_for_message('/raw_depth', Float64, 3)
+
+        except Exception:
+            print (format.WARNING + 'Raw feedback is unresponsive' +
+                   format.ENDC)
+            isResponsive = False
+            pass
+
+        # Test Pressure Output of Depth Sensor
+        try:
+            wait_for_message('/depth/pressure', Float64, 3)
+
+        except Exception:
+            print (format.WARNING + 'Pressure feedback is unresponsive' +
+                   format.ENDC)
+            isResponsive = False
+            pass
+
+        if isResponsive:
+            answer = 'n'
+        else:
+            answer = raw_input('One or more of the messages was not being '
+                               'published.\nPress y to try again and any '
+                               'other key to move on to the next sensor: ')
+
+    if isResponsive:
+        print (format.OKGREEN + format.BOLD + 'The sensor is working!' +
+               format.ENDC)
+    else:
+        print (format.FAIL + format.BOLD + 'The sensor is not responsive' +
+               format.ENDC)
+
+    return isResponsive
 
 
-def check_depth_raw():
-    try:
-        wait_for_message("/raw_depth", Float64, 3)
+def check_imu():
+    answer = 'y'
+    skip = 'x'
 
-    except Exception:
-        print ("> /raw_depth is not being published.")
-        pass
+    print('\n' + format.UNDERLINE + format.OKBLUE + 'IMU' +
+          format.ENDC)
+
+    skip = raw_input('About to test sensor, make sure it is launched, and '
+                     'press most keys to continue (s to skip): ')
+
+    if (skip.lower() == 's'):
+        print(format.WARNING + 'Skipped...' + format.ENDC)
+        return True
+
+    while (answer.lower() == 'y'):
+        isResponsive = True
+        print('Waiting for sensor feedback...')
+
+        # Test Raw Output of the IMU
+        try:
+            wait_for_message('/state_estimation/raw', Imu, 3)
+
+        except Exception:
+            print (format.WARNING + 'Raw feedback is unresponsive' +
+                   format.ENDC)
+            isResponsive = False
+            pass
+
+        if isResponsive:
+            answer = 'n'
+        else:
+            answer = raw_input('One or more of the messages was not being '
+                               'published.\nPress y to try again and any '
+                               'other key to move on to the next sensor: ')
+
+    if isResponsive:
+        print (format.OKGREEN + format.BOLD + 'The sensor is working!' +
+               format.ENDC)
+    else:
+        print (format.FAIL + format.BOLD + 'The sensor is not responsive' +
+               format.ENDC)
+
+    return isResponsive
 
 
-def check_depth_pressure():
-    try:
-        wait_for_message("/depth/pressure", Float64, 3)
+def check_sonar():
+    answer = 'y'
+    skip = 'x'
 
-    except Exception:
-        print ("> /depth/pressure is not being published.")
-        pass
+    print('\n' + format.UNDERLINE + format.OKBLUE + 'Sonar' +
+          format.ENDC)
+
+    skip = raw_input('About to test sensor, make sure it is launched, and '
+                     'press most keys to continue (s to skip): ')
+
+    if (skip.lower() == 's'):
+        print(format.WARNING + 'Skipped...' + format.ENDC)
+        return True
+
+    while (answer.lower() == 'y'):
+        isResponsive = True
+        print('Waiting for sensor feedback...')
+
+        # Test Raw Output of the Sonar
+        try:
+            wait_for_message('/tritech_micron/scan', PointCloud, 3)
+
+        except Exception:
+            print (format.WARNING + 'Raw feedback on tritech_micron is '
+                   'unresponsive' + format.ENDC)
+            isResponsive = False
+            pass
+
+        # Test Full Scan Output from Sonar Proc
+        try:
+            wait_for_message('/sonar_proc/full_scan', PointCloud, 3)
+
+        except Exception:
+            print (format.WARNING + 'Full scan on sonar_proc is unresponsive' +
+                   format.ENDC)
+            isResponsive = False
+            pass
+
+        if isResponsive:
+            answer = 'n'
+        else:
+            answer = raw_input('One or more of the messages was not being '
+                               'published.\nPress y to try again and any '
+                               'other key to move on to the next sensor: ')
+
+    if isResponsive:
+        print (format.OKGREEN + format.BOLD + 'The sensor is working!' +
+               format.ENDC)
+    else:
+        print (format.FAIL + format.BOLD + 'The sensor is not responsive' +
+               format.ENDC)
+
+    return isResponsive
+
+
+def run_test():
+    functional = []
+    non_functional = []
+
+    print (format.OKBLUE + format.BOLD + '\n\n'
+           ' #####################\n'
+           ' ## TESTING SENSORS ##\n'
+           ' #####################\n' + format.ENDC)
+
+    # DEPTH SENSOR ------------------------------------------------------------
+    if check_depth_sensor():
+        functional.append('Depth Sensor')
+    else:
+        non_functional.append('Depth Sensor')
+
+    time.sleep(1)
+
+    # IMU ---------------------------------------------------------------------
+    if check_imu():
+        functional.append('IMU')
+    else:
+        non_functional.append('IMU')
+
+    time.sleep(1)
+
+    # SONAR -------------------------------------------------------------------
+    if check_sonar():
+        functional.append('Sonar')
+    else:
+        non_functional.append('Sonar')
+
+    time.sleep(1)
+
+    # SUMMARY -----------------------------------------------------------------
+    print('\n' + format.UNDERLINE + format.OKBLUE + 'Summary' +
+          format.ENDC)
+
+    # Prints All Functional Sensors
+    print ('\n' + format.OKGREEN + format.BOLD +
+           'Functional (or skipped) Sensors are: ')
+    for sensor in functional:
+        print('  - ' + sensor)
+    print (format.ENDC)
+
+    # Prints All Functional Sensors
+    print ('\n' + format.FAIL + format.BOLD + 'Non-functional Sensors are: ')
+    for sensor in non_functional:
+        print('  - ' + sensor)
+    print (format.ENDC)
+
+    print (format.OKBLUE + '\nFinished testing sensors\n\n' + format.ENDC)
+
+    if (len(non_functional) > 0):
+        return True  # >> isError
+    else:
+        return False  # >> is Error
 
 
 if __name__ == "__main__":
-
-    """
-    Calls function wait_for_message which creates an object for each sensor
-    being tested.
-
-    Waits for message:
-        - "None": Sensor is not connected
-        -  Data published to the topic : Sensor is connected
-
-    """
-
-    rospy.init_node("Testing")
-    print("Are you ready to begin the dry test? Yes? No?")
-
-    agree.lower() = raw_input()
-
-    if agree.lower() == 'no' or agree.lower() == 'n':
-        print ("Maybe later. Goodbye!")
-
-    elif agree.lower() == 'yes' or agree.lower() == 'y':
-        print("Excellent choice!")
-        time.sleep(1)
-        check_depth_sensor()
-
-        time.sleep(1)
-
-        """
-        print("Moving on to Ximu:")
-
-        try:
-            wait_for_message("", Float64, 3)
-
-        except Exception:
-            print ("> The Ximu is not connected.")
-            pass
-
-        print("Testing the Sonar:")
-
-        try:
-            wait_for_message("", Float64, 3)
-
-        except Exception:
-            print ("> The Sonar is not connected.")
-            pass
-
-        print("Testing the front camera:")
-
-        try:
-            wait_for_message("", Float64, 3)
-
-        except Exception:
-            print ("> The front camera is not connected.")
-            pass
-        """
-
-        print('Sensors connection have been tested.')
-
-    else:
-        print("I don't know what that means!")
-        time.sleep(1)
-        print("Try again.")
+    rospy.init_node("drytest_sensors")
+    run_test()
