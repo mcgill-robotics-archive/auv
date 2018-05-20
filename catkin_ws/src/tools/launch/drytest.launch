@@ -1,15 +1,4 @@
 <launch>
-	<arg name="down_image" default="/camera_down/image_raw"/>
-	<arg name="front_image" default="/camera_front/image_raw"/>
-
-	<node name="camera_test_down" pkg="image_view" type="image_view">
-		<remap from="image" to="down_image"/>
-	</node>
-
-	<node name="camera_test_front" pkg="image_view" type="image_view">
-		<remap from="image" to="front_image"/>
-	</node>
-
-	<node name="full_test.py" pkg="robot" type="full_test.py" output="screen">
+	<node name="full_test" pkg="tools" type="full_test.py" output="screen">
 	</node>
 </launch>

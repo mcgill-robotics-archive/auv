@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
-"""Thruster Dry Test.
+"""
+Thruster Dry Test.
 
 This cycles through each thruster turning it on and asking the user to
 confirm functionality.
@@ -8,7 +9,9 @@ confirm functionality.
 
 import rospy
 from rospy import Publisher
+
 from auv_msgs.msg import ThrusterCommands
+from console_format import format
 
 
 def drytest_thrusters():
@@ -22,64 +25,97 @@ def drytest_thrusters():
     functional = ['N', 'N', 'N', 'N', 'N', 'N', 'N', 'N']
 
     # Thruster names
-    thrusters = ['Port Bow Heave', 'Bow Sway', 'Starboard Bow Heave',
-                 'Starboard Surge', 'Starboard Stern Heave', 'Stern Sway',
-                 'Port Stern Heave', 'Port Surge']
+    thrusters = ['Port Surge', 'Starboard Surge', 'Bow Sway',
+                 'Stern Sway', 'Port Bow Heave', 'Starboard Bow Heave',
+                 'Port Stern Heave', 'Starboard Stern Heave']
 
     freq = 10  # set the frequency
     rate = rospy.Rate(freq)  # set the rate
 
     for i in range(0, len(thrusters)):
-        # sets answer back to no for the new thruster
         answer = 'n'
+
+        print('\n' + format.UNDERLINE + format.OKBLUE + thrusters[i] +
+              format.ENDC)
+
         # Tests the same thruster until answer is changed to y
         while(answer.lower() == 'n'):
-            print '\nTesting:', thrusters[i]
-            raw_input('Press any key to continue')
+            raw_input('Press any key to send pulse ')
 
             # publish this command at the specified frequency
             for j in range(0, freq):
                 pub.publish(create_command(i))
                 rate.sleep()
             answer = raw_input('Is it running? y/n: ')
+
             # moves on to the next thruster if the answer is yes
             if answer.lower() == 'y':
                 functional[i] = 'Y'
+
             # try again if the answer is no
             else:
-                answer = raw_input('Press n to test again and y to move on '
-                                   'to the next thruster ')
+                answer = raw_input('Press n to test again and any other '
+                                   'key to move to the next thruster ')
+
+        if (functional[i] == 'Y'):
+            print (format.OKGREEN + format.BOLD + 'The thruster is working!' +
+                   format.ENDC)
+        else:
+            print (format.FAIL + format.BOLD + 'The thruster is not '
+                   'responsive' + format.ENDC)
+
     return functional, thrusters
 
 
-def create_command(thruster):
+def create_command(t):
     """This function turns on one thruster and sets the rest to 0"""
     cmd = ThrusterCommands()
-    cmd.port_bow_heave = 300 if thruster == 0 else 0
-    cmd.bow_sway = 300 if thruster == 1 else 0
-    cmd.starboard_bow_heave = 300 if thruster == 2 else 0
-    cmd.starboard_surge = 300 if thruster == 3 else 0
-    cmd.starboard_stern_heave = 300 if thruster == 4 else 0
-    cmd.stern_sway = 300 if thruster == 5 else 0
-    cmd.port_stern_heave = 300 if thruster == 6 else 0
-    cmd.port_surge = 300 if thruster == 7 else 0
+    cmd.thruster_commands[cmd.SURGE_PORT] = 300 if t == 0 else 0
+    cmd.thruster_commands[cmd.SURGE_STARBOARD] = 300 if t == 1 else 0
+    cmd.thruster_commands[cmd.SWAY_BOW] = 300 if t == 2 else 0
+    cmd.thruster_commands[cmd.SWAY_STERN] = 300 if t == 3 else 0
+    cmd.thruster_commands[cmd.HEAVE_BOW_PORT] = 300 if t == 4 else 0
+    cmd.thruster_commands[cmd.HEAVE_BOW_STARBOARD] = 300 if t == 5 else 0
+    cmd.thruster_commands[cmd.HEAVE_STERN_PORT] = 300 if t == 6 else 0
+    cmd.thruster_commands[cmd.HEAVE_STERN_STARBOARD] = 300 if t == 7 else 0
     return cmd
 
 
 def run_test():
+    isAllGood = True
+
+    print (format.OKBLUE + format.BOLD + '\n\n'
+           ' #######################\n'
+           ' ## TESTING THRUSTERS ##\n'
+           ' #######################\n' + format.ENDC)
+
     functional, thrusters = drytest_thrusters()
 
-    # prints a list of functional and non-functional thrusters
-    print '\nFunctional Thrusters are: '
+    # SUMMARY -----------------------------------------------------------------
+    print('\n' + format.UNDERLINE + format.OKBLUE + 'Summary' +
+          format.ENDC)
+
+    # Prints All Functional Thrusters
+    print ('\n' + format.OKGREEN + format.BOLD + 'Functional Thrusters are: ')
     for i in range(0, len(thrusters)):
         if functional[i] == 'Y':
-            print "\t", thrusters[i]
-    print 'Non-Functional Thrusters are: '
+            print (" - " + thrusters[i])
+    print (format.ENDC)
+
+    # Prints All Non-Functional Thrusters
+    print ('\n' + format.FAIL + format.BOLD + 'Non-functional Thrusters are: ')
     for i in range(0, len(thrusters)):
         if functional[i] == 'N':
-            print "\t", thrusters[i]
+            print (' - ' + thrusters[i])
+            isAllGood = False
+    print (format.ENDC)
 
-    print "\nFinished thruster test."
+    print (format.OKBLUE + '\nFinished testing thrusters\n\n' + format.ENDC)
+
+    if (not isAllGood):
+        return True  # >> isError
+    else:
+        return False  # >> is Error
 
 
 if __name__ == "__main__":
