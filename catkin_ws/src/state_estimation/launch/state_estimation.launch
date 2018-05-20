@@ -1,5 +1,5 @@
 <launch>
-	<node
+    <node
 		name="XimuPublisher"
 		type="XimuPublisher"
 		pkg="state_estimation"
@@ -19,17 +19,18 @@
 	/>
 
 	<node name="initialize_horizon" type="initialize_horizon" pkg="state_estimation">
-    <param name="yaw_drift_tolerance" value="1" />  <!-- in rad/sec -->
-  </node>
+        <param name="yaw_drift_tolerance" value="1" />  <!-- in rad/sec -->
+    </node>
 
-  <node name="depth" type="depth" pkg="state_estimation">
-    <param name="offset" value="-92.6" />
-    <param name="window" value="10" />
-  </node>
+    <node name="depth" type="depth" pkg="state_estimation">
+        <param name="offset" value="-92.6" />
+        <param name="window" value="10" />
+    </node>
 
-  <node name="state_publisher" type="state_publisher" pkg="state_estimation">
-  </node>
-
-  <node name="bin_detector" type="bin_detector" pkg="state_estimation" />
-  <node name="lane_detector" type="lane_detector" pkg="state_estimation" />
+    <node name="state_publisher" type="state_publisher" pkg="state_estimation">
+    </node>
+<!--
+    <node name="bin_detector" type="bin_detector" pkg="state_estimation" />
+    <node name="lane_detector" type="lane_detector" pkg="state_estimation" />
+-->
 </launch>
