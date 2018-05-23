@@ -15,7 +15,7 @@ from console_format import format
 
 
 def drytest_thrusters():
-    pub = Publisher("electrical_interface/motor",
+    pub = Publisher("electrical_interface/thrusters",
                     ThrusterCommands,
                     queue_size=5)
 
@@ -70,14 +70,14 @@ def drytest_thrusters():
 def create_command(t):
     """This function turns on one thruster and sets the rest to 0"""
     cmd = ThrusterCommands()
-    cmd.thruster_commands[cmd.SURGE_PORT] = 300 if t == 0 else 0
-    cmd.thruster_commands[cmd.SURGE_STARBOARD] = 300 if t == 1 else 0
-    cmd.thruster_commands[cmd.SWAY_BOW] = 300 if t == 2 else 0
-    cmd.thruster_commands[cmd.SWAY_STERN] = 300 if t == 3 else 0
-    cmd.thruster_commands[cmd.HEAVE_BOW_PORT] = 300 if t == 4 else 0
-    cmd.thruster_commands[cmd.HEAVE_BOW_STARBOARD] = 300 if t == 5 else 0
-    cmd.thruster_commands[cmd.HEAVE_STERN_PORT] = 300 if t == 6 else 0
-    cmd.thruster_commands[cmd.HEAVE_STERN_STARBOARD] = 300 if t == 7 else 0
+    cmd.thruster_commands[cmd.SURGE_PORT] = 100 if t == 0 else 0
+    cmd.thruster_commands[cmd.SURGE_STARBOARD] = 100 if t == 1 else 0
+    cmd.thruster_commands[cmd.SWAY_BOW] = 100 if t == 2 else 0
+    cmd.thruster_commands[cmd.SWAY_STERN] = 100 if t == 3 else 0
+    cmd.thruster_commands[cmd.HEAVE_BOW_PORT] = 100 if t == 4 else 0
+    cmd.thruster_commands[cmd.HEAVE_BOW_STARBOARD] = 100 if t == 5 else 0
+    cmd.thruster_commands[cmd.HEAVE_STERN_PORT] = 100 if t == 6 else 0
+    cmd.thruster_commands[cmd.HEAVE_STERN_STARBOARD] = 100 if t == 7 else 0
     return cmd
 
 
@@ -92,6 +92,8 @@ def run_test():
     functional, thrusters = drytest_thrusters()
 
     # SUMMARY -----------------------------------------------------------------
+    non_functional = []
+
     print('\n' + format.UNDERLINE + format.OKBLUE + 'Summary' +
           format.ENDC)
 
@@ -106,6 +108,7 @@ def run_test():
     print ('\n' + format.FAIL + format.BOLD + 'Non-functional Thrusters are: ')
     for i in range(0, len(thrusters)):
         if functional[i] == 'N':
+            non_functional.append(thrusters[i])
             print (' - ' + thrusters[i])
             isAllGood = False
     print (format.ENDC)
@@ -113,9 +116,9 @@ def run_test():
     print (format.OKBLUE + '\nFinished testing thrusters\n\n' + format.ENDC)
 
     if (not isAllGood):
-        return True  # >> isError
+        return True, non_functional  # >> isError
     else:
-        return False  # >> is Error
+        return False, None  # >> is Error
 
 
 if __name__ == "__main__":

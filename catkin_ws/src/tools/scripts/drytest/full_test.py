@@ -12,6 +12,7 @@ if __name__ == "__main__":
     rospy.init_node("drytest_node")
 
     isError = False
+    failures = []
     runTest = 'n'
 
     os.system('clear')
@@ -33,7 +34,9 @@ if __name__ == "__main__":
                         format.ENDC)
 
     if (runTest.lower() == 'y'):
-        isError = (sensors_test.run_test() or isError)
+        is_sensor_fail, nf_sensors = sensors_test.run_test()
+        isError = is_sensor_fail or isError
+        failures.append(nf_sensors)
     else:
         print (format.OKBLUE + 'Skipped sensor tests' + format.ENDC)
 
@@ -42,7 +45,9 @@ if __name__ == "__main__":
                         format.ENDC)
 
     if (runTest.lower() == 'y'):
-        isError = (thrusters_test.run_test() or isError)
+        is_thruster_fail, nf_thrusters = thrusters_test.run_test()
+        isError = is_thruster_fail or isError
+        failures.append(nf_thrusters)
     else:
         print (format.OKBLUE + 'Skipped thruster tests' + format.ENDC)
 
@@ -51,7 +56,9 @@ if __name__ == "__main__":
                         format.ENDC)
 
     if (runTest.lower() == 'y'):
-        isError = (camera_test.run_test() or isError)
+        is_camera_fail, nf_cameras = camera_test.run_test()
+        isError = is_camera_fail or isError
+        failures.append(nf_cameras)
     else:
         print (format.OKBLUE + 'Skipped camera tests' + format.ENDC)
 
@@ -64,6 +71,11 @@ if __name__ == "__main__":
               '  #            #\n'
               '  ##############\n' + format.ENDC)
     else:
+        print (format.FAIL + 'Errors:')
+        for fail in failures:
+            print (fail)
+        print (format.ENDC + '\n')
+
         print(format.BOLD + format.FAIL + '\n\n'
               '  ##############\n'
               '  #            #\n'
