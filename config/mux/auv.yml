@@ -7,18 +7,21 @@ pre: mv ~/.zhistory ~/.zhistory.old && strings ~/.zhistory.old > ~/.zhistory && 
 
 windows:
     - core: roscore
-    - serial: roslaunch arduino teensy.launch --wait
+    - serial: roslaunch arduino arduino.launch --wait
     - cameras:
         panes:
-          - roslaunch auv_base camera_front.launch --wait
-          - roslaunch auv_base camera_down.launch --wait
+          - roslaunch cv camera_front_1.launch --wait
+          - roslaunch cv camera_front_2.launch --wait
     - sonar:
         panes:
           - roslaunch tritech_micron tritech_micron.launch --wait
           - roslaunch sonar_proc sonar_proc.launch --wait
     - state_estimation: roslaunch state_estimation state_estimation.launch --wait
     - controls: roslaunch controls controls.launch --wait
-    - status: roslaunch status status.launch --wait --screen
+    - status:
+        panes:
+          - roslaunch status status.launch --wait --screen
+          - roslaunch dcdc_nuc dcdc_nuc.launch --wait
     - planner: roslaunch planner planner.launch --wait
     - taskr: roslaunch taskr taskr.launch --wait
     - hydrophones: roslaunch hydrophones hydrophones.launch --wait
