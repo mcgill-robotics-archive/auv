@@ -197,9 +197,9 @@ def run_test():
     print (format.OKBLUE + '\nFinished testing cameras\n\n' + format.ENDC)
 
     if (len(non_functional) > 0):
-        return True  # >> isError
+        return True, non_functional  # >> isError
     else:
-        return False  # >> is Error
+        return False, None  # >> is Error
 
 
 if __name__ == "__main__":

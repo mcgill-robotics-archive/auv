@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 import time
-from std_msgs.msg import Float64
+from std_msgs.msg import Float64, Float32
 from sensor_msgs.msg import Imu, PointCloud
 
 from console_format import format
@@ -28,7 +28,7 @@ def check_depth_sensor():
 
         # Test Raw Output of Depth Sensor
         try:
-            wait_for_message('/raw_depth', Float64, 3)
+            wait_for_message('/state_estimation/raw_depth', Float64, 3)
 
         except Exception:
             print (format.WARNING + 'Raw feedback is unresponsive' +
@@ -38,7 +38,7 @@ def check_depth_sensor():
 
         # Test Pressure Output of Depth Sensor
         try:
-            wait_for_message('/depth/pressure', Float64, 3)
+            wait_for_message('/depth_sensor/pressure', Float32, 3)
 
         except Exception:
             print (format.WARNING + 'Pressure feedback is unresponsive' +
@@ -216,9 +216,9 @@ def run_test():
     print (format.OKBLUE + '\nFinished testing sensors\n\n' + format.ENDC)
 
     if (len(non_functional) > 0):
-        return True  # >> isError
+        return True, non_functional  # >> isError
     else:
-        return False  # >> is Error
+        return False, None  # >> is Error
 
 
 if __name__ == "__main__":
