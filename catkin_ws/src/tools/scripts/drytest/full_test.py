@@ -3,17 +3,17 @@
 import rospy
 import os
 
-import camera_test
-import thrusters_test
-import sensors_test
+from camera_test import CameraTest
+from thruster_test import ThrusterTest
+from sensor_test import SensorTest
 from console_format import format
 
 if __name__ == "__main__":
-    rospy.init_node("drytest_node")
+    rospy.init_node("drytest")
 
-    isError = False
-    failures = []
-    runTest = 'n'
+    is_error = False
+    run_test = 'n'
+    results = {'passes': [], 'fails': []}
 
     os.system('clear')
 
@@ -30,56 +30,71 @@ if __name__ == "__main__":
           '  #########################')
 
     # CHECK SENSORS -----------------------------------------------------------
-    runTest = raw_input(format.WARNING + '\nTest sensors? (y/n): ' +
-                        format.ENDC)
+    run_test = raw_input(format.WARNING + '\nTest sensors? [y/N]: ' +
+                         format.ENDC)
 
-    if (runTest.lower() == 'y'):
-        is_sensor_fail, nf_sensors = sensors_test.run_test()
-        isError = is_sensor_fail or isError
-        failures.append(nf_sensors)
+    if (run_test.lower() == 'y'):
+        sensor_test = SensorTest()
+
+        is_sensor_error = sensor_test.run_test()
+        is_error = is_sensor_error or is_error
+
+        results['passes'].append(sensor_test.results['passes'])
+        results['fails'].append(sensor_test.results['fails'])
+
     else:
         print (format.OKBLUE + 'Skipped sensor tests' + format.ENDC)
 
     # CHECK THRUSTERS ---------------------------------------------------------
-    runTest = raw_input(format.WARNING + '\nTest thrusters? (y/n): ' +
-                        format.ENDC)
+    run_test = raw_input(format.WARNING + '\nTest Thrusters? [y/N]: ' +
+                         format.ENDC)
 
-    if (runTest.lower() == 'y'):
-        is_thruster_fail, nf_thrusters = thrusters_test.run_test()
-        isError = is_thruster_fail or isError
-        failures.append(nf_thrusters)
+    if (run_test.lower() == 'y'):
+        thruster_test = ThrusterTest()
+
+        is_thruster_error = thruster_test.run_test()
+        is_error = is_thruster_error or is_error
+
+        results['passes'].append(thruster_test.results['passes'])
+        results['fails'].append(thruster_test.results['fails'])
+
     else:
         print (format.OKBLUE + 'Skipped thruster tests' + format.ENDC)
 
     # CHECK CAMERAS -----------------------------------------------------------
-    runTest = raw_input(format.WARNING + '\nTest cameras? (y/n): ' +
-                        format.ENDC)
+    run_test = raw_input(format.WARNING + '\nTest Cameras? [y/N]: ' +
+                         format.ENDC)
 
-    if (runTest.lower() == 'y'):
-        is_camera_fail, nf_cameras = camera_test.run_test()
-        isError = is_camera_fail or isError
-        failures.append(nf_cameras)
+    if (run_test.lower() == 'y'):
+        camera_test = CameraTest()
+
+        is_camera_error = camera_test.run_test()
+        is_error = is_camera_error or is_error
+
+        results['passes'].append(camera_test.results['passes'])
+        results['fails'].append(camera_test.results['fails'])
+
     else:
         print (format.OKBLUE + 'Skipped camera tests' + format.ENDC)
 
     # CONCLUSION --------------------------------------------------------------
-    if (not isError):
-        print(format.BOLD + format.OKGREEN + '\n\n'
-              '  ##############\n'
-              '  #            #\n'
-              '  #  Passing!  #\n'
-              '  #            #\n'
-              '  ##############\n' + format.ENDC)
-    else:
-        print (format.FAIL + 'Errors:')
-        for fail in failures:
+    if (is_error):
+        print ('\n' + format.FAIL + 'Errors:')
+        for fail in results['fails']:
             print (fail)
-        print (format.ENDC + '\n')
+        print (format.ENDC)
 
         print(format.BOLD + format.FAIL + '\n\n'
               '  ##############\n'
               '  #            #\n'
               '  #    Fail    #\n'
+              '  #            #\n'
+              '  ##############\n' + format.ENDC)
+    else:
+        print(format.BOLD + format.OKGREEN + '\n\n'
+              '  ##############\n'
+              '  #            #\n'
+              '  #  Passing!  #\n'
               '  #            #\n'
               '  ##############\n' + format.ENDC)
 
