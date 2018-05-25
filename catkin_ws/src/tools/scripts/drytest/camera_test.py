@@ -8,200 +8,124 @@ from console_format import format
 from wait_for_message import *
 
 
-def check_front_camera():
-    cont = 'y'  # Continue the camera test loop (feedback)
-    skip = 'x'  # Skip this camera (feedback)
-    viewFb = 'n'  # Feedback as to whether the video is good or not
+class CameraTest:
 
-    # Command to open the image feed
-    cmd = '\"rosrun image_view image_view image:=/camera_front/image_color\"'
+    def __init__(self):
+        # Load cameras from the config file
+        self.cameras = rospy.get_param('/drytest/cameras')
 
-    print('\n' + format.UNDERLINE + format.OKBLUE + 'Front Camera' +
-          format.ENDC)
+        # Delay between camera checks
+        self.delay = 2
 
-    skip = raw_input('About to test sensor, make sure it is launched, and '
-                     'press most keys to continue (s to skip): ')
+        # Command to open the image feed
+        self.cmd = ('\"rosrun image_view image_view image:=')
 
-    if (skip.lower() == 's'):
-        print(format.WARNING + 'Skipped...' + format.ENDC)
-        return True
+        # Stores the results of the test
+        self.results = {
+            'passes': [],
+            'fails': []
+        }
 
-    while (cont.lower() == 'y'):
-        isResponsive = True
-        isGoodView = False
+    def check_camera(self, camera):
+        cont = 'y'  # Continue the camera test loop (feedback)
+        skip = 'x'  # Skip this camera (feedback)
+        view_fb = 'n'  # Feedback as to whether the video is good or not
 
-        print('Waiting for sensor feedback...')
+        print('\n' + format.UNDERLINE + format.OKBLUE + camera['name'] +
+              format.ENDC)
 
-        # Make sure that the node is actually publishing
-        try:
-            wait_for_message('/camera_front/image_color', Image, 3)
+        skip = raw_input('About to test the camera, make sure it is launched, '
+                         'and enter most keys to continue [s to skip] ')
 
-        except Exception:
-            print (format.WARNING + 'Raw feedback is unresponsive' +
-                   format.ENDC)
-            isResponsive = False
-            pass
+        if (skip.lower() == 's'):
+            print(format.WARNING + 'Skipped...' + format.ENDC)
+            return True
 
-        if isResponsive:
-            raw_input('The camera node is responsive.\nThe test will now '
-                      'open a new terminal and will only resume ' +
-                      format.BOLD + format.WARNING +
-                      'COMPLETELY EXIT THAT WINDOW\n' +
-                      format.ENDC + 'Press any key to continue ')
+        while (cont.lower() == 'y'):
+            is_responsive = True
+            is_good_view = False
 
-            # A new subprocess opens another terminal and runs image_view
-            # The main test process will be blocked until this subprcoess
-            # is killed. Could not get this to run in the same process in
-            # sequence because image_view doesn't like to exit cleanly...
+            print('Waiting for sensor feedback...')
+
+            # Make sure that the node is actually publishing
             try:
-                subprocess.call('xterm -e ' + cmd, shell=True)
+                wait_for_message(camera['topic'], Image, 3)
+
             except Exception:
-                print(format.FAIL + 'Could not open a xterm' +
-                      format.ENDC)
+                print (format.WARNING + camera['topic'] + ' is unresponsive' +
+                       format.ENDC)
+                is_responsive = False
+                pass
 
-            viewFb = raw_input('Is this feed good? y/n: ')
+            if is_responsive:
+                raw_input('The camera node is responsive.\nThe test will now '
+                          'open a new terminal and will only resume ' +
+                          format.BOLD + format.WARNING +
+                          'COMPLETELY EXIT THAT WINDOW\n' +
+                          format.ENDC + 'Enter any key to continue ')
 
-            if (viewFb.lower() == 'y'):
-                isGoodView = True
-                break
+                # A new subprocess opens another terminal and runs image_view
+                # The main test process will be blocked until this subprcoess
+                # is killed. Could not get this to run in the same process in
+                # sequence because image_view doesn't like to exit cleanly...
+                try:
+                    view_call = self.cmd + ' image:=' + camera['topic'] + '\"'
+                    subprocess.call('xterm -e ' + view_call, shell=True)
+                except Exception as e:
+                    print(format.FAIL + 'Could not open xterm' + format.ENDC)
+                    print(e)
+                    break
 
-        if ((not isResponsive) or (not isGoodView)):
-            cont = raw_input('The camera is unresponsive or the view is not '
-                             'good.\nPress y to try again and any '
-                             'other key to move on to the next sensor: ')
+                view_fb = raw_input('Is this feed good? [y/N] ')
 
-    if isGoodView:
-        print (format.OKGREEN + format.BOLD + 'The camera is working!' +
-               format.ENDC)
-    else:
-        print (format.FAIL + format.BOLD + 'The camera is not working' +
-               format.ENDC)
+                if (view_fb.lower() == 'y'):
+                    is_good_view = True
+                    break
 
-    return isGoodView
+            if ((not is_responsive) or (not is_good_view)):
+                cont = raw_input('The camera is unresponsive or the view is '
+                                 'not good.\nTry again? [y/N] ')
 
-
-def check_down_camera():
-    cont = 'y'  # Continue the camera test loop (feedback)
-    skip = 'x'  # Skip this camera (feedback)
-    viewFb = 'n'  # Feedback as to whether the video is good or not
-
-    # Command to open the image feed
-    cmd = '\"rosrun image_view image_view image:=/camera_down/image_color\"'
-
-    print('\n' + format.UNDERLINE + format.OKBLUE + 'Down Camera' +
-          format.ENDC)
-
-    skip = raw_input('About to test sensor, make sure it is launched, and '
-                     'press most keys to continue (s to skip): ')
-
-    if (skip.lower() == 's'):
-        print(format.WARNING + 'Skipped...' + format.ENDC)
-        return True
-
-    while (cont.lower() == 'y'):
-        isResponsive = True
-        isGoodView = False
-
-        print('Waiting for sensor feedback...')
-
-        # Make sure that the node is actually publishing
-        try:
-            wait_for_message('/camera_down/image_color', Image, 3)
-
-        except Exception:
-            print (format.WARNING + 'Raw feedback is unresponsive' +
+        if is_good_view:
+            self.results['passes'].append(camera['name'])
+            print (format.OKGREEN + format.BOLD + 'The camera is working!' +
                    format.ENDC)
-            isResponsive = False
-            pass
+        else:
+            self.results['fails'].append(camera['name'])
+            print (format.FAIL + format.BOLD + 'The camera is not working' +
+                   format.ENDC)
 
-        if isResponsive:
-            raw_input('The camera node is responsive.\nThe test will now '
-                      'open a new terminal and will only resume ' +
-                      format.BOLD + format.WARNING +
-                      'COMPLETELY EXIT THAT WINDOW\n' +
-                      format.ENDC + 'Press any key to continue ')
+        return is_good_view
 
-            # A new subprocess opens another terminal and runs image_view
-            # The main test process will be blocked until this subprcoess
-            # is killed. Could not get this to run in the same process in
-            # sequence because image_view doesn't like to exit cleanly...
-            try:
-                subprocess.call('xterm -e ' + cmd, shell=True)
-            except Exception:
-                print(format.FAIL + 'Could not open a xterm' +
-                      format.ENDC)
+    def run_test(self):
+        is_error = False
 
-            viewFb = raw_input('Is this feed good? y/n: ')
+        print (format.OKBLUE + format.BOLD + '\n\n'
+               ' #####################\n'
+               ' ## TESTING CAMERAS ##\n'
+               ' #####################\n' + format.ENDC)
 
-            if (viewFb.lower() == 'y'):
-                isGoodView = True
-                break
+        # TEST CAMERAS --------------------------------------------------------
+        for camera in self.cameras:
+            self.check_camera(camera)
+            time.sleep(self.delay)
 
-        if ((not isResponsive) or (not isGoodView)):
-            cont = raw_input('The camera is unresponsive or the view is not '
-                             'good.\nPress y to try again and any '
-                             'other key to move on to the next sensor: ')
+        # SUMMARY -------------------------------------------------------------
+        print('\n' + format.UNDERLINE + format.OKBLUE + 'Summary' +
+              format.ENDC)
 
-    if isGoodView:
-        print (format.OKGREEN + format.BOLD + 'The camera is working!' +
-               format.ENDC)
-    else:
-        print (format.FAIL + format.BOLD + 'The camera is not working' +
-               format.ENDC)
+        # Prints All Functional Cameras
+        print (format.OKGREEN + format.BOLD + 'Functional Cameras are: ')
+        for camera in self.results['passes']:
+            print('- ' + camera)
 
-    return isGoodView
+        # Prints All Functional Sensors
+        print (format.FAIL + format.BOLD + 'Non-functional Sensors are: ')
+        for camera in self.results['fails']:
+            print('- ' + camera)
+            is_error = True
+        print (format.ENDC)
 
+        print (format.OKBLUE + 'Finished testing cameras\n' + format.ENDC)
 
-def run_test():
-    functional = []
-    non_functional = []
-
-    print (format.OKBLUE + format.BOLD + '\n\n'
-           ' #####################\n'
-           ' ## TESTING CAMERAS ##\n'
-           ' #####################\n' + format.ENDC)
-
-    # FRONT CAMERA ------------------------------------------------------------
-    if check_front_camera():
-        functional.append('Front Camera')
-    else:
-        non_functional.append('Front Camera')
-
-    time.sleep(1)
-
-    # DOWN CAMERA -------------------------------------------------------------
-    if check_down_camera():
-        functional.append('Down Camera')
-    else:
-        non_functional.append('Down Camera')
-
-    time.sleep(1)
-
-    # SUMMARY -----------------------------------------------------------------
-    print('\n' + format.UNDERLINE + format.OKBLUE + 'Summary' +
-          format.ENDC)
-
-    # Prints All Functional Sensors
-    print ('\n' + format.OKGREEN + format.BOLD +
-           'Functional (or skipped) Cameras are: ')
-    for camera in functional:
-        print('  - ' + camera)
-    print (format.ENDC)
-
-    # Prints All Functional Sensors
-    print ('\n' + format.FAIL + format.BOLD + 'Non-functional Cameras are: ')
-    for camera in non_functional:
-        print('  - ' + camera)
-    print (format.ENDC)
-
-    print (format.OKBLUE + '\nFinished testing cameras\n\n' + format.ENDC)
-
-    if (len(non_functional) > 0):
-        return True, non_functional  # >> isError
-    else:
-        return False, None  # >> is Error
-
-
-if __name__ == "__main__":
-    rospy.init_node("drytest_sensors")
-    run_test()
+        return is_error
