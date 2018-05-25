@@ -1,5 +1,5 @@
 <launch>
-	<node name="full_test" pkg="tools" type="full_test.py" output="screen">
-        <rosparam command="load" file="$(find taskr)/config/drytest.yaml" />
+	<node name="drytest" pkg="tools" type="full_test.py" output="screen">
+        <rosparam command="load" file="$(find tools)/config/drytest.yaml" />
 	</node>
 </launch>
