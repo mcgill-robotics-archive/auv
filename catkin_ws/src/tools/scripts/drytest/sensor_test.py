@@ -15,7 +15,7 @@ class SensorTest:
         self.sensors = rospy.get_param('/drytest/sensors')
 
         # Delay between sensor checks
-        self.delay = 2
+        self.delay = 1
 
         # Map messages types to strings
         # TODO There might be a better way of doing this, but
@@ -41,7 +41,7 @@ class SensorTest:
               format.ENDC)
 
         skip = raw_input('About to test the sensor, make sure it is launched, '
-                         'and enter most keys to continue [s to skip]: ')
+                         'and enter most keys to continue [s to skip] ')
 
         if (skip.lower() == 's'):
             print(format.WARNING + 'Skipped...' + format.ENDC)

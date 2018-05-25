@@ -95,8 +95,6 @@ class CameraTest:
             print (format.FAIL + format.BOLD + 'The camera is not working' +
                    format.ENDC)
 
-        return is_good_view
-
     def run_test(self):
         is_error = False
 

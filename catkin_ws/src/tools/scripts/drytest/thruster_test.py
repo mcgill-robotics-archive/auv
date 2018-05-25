@@ -105,21 +105,18 @@ class ThrusterTest:
               format.ENDC)
 
         # Prints All func Thrusters
-        print ('\n' + format.OKGREEN + format.BOLD +
-               'Functional Thrusters are: ')
+        print (format.OKGREEN + format.BOLD + 'Functional Thrusters are: ')
         for thruster in self.results['passes']:
-                print (" - " + thruster)
-        print (format.ENDC)
+                print ("- " + thruster)
 
         # Prints All Non-func Thrusters
-        print ('\n' + format.FAIL + format.BOLD +
-               'Non-functional Thrusters are: ')
+        print (format.FAIL + format.BOLD + 'Non-functional Thrusters are: ')
         for thruster in self.results['fails']:
-                print (" - " + thruster)
+                print ("- " + thruster)
                 is_error = True
         print (format.ENDC)
 
-        print (format.OKBLUE + '\nFinished testing thrusters\n\n' +
+        print (format.OKBLUE + 'Finished testing thrusters\n' +
                format.ENDC)
 
         return is_error

@@ -23,4 +23,4 @@ cameras:
   - name: 'Front Camera'
     topic: '/camera_front/image_raw'
   - name: 'Down Camera'
-    topic: '/camera_front/image_raw'
+    topic: '/camera_down/image_raw'
