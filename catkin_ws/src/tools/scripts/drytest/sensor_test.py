@@ -1,0 +1,119 @@
+#!/usr/bin/env python
+
+import time
+from std_msgs.msg import Float64, Float32
+from sensor_msgs.msg import Imu, PointCloud
+
+from console_format import format
+from wait_for_message import *
+
+
+class SensorTest:
+
+    def __init__(self):
+        # Load sensors from the config file
+        self.sensors = rospy.get_param('/drytest/sensors')
+
+        # Delay between sensor checks
+        self.delay = 2
+
+        # Map messages types to strings
+        # TODO There might be a better way of doing this, but
+        # marginally better than using eval()...
+        self.messages = {
+            'Float32': Float32,
+            'Float64': Float64,
+            'Imu': Imu,
+            'PointCloud': PointCloud
+        }
+
+        # Stores the results of the test
+        self.results = {
+            'passes': [],
+            'fails': []
+        }
+
+    def check_sensor(self, sensor):
+        answer = 'y'
+        skip = 'x'
+
+        print('\n' + format.UNDERLINE + format.OKBLUE + sensor['name'] +
+              format.ENDC)
+
+        skip = raw_input('About to test the sensor, make sure it is launched, '
+                         'and enter most keys to continue [s to skip]: ')
+
+        if (skip.lower() == 's'):
+            print(format.WARNING + 'Skipped...' + format.ENDC)
+            self.results['passes'].append(sensor['name'])
+            return True
+
+        while (answer.lower() == 'y'):
+            is_responsive = True
+            print('Waiting for sensor feedback...')
+
+            # Test the output of each topic listed in the config
+            for topic in sensor['topics']:
+                name = topic['name']
+                msg_type = self.messages[topic['type']]
+
+                try:
+                    wait_for_message(name, msg_type, 3)
+
+                except Exception:
+                    print (format.WARNING + topic['name'] +
+                           ' is unresponsive' + format.ENDC)
+                    is_responsive = False
+                    pass
+
+            if is_responsive:
+                answer = 'n'
+            else:
+                answer = raw_input('One or more of the messages was not being '
+                                   'published.\nEnter y to try again and any '
+                                   'other key to move on to the next sensor: ')
+
+        if is_responsive:
+            self.results['passes'].append(sensor['name'])
+            print (format.OKGREEN + format.BOLD + 'The sensor is working!' +
+                   format.ENDC)
+        else:
+            self.results['fails'].append(sensor['name'])
+            print (format.FAIL + format.BOLD + 'The sensor is not responsive' +
+                   format.ENDC)
+
+    def run_test(self):
+        is_error = False
+
+        print (format.OKBLUE + format.BOLD + '\n\n'
+               ' #####################\n'
+               ' ## TESTING SENSORS ##\n'
+               ' #####################\n' + format.ENDC)
+
+        # TEST SENSORS --------------------------------------------------------
+        for sensor in self.sensors:
+            self.check_sensor(sensor)
+            time.sleep(self.delay)
+
+        # SUMMARY -------------------------------------------------------------
+        print('\n' + format.UNDERLINE + format.OKBLUE + 'Summary' +
+              format.ENDC)
+
+        # Prints All Functional Sensors
+        print ('\n' + format.OKGREEN + format.BOLD +
+               'Functional (or skipped) Sensors are: ')
+        for sensor in self.results['passes']:
+            print('  - ' + sensor)
+        print (format.ENDC)
+
+        # Prints All Functional Sensors
+        print ('\n' + format.FAIL + format.BOLD +
+               'Non-functional Sensors are: ')
+        for sensor in self.results['fails']:
+            print('  - ' + sensor)
+            is_error = True
+        print (format.ENDC)
+
+        print (format.OKBLUE + '\nFinished testing sensors\n\n' + format.ENDC)
+
+        return is_error

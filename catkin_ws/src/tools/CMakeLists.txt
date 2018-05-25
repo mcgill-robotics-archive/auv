@@ -37,13 +37,7 @@ catkin_package(CATKIN_DEPENDS
 ## Install ##
 #############
 
-catkin_install_python(PROGRAMS
-  scripts/drytest/full_test.py
-  scripts/drytest/sensors_test.py
-  scripts/drytest/thrusters_test.py
-  scripts/drytest/camera_test.py
-  DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
-)
+## None for now...
 
 #############
 ## Testing ##
