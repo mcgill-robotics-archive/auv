@@ -70,8 +70,7 @@ class SensorTest:
                 answer = 'n'
             else:
                 answer = raw_input('One or more of the messages was not being '
-                                   'published.\nEnter y to try again and any '
-                                   'other key to move on to the next sensor: ')
+                                   'published.\nTry again? [y/N] ')
 
         if is_responsive:
             self.results['passes'].append(sensor['name'])
@@ -100,20 +99,17 @@ class SensorTest:
               format.ENDC)
 
         # Prints All Functional Sensors
-        print ('\n' + format.OKGREEN + format.BOLD +
-               'Functional (or skipped) Sensors are: ')
+        print (format.OKGREEN + format.BOLD + 'Functional Sensors are: ')
         for sensor in self.results['passes']:
-            print('  - ' + sensor)
-        print (format.ENDC)
+            print('- ' + sensor)
 
         # Prints All Functional Sensors
-        print ('\n' + format.FAIL + format.BOLD +
-               'Non-functional Sensors are: ')
+        print (format.FAIL + format.BOLD + 'Non-functional Sensors are: ')
         for sensor in self.results['fails']:
-            print('  - ' + sensor)
+            print('- ' + sensor)
             is_error = True
         print (format.ENDC)
 
-        print (format.OKBLUE + '\nFinished testing sensors\n\n' + format.ENDC)
+        print (format.OKBLUE + 'Finished testing sensors\n' + format.ENDC)
 
         return is_error

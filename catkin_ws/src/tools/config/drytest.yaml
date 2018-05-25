@@ -17,7 +17,7 @@ sensors:
         type: 'PointCloud'
 
 thrusters:
-  topic: '/electrical_interface/thrusters'
+  topic: 'electrical_interface/thrusters'
 
 cameras:
   - name: 'Front Camera'

@@ -10,7 +10,7 @@ easily check the functionality of hardware.
 
 _Requires xterm to open image_view internally; gnome-terminal was being silly._
 
-If the package is built (recommended):
+To use:
 ```
 roslaunch tools drytest.launch
 ````

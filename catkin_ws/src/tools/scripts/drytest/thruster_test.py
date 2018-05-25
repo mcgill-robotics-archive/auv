@@ -18,6 +18,7 @@ class ThrusterTest:
 
     def __init__(self):
         self.cmd = ThrusterCommands()
+        self.topic = rospy.get_param('/drytest/thrusters/topic')
 
         # Magnitude of the pulse sent to the thrusters
         self.pulse = 100
@@ -39,21 +40,19 @@ class ThrusterTest:
 
         # Stores the results of the test
         self.results = {
-            'func', [],
-            'nfunc', []
+            'passes': [],
+            'fails': []
         }
 
-        self.pub = Publisher('electrical_interface/thrusters',
-                             ThrusterCommands,
-                             queue_size=5)
+        self.pub = Publisher(self.topic, ThrusterCommands, queue_size=5)
 
     def drytest_thrusters(self):
 
         rate = rospy.Rate(self.freq)
-        is_working = False
 
         for i in range(0, len(self.thrusters)):
             answer = 'n'
+            is_working = False
 
             print('\n' + format.UNDERLINE + format.OKBLUE + self.thrusters[i] +
                   format.ENDC)
@@ -68,7 +67,7 @@ class ThrusterTest:
                     self.pub.publish(self.cmd)
                     rate.sleep()
 
-                answer = raw_input('Is it running? [y/N]: ')
+                answer = raw_input('Is it running? [y/N] ')
 
                 # Adds thruster to func results if yes
                 if answer.lower() == 'y':
@@ -76,15 +75,14 @@ class ThrusterTest:
 
                 # Ask to try again if anything else
                 else:
-                    answer = raw_input('Enter n to try again and any other '
-                                       'key to move to the next thruster ')
+                    answer = raw_input('Skip? [Y/n] ')
 
             if (is_working):
-                self.results['func'].append(self.thrusters[i])
+                self.results['passes'].append(self.thrusters[i])
                 print (format.OKGREEN + format.BOLD +
-                       'The thruster is working!' + format.ENDC)
+                       'The thruster is working' + format.ENDC)
             else:
-                self.results['nfunc'].append(self.thrusters[i])
+                self.results['fails'].append(self.thrusters[i])
                 print (format.FAIL + format.BOLD + 'The thruster is not '
                        'responsive' + format.ENDC)
 
@@ -93,7 +91,7 @@ class ThrusterTest:
         self.cmd.thruster_commands[thruster] = self.pulse
 
     def run_test(self):
-        isError = False
+        is_error = False
 
         print (format.OKBLUE + format.BOLD + '\n\n'
                ' #######################\n'
@@ -109,19 +107,19 @@ class ThrusterTest:
         # Prints All func Thrusters
         print ('\n' + format.OKGREEN + format.BOLD +
                'Functional Thrusters are: ')
-        for i in range(0, len(self.results['func'])):
-                print (" - " + self.results['func'][i])
+        for thruster in self.results['passes']:
+                print (" - " + thruster)
         print (format.ENDC)
 
         # Prints All Non-func Thrusters
         print ('\n' + format.FAIL + format.BOLD +
                'Non-functional Thrusters are: ')
-        for i in range(0, len(self.results['nfunc'])):
-                print (' - ' + self.results['nfunc'][i])
-                isError = True
+        for thruster in self.results['fails']:
+                print (" - " + thruster)
+                is_error = True
         print (format.ENDC)
 
         print (format.OKBLUE + '\nFinished testing thrusters\n\n' +
                format.ENDC)
 
-        return isError
+        return is_error
