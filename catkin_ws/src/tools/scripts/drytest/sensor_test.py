@@ -37,20 +37,20 @@ class SensorTest:
         answer = 'y'
         skip = 'x'
 
-        print('\n' + format.UNDERLINE + format.OKBLUE + sensor['name'] +
+        print('\n\t' + format.UNDERLINE + format.OKBLUE + sensor['name'] +
               format.ENDC)
 
-        skip = raw_input('About to test the sensor, make sure it is launched, '
-                         'and enter most keys to continue [s to skip] ')
+        skip = raw_input('\tMake sure the sensor is is launched.\n'
+                         '\tEnter most keys to continue [s to skip] ')
 
         if (skip.lower() == 's'):
-            print(format.WARNING + 'Skipped...' + format.ENDC)
+            print(format.WARNING + '\tSkipped...' + format.ENDC)
             self.results['passes'].append(sensor['name'])
             return True
 
         while (answer.lower() == 'y'):
             is_responsive = True
-            print('Waiting for sensor feedback...')
+            print('\tWaiting for sensor feedback...')
 
             # Test the output of each topic listed in the config
             for topic in sensor['topics']:
@@ -61,7 +61,7 @@ class SensorTest:
                     wait_for_message(name, msg_type, 3)
 
                 except Exception:
-                    print (format.WARNING + topic['name'] +
+                    print (format.WARNING + '\t' + topic['name'] +
                            ' is unresponsive' + format.ENDC)
                     is_responsive = False
                     pass
@@ -69,25 +69,25 @@ class SensorTest:
             if is_responsive:
                 answer = 'n'
             else:
-                answer = raw_input('One or more of the messages was not being '
-                                   'published.\nTry again? [y/N] ')
+                answer = raw_input('\tOne or more of the messages was not '
+                                   'being published.\n\tTry again? [y/N] ')
 
         if is_responsive:
             self.results['passes'].append(sensor['name'])
-            print (format.OKGREEN + format.BOLD + 'The sensor is working!' +
+            print (format.OKGREEN + format.BOLD + '\tThe sensor is working!' +
                    format.ENDC)
         else:
             self.results['fails'].append(sensor['name'])
-            print (format.FAIL + format.BOLD + 'The sensor is not responsive' +
+            print (format.FAIL + format.BOLD + '\tThe sensor is not working' +
                    format.ENDC)
 
     def run_test(self):
         is_error = False
 
         print (format.OKBLUE + format.BOLD + '\n\n'
-               ' #####################\n'
-               ' ## TESTING SENSORS ##\n'
-               ' #####################\n' + format.ENDC)
+               '  #####################\n'
+               '  ## TESTING SENSORS ##\n'
+               '  #####################\n' + format.ENDC)
 
         # TEST SENSORS --------------------------------------------------------
         for sensor in self.sensors:
@@ -95,21 +95,21 @@ class SensorTest:
             time.sleep(self.delay)
 
         # SUMMARY -------------------------------------------------------------
-        print('\n' + format.UNDERLINE + format.OKBLUE + 'Summary' +
+        print('\n\n  ' + format.UNDERLINE + format.OKBLUE + 'Summary' +
               format.ENDC)
 
         # Prints All Functional Sensors
-        print (format.OKGREEN + format.BOLD + 'Functional Sensors are: ')
+        print (format.OKGREEN + format.BOLD + '  Functional Sensors are: ')
         for sensor in self.results['passes']:
-            print('- ' + sensor)
+            print('  - ' + sensor)
 
         # Prints All Functional Sensors
-        print (format.FAIL + format.BOLD + 'Non-functional Sensors are: ')
+        print (format.FAIL + format.BOLD + '  Non-functional Sensors are: ')
         for sensor in self.results['fails']:
-            print('- ' + sensor)
+            print('  - ' + sensor)
             is_error = True
         print (format.ENDC)
 
-        print (format.OKBLUE + 'Finished testing sensors\n' + format.ENDC)
+        print (format.OKBLUE + '  Finished testing sensors\n' + format.ENDC)
 
         return is_error

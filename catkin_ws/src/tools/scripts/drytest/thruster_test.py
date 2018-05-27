@@ -54,12 +54,12 @@ class ThrusterTest:
             answer = 'n'
             is_working = False
 
-            print('\n' + format.UNDERLINE + format.OKBLUE + self.thrusters[i] +
-                  format.ENDC)
+            print('\n\t' + format.UNDERLINE + format.OKBLUE +
+                  self.thrusters[i] + format.ENDC)
 
             # Tests the same thruster until answer is changed to y
             while(answer.lower() == 'n'):
-                raw_input('Press enter to send a pulse ')
+                raw_input('\tPress enter to send a pulse ')
 
                 # Publish a command at the specified frequency
                 self.set_command(i)
@@ -67,7 +67,7 @@ class ThrusterTest:
                     self.pub.publish(self.cmd)
                     rate.sleep()
 
-                answer = raw_input('Is it running? [y/N] ')
+                answer = raw_input('\tIs it running? [y/N] ')
 
                 # Adds thruster to func results if yes
                 if answer.lower() == 'y':
@@ -75,16 +75,16 @@ class ThrusterTest:
 
                 # Ask to try again if anything else
                 else:
-                    answer = raw_input('Skip? [Y/n] ')
+                    answer = raw_input('\tSkip? [Y/n] ')
 
             if (is_working):
                 self.results['passes'].append(self.thrusters[i])
                 print (format.OKGREEN + format.BOLD +
-                       'The thruster is working' + format.ENDC)
+                       '\tThe thruster is working' + format.ENDC)
             else:
                 self.results['fails'].append(self.thrusters[i])
-                print (format.FAIL + format.BOLD + 'The thruster is not '
-                       'responsive' + format.ENDC)
+                print (format.FAIL + format.BOLD + '\tThe thruster is not '
+                       'working' + format.ENDC)
 
     def set_command(self, thruster):
         self.cmd.thruster_commands = [0, 0, 0, 0, 0, 0, 0, 0]
@@ -94,29 +94,29 @@ class ThrusterTest:
         is_error = False
 
         print (format.OKBLUE + format.BOLD + '\n\n'
-               ' #######################\n'
-               ' ## TESTING THRUSTERS ##\n'
-               ' #######################\n' + format.ENDC)
+               '  #######################\n'
+               '  ## TESTING THRUSTERS ##\n'
+               '  #######################\n' + format.ENDC)
 
         self.drytest_thrusters()
 
         # SUMMARY -------------------------------------------------------------
-        print('\n' + format.UNDERLINE + format.OKBLUE + 'Summary' +
+        print('\n\n  ' + format.UNDERLINE + format.OKBLUE + 'Summary' +
               format.ENDC)
 
         # Prints All func Thrusters
-        print (format.OKGREEN + format.BOLD + 'Functional Thrusters are: ')
+        print (format.OKGREEN + format.BOLD + '  Functional Thrusters are: ')
         for thruster in self.results['passes']:
-                print ("- " + thruster)
+                print ("  - " + thruster)
 
         # Prints All Non-func Thrusters
-        print (format.FAIL + format.BOLD + 'Non-functional Thrusters are: ')
+        print (format.FAIL + format.BOLD + '  Non-functional Thrusters are: ')
         for thruster in self.results['fails']:
-                print ("- " + thruster)
+                print ("  - " + thruster)
                 is_error = True
         print (format.ENDC)
 
-        print (format.OKBLUE + 'Finished testing thrusters\n' +
+        print (format.OKBLUE + '  Finished testing thrusters\n' +
                format.ENDC)
 
         return is_error
