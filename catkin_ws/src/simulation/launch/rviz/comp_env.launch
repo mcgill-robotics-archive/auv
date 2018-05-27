@@ -1,0 +1,6 @@
+<launch>
+  <include file="$(find simulation)/launch/rviz/gui.launch" />
+  <node name="fake_lane" pkg="simulation" type="lane.py"/>
+  <node name="fake_buoy" pkg="simulation" type="buoy.py"/>
+  <node name="fake_pinger" pkg="simulation" type="pinger.py"/>
+</launch>

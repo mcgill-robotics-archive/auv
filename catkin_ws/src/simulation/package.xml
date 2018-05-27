@@ -1,0 +1,29 @@
+<?xml version="1.0"?>
+<package format="2">
+  <name>simulation</name>
+  <version>0.0.0</version>
+  <description>
+    The Simulation Package; used to visualize the auv in rviz and gazebo
+    This also stores physical attributes of the AUV in its urdf model file
+  </description>
+
+  <maintainer email="jeremy.mallette@mail.mcgill.ca">Jeremy</maintainer>
+
+  <license>GPLv3</license>
+
+  <buildtool_depend>catkin</buildtool_depend>
+  <depend>auv_msgs</depend>
+  <depend>gazebo_msgs</depend>
+  <depend>gazebo_plugins</depend>
+  <depend>gazebo_ros</depend>
+  <depend>robot_state_publisher</depend>
+  <depend>rospy</depend>
+  <depend>std_msgs</depend>
+  <depend>tf</depend>
+  <depend>urdf</depend>
+  <depend>xacro</depend>
+
+  <!--   <test_depend>gtest</test_depend> -->
+  <!--   <doc_depend>doxygen</doc_depend> -->
+
+</package>
