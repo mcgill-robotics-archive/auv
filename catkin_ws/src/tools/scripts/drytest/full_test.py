@@ -30,7 +30,7 @@ if __name__ == "__main__":
           '  #########################')
 
     # CHECK SENSORS -----------------------------------------------------------
-    run_test = raw_input(format.WARNING + '\nTest sensors? [y/N]: ' +
+    run_test = raw_input(format.WARNING + '\n Test sensors? [y/N]: ' +
                          format.ENDC)
 
     if (run_test.lower() == 'y'):
@@ -43,10 +43,10 @@ if __name__ == "__main__":
         results['fails'].append(sensor_test.results['fails'])
 
     else:
-        print (format.OKBLUE + 'Skipped sensor tests' + format.ENDC)
+        print (format.OKBLUE + ' Skipped sensor tests' + format.ENDC)
 
     # CHECK THRUSTERS ---------------------------------------------------------
-    run_test = raw_input(format.WARNING + '\nTest Thrusters? [y/N]: ' +
+    run_test = raw_input(format.WARNING + '\n Test Thrusters? [y/N]: ' +
                          format.ENDC)
 
     if (run_test.lower() == 'y'):
@@ -59,10 +59,10 @@ if __name__ == "__main__":
         results['fails'].append(thruster_test.results['fails'])
 
     else:
-        print (format.OKBLUE + 'Skipped thruster tests' + format.ENDC)
+        print (format.OKBLUE + ' Skipped thruster tests' + format.ENDC)
 
     # CHECK CAMERAS -----------------------------------------------------------
-    run_test = raw_input(format.WARNING + '\nTest Cameras? [y/N]: ' +
+    run_test = raw_input(format.WARNING + '\n Test Cameras? [y/N]: ' +
                          format.ENDC)
 
     if (run_test.lower() == 'y'):
@@ -75,28 +75,30 @@ if __name__ == "__main__":
         results['fails'].append(camera_test.results['fails'])
 
     else:
-        print (format.OKBLUE + 'Skipped camera tests' + format.ENDC)
+        print (format.OKBLUE + ' Skipped camera tests' + format.ENDC)
 
     # CONCLUSION --------------------------------------------------------------
     if (is_error):
-        print ('\n' + format.FAIL + 'Errors:')
-        for fail in results['fails']:
-            print (fail)
+        print(format.BOLD + format.FAIL + '\n\n'
+              '  ###############\n'
+              '  #             #\n'
+              '  #   Failing   #\n'
+              '  #             #\n'
+              '  ###############\n' + format.ENDC)
+
+        print ('\n' + format.FAIL + ' Errors:')
+        for test in results['fails']:
+            for fail in test:
+                print (' ' + fail)
         print (format.ENDC)
 
-        print(format.BOLD + format.FAIL + '\n\n'
-              '  ##############\n'
-              '  #            #\n'
-              '  #    Fail    #\n'
-              '  #            #\n'
-              '  ##############\n' + format.ENDC)
     else:
         print(format.BOLD + format.OKGREEN + '\n\n'
-              '  ##############\n'
-              '  #            #\n'
-              '  #  Passing!  #\n'
-              '  #            #\n'
-              '  ##############\n' + format.ENDC)
+              '  ###############\n'
+              '  #             #\n'
+              '  #   Passing   #\n'
+              '  #             #\n'
+              '  ###############\n' + format.ENDC)
 
     print(format.GREY + format.BOLD + format.DIM +
           '\n<<<<<<<<<<<< Finished Drytest\n' + format.ENDC)
