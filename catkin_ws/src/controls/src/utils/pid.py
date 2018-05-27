@@ -4,7 +4,7 @@ trans_gains = rospy.get_param('PID/translation_gains')
 rot_gains = rospy.get_param('PID/rotation_gains')
 
 
-class PID(object):
+class Pid(object):
     """
     Discrete PID control
     """
