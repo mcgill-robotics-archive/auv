@@ -1,8 +1,11 @@
+#!/usr/bin/env python
+
 import rospy
-from auv_msgs.msg import TaskPointsArray
 import math
-from utils import normalize_angle
-from servo_controller import YawMaintainer
+
+from auv_msgs.msg import TaskPointsArray
+from controls.utils import normalize_angle
+from controls.maintainers import YawMaintainer
 
 
 class SonarServoController(YawMaintainer):
@@ -16,7 +19,8 @@ class SonarServoController(YawMaintainer):
 
     def start(self):
         super(SonarServoController, self).start()
-        self.sub = rospy.Subscriber("sonar_proc/task_point", TaskPointsArray,
+        self.sub = rospy.Subscriber("sonar_proc/task_point",
+                                    TaskPointsArray,
                                     self._update_sonar_header)
 
     def stop(self):

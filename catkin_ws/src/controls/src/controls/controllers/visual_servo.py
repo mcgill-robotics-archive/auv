@@ -1,14 +1,15 @@
+#!/usr/bin/env python
+
 import rospy
 import numpy as np
 
 from std_msgs.msg import Float64
 
-from cv import CvTarget
-from pid import Pid, trans_gains
-from utils import AsyncServoController
+from cv.msg import CvTarget
+from controls.utils import AsyncServoController, PID, trans_gains
 
 
-class FrontVisualServo(object):
+class FrontVisualServoController(object):
     def __init__(self, setpoint=None):
         # Get Params
         self.params.cam_offset = rospy.get_param('/cameras/offset', 0)
@@ -58,7 +59,7 @@ class FrontVisualServo(object):
         return self.active
 
 
-class DownVisualServoMaintainer(object):
+class DownVisualServoController(object):
     def __init__(self, setpoint=None):
         # Get Params
         self.params.cam_offset = rospy.get_param('/cameras/offset', 1.18)
@@ -115,7 +116,7 @@ class VisualServoSurge(AsyncServoController):
         if setpoint is None:
             setpoint = self.params.img_center_y
 
-        self.pid = Pid(*trans_gains['surge'])
+        self.pid = PID(*trans_gains['surge'])
         self.pub = rospy.Publisher('controls/superimposer/surge',
                                    Float64,
                                    queue_size=1)
@@ -145,7 +146,7 @@ class VisualServoSway(AsyncServoController):
         if setpoint is None:
             setpoint = self.params.img_center_x
 
-        self.pid = Pid(*trans_gains['sway'])
+        self.pid = PID(*trans_gains['sway'])
         self.pub = rospy.Publisher('controls/superimposer/sway',
                                    Float64,
                                    queue_size=1)
@@ -182,7 +183,7 @@ class VisualServoHeave(AsyncServoController):
         if setpoint is None:
             setpoint = self.params.img_center_y
 
-        self.pid = Pid(*trans_gains['heave'])
+        self.pid = PID(*trans_gains['heave'])
         self.pub = rospy.Publisher('controls/superimposer/heave',
                                    Float64,
                                    queue_size=1)
