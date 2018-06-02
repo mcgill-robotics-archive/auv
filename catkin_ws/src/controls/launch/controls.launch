@@ -1,13 +1,28 @@
 <launch>
+    <!-- Args -->
+    <arg name="launch_maintainers" default="true" />
+    <arg name="launch_controllers" default="true" />
     <arg name="gains_file" default="$(find controls)/config/pid_gains.yaml" />
 
+    <!-- Launch the parameter server -->
     <rosparam command="load" file="$(arg gains_file)" ns="PID" />
 
-    <!-- Launch both nodes -->
+    <!-- Launch the effort controllers -->
     <node name="controls" pkg="controls" type="superimposer.py" respawn="false" output="screen">
       <param name="thrust_decay" value="1.0" />
     </node>
-    <node name="thrust_mapper" pkg="controls" type="thrust_mapper" respawn="false" output="screen">
+
+    <node name="thrust_mapper" pkg="controls" type="thrust_mapper.py" respawn="false" output="screen">
       <remap from="thrust_cmds" to="electrical_interface/motor"/>
     </node>
+
+    <!-- If specified by the arguments, launch controls subsets -->
+    <group if="$(arg launch_maintainers)">
+        <include file="$(find controls)/launch/maintainers.launch" />
+    </group>
+
+    <!-- group if="$(arg launch_controllers)">
+        <include file="$(find controls)/launch/controllers.launch" />
+    </group-->
+
 </launch>
