@@ -13,7 +13,7 @@
     </node>
 
     <node name="thrust_mapper" pkg="controls" type="thrust_mapper.py" respawn="false" output="screen">
-      <remap from="thrust_cmds" to="electrical_interface/motor"/>
+      <remap from="thrust_cmds" to="electrical_interface/thrusters"/>
     </node>
 
     <!-- If specified by the arguments, launch controls subsets -->
