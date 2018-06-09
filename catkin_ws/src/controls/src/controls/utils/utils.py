@@ -74,6 +74,7 @@ class SyncServoController(object):
                 "Tried to start %s but it was already started" %
                 self.__class__.__name__)
 
+        self.active = True
         self._update_timer = rospy.Timer(
             rospy.Duration(period), self._update)
 
