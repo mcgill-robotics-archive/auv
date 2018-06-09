@@ -41,7 +41,7 @@ class DepthMaintainer(AsyncServoController):
             self.stop()
             return
 
-        if (self.active is False):
+        if not self.is_active():
             self.start()
 
         self.set_setpoint(msg.data)
