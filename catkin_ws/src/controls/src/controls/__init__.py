@@ -2,16 +2,28 @@
 
 """Controls package."""
 
-from servo_controller import DepthMaintainer, YawMaintainer, \
-    BuoyVisualServoMaintainer, TorpedoVisualServoMaintainer, \
-    BinsVisualServoMaintainer
-from acoustic_servo import AcousticServoController
-from sonar_servo import SonarServoController
-from utils import normalize_angle
+# Controllers
+from controllers import *
 
-__author__ = "Justin Bell, Jana Pavlasek, Jeremy Mallette"
+# Maintainers
+from maintainers import *
 
-__all__ = ["DepthMaintainer", "YawMaintainer", "normalize_angle",
-           "AcousticServoController", "BuoyVisualServoMaintainer",
-           "TorpedoVisualServoMaintainer", "BinsVisualServoMaintainer",
-           "SonarServoController"]
+# Utils
+from utils import *
+
+__author__ = 'Justin Bell, Jana Pavlasek, Jeremy Mallette'
+
+__all__ = ['AcousticServoController',
+           'SonarServoController',
+           'FrontVisualServoController',
+           'DownVisualServoController',
+           'DepthMaintainer',
+           'YawMaintainer',
+           'RollMaintainer',
+           'PID',
+           'trans_gains',
+           'rot_gains',
+           'SyncServoController',
+           'AsyncServoController',
+           'normalize_angle',
+           'transform_polygon']

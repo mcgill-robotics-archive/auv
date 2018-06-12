@@ -19,7 +19,7 @@ ros::NodeHandle nh;
 #define TRRUSTER_RESET_INTERVAL 10000
 
 unsigned long thruster_reset_schedule = 0;
-const uint8_t thruster_pins[THRUSTER_COUNT] = {A2, A3, A0, A1, 4, 5, 2, 3};
+const uint8_t thruster_pins[THRUSTER_COUNT] = {A2, A3, A0, A1, 5, 2, 3, 4};
 int16_t last_thruster_commands[THRUSTER_COUNT] = {0};
 Servo thrusters[THRUSTER_COUNT];
 
