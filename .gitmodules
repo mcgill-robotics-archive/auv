@@ -8,3 +8,6 @@
 [submodule "catkin_ws/src/dcdc_nuc"]
 	path = catkin_ws/src/dcdc_nuc
 	url = git@github.com:mcgill-robotics/ros-dcdc-nuc.git
+[submodule "catkin_ws/src/teledyne_navigator"]
+	path = catkin_ws/src/teledyne_navigator
+	url = git@github.com:mcgill-robotics/ros-teledyne-navigator.git
