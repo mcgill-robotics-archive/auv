@@ -3,7 +3,7 @@ yolo_model:
   config_file:
     name: tiny_dice1256.cfg
   weight_file:
-    name: tiny_dice1256_20000.weights
+    name: tiny_dice1256_30000.weights
   threshold:
     value: 0.3
   detection_classes:
