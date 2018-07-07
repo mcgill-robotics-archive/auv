@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 
+#TODO: add a linear factor to the get_error function
 import rospy
 import numpy as np
 
@@ -12,15 +13,16 @@ from controls.utils import AsyncServoController, PID, trans_gains
 class FrontVisualServoController(object):
     def __init__(self, setpoint=None):
         # Get Params
-        self.params.cam_offset = rospy.get_param('/cameras/offset', 0)
-        self.params.prob_thresh = rospy.get_param('/cameras/prob_thresh', 0.5)
-        self.params.img_width = rospy.get_param('/cameras/img_width', 1296)
-        self.params.img_height = rospy.get_param('/cameras/img_height', 964)
+	self.params = {}
+        self.params["cam_offset"] = rospy.get_param('/cameras/offset', 0)
+        self.params["prob_thresh"] = rospy.get_param('/cameras/prob_thresh', 0.5)
+        self.params["img_width"] = rospy.get_param('/cameras/img_width', 1296)
+        self.params["img_height"] = rospy.get_param('/cameras/img_height', 964)
 
         self.img_center_x = self.img_width / 2
         self.img_center_y = self.img_height / 2
 
-        self.params.is_front = True
+        self.params["is_front"] = True
 
         # Initialize Visual Servo Axis Controllers
         self.servo_sway = VisualServoSway(self.params)
@@ -47,11 +49,11 @@ class FrontVisualServoController(object):
         x_0 = self.servo_sway.error
         y_0 = self.servo_heave.error
 
-        x_n = ((np.cos(self.params.cam_offset) * x_0) -
-               (np.sin(self.params.cam_offset) * y_0))
+        x_n = ((np.cos(self.params["cam_offset"]) * x_0) -
+               (np.sin(self.params["cam_offset"]) * y_0))
 
-        y_n = ((np.sin(self.params.cam_offset) * x_0) +
-               (np.cos(self.params.cam_offset) * y_0))
+        y_n = ((np.sin(self.params["cam_offset"]) * x_0) +
+               (np.cos(self.params["cam_offset"]) * y_0))
 
         return (x_n, y_n)
 
@@ -62,15 +64,15 @@ class FrontVisualServoController(object):
 class DownVisualServoController(object):
     def __init__(self, setpoint=None):
         # Get Params
-        self.params.cam_offset = rospy.get_param('/cameras/offset', 1.18)
-        self.params.prob_thresh = rospy.get_param('/cameras/prob_thresh', 0.5)
-        self.params.img_width = rospy.get_param('/cameras/img_width', 1296)
-        self.params.img_height = rospy.get_param('/cameras/img_height', 964)
+        self.params["cam_offset"] = rospy.get_param('/cameras/offset', 1.18)
+        self.params["prob_thresh"] = rospy.get_param('/cameras/prob_thresh', 0.5)
+        self.params["img_width"] = rospy.get_param('/cameras/img_width', 1296)
+        self.params["img_height"] = rospy.get_param('/cameras/img_height', 964)
 
-        self.img_center_x = self.img_width / 2
-        self.img_center_y = self.img_height / 2
+        self.params["img_center_x"] = self.img_width / 2
+        self.params["img_center_y"] = self.img_height / 2
 
-        self.params.is_front = True
+        self.params["is_front"] = True
 
         # Initialize Visual Servo Axis Controllers
         self.servo_sway = VisualServoSway(self.params)
@@ -97,11 +99,11 @@ class DownVisualServoController(object):
         x_0 = self.servo_sway.error
         y_0 = self.servo_surge.error
 
-        x_n = ((np.cos(self.params.cam_offset) * x_0) -
-               (np.sin(self.params.cam_offset) * y_0))
+        x_n = ((np.cos(self.params["cam_offset"]) * x_0) -
+               (np.sin(self.params["cam_offset"]) * y_0))
 
-        y_n = ((np.sin(self.params.cam_offset) * x_0) +
-               (np.cos(self.params.cam_offset) * y_0))
+        y_n = ((np.sin(self.params["cam_offset"]) * x_0) +
+               (np.cos(self.params["cam_offset"]) * y_0))
 
         return (x_n, y_n)
 
@@ -114,7 +116,7 @@ class VisualServoSurge(AsyncServoController):
         self.params = params
 
         if setpoint is None:
-            setpoint = self.params.img_center_y
+            setpoint = self.params["img_center_y"]
 
         self.pid = PID(*trans_gains['surge'])
         self.pub = rospy.Publisher('controls/superimposer/surge',
@@ -131,7 +133,7 @@ class VisualServoSurge(AsyncServoController):
                                                setpoint)
 
     def get_error(self, msg):
-        if msg.probability > self.params.prob_thresh:
+        if msg.probability > self.params["prob_thresh"]:
             self.error = msg.gravity.y - self.aimed_y
         else:
             self.error = None
@@ -144,7 +146,7 @@ class VisualServoSway(AsyncServoController):
         self.params = params
 
         if setpoint is None:
-            setpoint = self.params.img_center_x
+            setpoint = self.params["img_center_x"]
 
         self.pid = PID(*trans_gains['sway'])
         self.pub = rospy.Publisher('controls/superimposer/sway',
@@ -154,7 +156,7 @@ class VisualServoSway(AsyncServoController):
         self.error = None
         self.aimed_x = setpoint
 
-        if self.params.is_front:
+        if self.params["is_front"]:
             super(VisualServoSway, self).__init__(self.pid,
                                                   self.pub,
                                                   'cv/front_cam_target',
@@ -168,7 +170,7 @@ class VisualServoSway(AsyncServoController):
                                                   setpoint)
 
     def get_error(self, msg):
-        if msg.probability > self.params.prob_thresh:
+        if msg.probability > self.params["prob_thresh"]:
             self.error = msg.gravity.x - self.aimed_x
         else:
             self.error = None
@@ -181,7 +183,7 @@ class VisualServoHeave(AsyncServoController):
         self.params = params
 
         if setpoint is None:
-            setpoint = self.params.img_center_y
+            setpoint = self.params["img_center_y"]
 
         self.pid = PID(*trans_gains['heave'])
         self.pub = rospy.Publisher('controls/superimposer/heave',
@@ -198,7 +200,7 @@ class VisualServoHeave(AsyncServoController):
                                                setpoint)
 
     def get_error(self, msg):
-        if msg.probability > self.params.prob_thresh:
+        if msg.probability > self.params["prob_thresh"]:
             self.error = msg.gravity.y - self.aimed_y
         else:
             self.error = None
