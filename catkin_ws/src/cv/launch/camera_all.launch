@@ -1,4 +1,5 @@
 <launch>
-    <include file="$(find pointgrey_camera_driver)/launch/camera_down.launch"></include>
-    <include file="$(find pointgrey_camera_driver)/launch/camera_front.launch"></include>
+    <include file="$(find cv)/launch/camera_front_1.launch"></include>
+    <include file="$(find cv)/launch/camera_front_2.launch"></include>
+    <include file="$(find cv)/launch/camera_down.launch"></include>
 </launch>
