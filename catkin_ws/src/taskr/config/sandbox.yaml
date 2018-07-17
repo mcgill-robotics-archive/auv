@@ -45,3 +45,14 @@ square:
         yaw: 0.0
         distance: 1.5
         depth: 0.0
+#FOLLOW LANE
+#Finds a Lane, servos to center and turns
+follow_lane:
+  actions:
+    - follow_lane: "not needed"
+
+#ROULETTE TASK
+#Looks for roulette and servos to the center
+roulette:
+  actions:
+    - roulette: "not needed"
