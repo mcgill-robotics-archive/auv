@@ -7,7 +7,7 @@ find_package(catkin REQUIRED COMPONENTS
   std_msgs
   rospy
 )
-
+find_package(darknet_ros REQUIRED)
 ## Generate messages in the 'msg' folder
 add_message_files(
   FILES
