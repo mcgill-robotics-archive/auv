@@ -2,7 +2,7 @@
 import rospy
 from math import fabs
 from std_msgs.msg import Float64
-from controls.servo_controller import YawMaintainer, DepthMaintainer
+from controls.maintainers import YawMaintainer, DepthMaintainer
 
 
 class MoveAll(object):
