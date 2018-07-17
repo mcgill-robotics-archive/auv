@@ -18,6 +18,7 @@ from planner.msg import TaskFeedback, TaskResult, TaskAction
 from controls.maintainers import DepthMaintainer
 from auv_msgs.msg import HydrophonesAction, HydrophonesFeedback, HydrophonesResult
 from follow_lane import FollowLane
+from roulette import RouletteT
 
 current_task = TaskStatus()
 current_task.task = TaskStatus.TASK_IDLE
@@ -33,7 +34,8 @@ action_object_map = {"move_all": MoveAll,
                      "initialize": Initializer,
                      "acoustic_servo": AcousticServo,
                      "sonar_servo": SonarServo,
-                     "follow_lane": FollowLane}
+                     "follow_lane": FollowLane,
+                     "roulette": RouletteT}
 
 action_state_map = {"move_all": TaskStatus.MOVE,
                     "move": TaskStatus.MOVE,
@@ -45,7 +47,8 @@ action_state_map = {"move_all": TaskStatus.MOVE,
                     "bins_servo": TaskStatus.VISUAL_SERVO,
                     "dive": TaskStatus.MOVE,
                     "sonar_servo": TaskStatus.MOVE,
-                    "follow_lane": TaskStatus.VISUAL_SERVO}
+                    "follow_lane": TaskStatus.VISUAL_SERVO, #TODO: change TaskStatus?
+                    "roulette": TaskStatus.VISUAL_SERVO} #TODO: change TaskStatus?
 
 
 class Task(object):
@@ -341,7 +344,16 @@ class Lanes(Task):
         super(Lanes, self).__init__(name, self.execute_cb)
 
         self.data = rospy.get_param("taskr/follow_lane")
-        #self.data = "follow_lane"
+    def execute_cb(self, goal):
+        current_task.task = TaskStatus.VISUAL_SERVO
+        self.action_sequence(self.data)
+
+class Roulette(Task):
+    YAML = "roulette.yaml"
+    def __init__(self, name):
+        super(Roulette, self).__init__(name, self.execute_cb)
+
+        self.data = rospy.get_param("taskr/roulette")
     def execute_cb(self, goal):
         current_task.task = TaskStatus.VISUAL_SERVO
         self.action_sequence(self.data)
@@ -372,6 +384,7 @@ if __name__ == '__main__':
     Square("square_task")
     #TODO: check
     Lanes("follow_lane_task")
+    Roulette("roulette_task")
 
     Wait()
     ChooseTask()
