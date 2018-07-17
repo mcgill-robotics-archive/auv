@@ -1,26 +1,23 @@
 #!/usr/bin/env python
 
-#TODO: add a linear factor to the get_error function
 import rospy
 import numpy as np
-
 from std_msgs.msg import Float64
-
 from cv.msg import CvTarget
 from controls.utils import AsyncServoController, PID, trans_gains
-
 
 class FrontVisualServoController(object):
     def __init__(self, setpoint=None):
         # Get Params
-	self.params = {}
+        self.params = {}
+        self.params["downscale_factor"] = rospy.get_param('/cameras/downscale_factor', 0.001)
         self.params["cam_offset"] = rospy.get_param('/cameras/offset', 0)
         self.params["prob_thresh"] = rospy.get_param('/cameras/prob_thresh', 0.5)
         self.params["img_width"] = rospy.get_param('/cameras/img_width', 1296)
         self.params["img_height"] = rospy.get_param('/cameras/img_height', 964)
 
-        self.img_center_x = self.img_width / 2
-        self.img_center_y = self.img_height / 2
+        self.params["img_center_x"] = self.params["img_width"] / 2
+        self.params["img_center_y"] = self.params["img_height"] / 2
 
         self.params["is_front"] = True
 
@@ -43,7 +40,7 @@ class FrontVisualServoController(object):
     def get_error(self):
         # ALL THIS SHOULDN'T BE NECESSARY WITH PROPER MECH INSTALLATION
         # EVENTUALLY CAN BE REDUCED TO JUST RETURNING THE ERROR
-        if (self.servo_sway.error is None) or (self.servo_surge.error is None):
+        if (self.servo_sway.error is None) or (self.servo_heave.error is None):
             return (None, None)
 
         x_0 = self.servo_sway.error
@@ -64,15 +61,17 @@ class FrontVisualServoController(object):
 class DownVisualServoController(object):
     def __init__(self, setpoint=None):
         # Get Params
+        self.params = {}
+        self.params["downscale_factor"] = rospy.get_param('/cameras/downscale_factor', 0.001)
         self.params["cam_offset"] = rospy.get_param('/cameras/offset', 1.18)
         self.params["prob_thresh"] = rospy.get_param('/cameras/prob_thresh', 0.5)
         self.params["img_width"] = rospy.get_param('/cameras/img_width', 1296)
         self.params["img_height"] = rospy.get_param('/cameras/img_height', 964)
 
-        self.params["img_center_x"] = self.img_width / 2
-        self.params["img_center_y"] = self.img_height / 2
+        self.params["img_center_x"] = self.params["img_width"] / 2
+        self.params["img_center_y"] = self.params["img_height"] / 2
 
-        self.params["is_front"] = True
+        self.params["is_front"] = False
 
         # Initialize Visual Servo Axis Controllers
         self.servo_sway = VisualServoSway(self.params)
@@ -134,7 +133,7 @@ class VisualServoSurge(AsyncServoController):
 
     def get_error(self, msg):
         if msg.probability > self.params["prob_thresh"]:
-            self.error = msg.gravity.y - self.aimed_y
+            self.error = (msg.gravity.y - self.aimed_y) * self.params["downscale_factor"]
         else:
             self.error = None
 
@@ -171,7 +170,7 @@ class VisualServoSway(AsyncServoController):
 
     def get_error(self, msg):
         if msg.probability > self.params["prob_thresh"]:
-            self.error = msg.gravity.x - self.aimed_x
+            self.error = (msg.gravity.x - self.aimed_x) * self.params["downscale_factor"]
         else:
             self.error = None
 
@@ -201,7 +200,7 @@ class VisualServoHeave(AsyncServoController):
 
     def get_error(self, msg):
         if msg.probability > self.params["prob_thresh"]:
-            self.error = msg.gravity.y - self.aimed_y
+            self.error = (msg.gravity.y - self.aimed_y) * self.params["downscale_factor"]
         else:
             self.error = None
 

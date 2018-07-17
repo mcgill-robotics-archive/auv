@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 import rospy
-from controls.servo_controller import YawMaintainer, DepthMaintainer
+from controls.maintainers import YawMaintainer, DepthMaintainer
 
 
 class Dive(object):

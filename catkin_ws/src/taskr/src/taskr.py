@@ -15,8 +15,9 @@ from actionlib import SimpleActionServer
 from auv_msgs.msg import TaskStatus
 from std_msgs.msg import Float64
 from planner.msg import TaskFeedback, TaskResult, TaskAction
-from controls.servo_controller import DepthMaintainer
+from controls.maintainers import DepthMaintainer
 from auv_msgs.msg import HydrophonesAction, HydrophonesFeedback, HydrophonesResult
+from follow_lane import FollowLane
 
 current_task = TaskStatus()
 current_task.task = TaskStatus.TASK_IDLE
@@ -31,7 +32,8 @@ action_object_map = {"move_all": MoveAll,
                      "bins_servo": BinServo,
                      "initialize": Initializer,
                      "acoustic_servo": AcousticServo,
-                     "sonar_servo": SonarServo}
+                     "sonar_servo": SonarServo,
+                     "follow_lane": FollowLane}
 
 action_state_map = {"move_all": TaskStatus.MOVE,
                     "move": TaskStatus.MOVE,
@@ -42,7 +44,8 @@ action_state_map = {"move_all": TaskStatus.MOVE,
                     "dive": TaskStatus.MOVE,
                     "bins_servo": TaskStatus.VISUAL_SERVO,
                     "dive": TaskStatus.MOVE,
-                    "sonar_servo": TaskStatus.MOVE}
+                    "sonar_servo": TaskStatus.MOVE,
+                    "follow_lane": TaskStatus.VISUAL_SERVO}
 
 
 class Task(object):
@@ -331,6 +334,18 @@ class ChooseTask(object):
         self.goals.append(msg.data)
 
 
+#TODO: check what the hell im doing
+class Lanes(Task):
+    YAML = "follow_lane.yaml"
+    def __init__(self, name):
+        super(Lanes, self).__init__(name, self.execute_cb)
+
+        self.data = rospy.get_param("taskr/follow_lane")
+        #self.data = "follow_lane"
+    def execute_cb(self, goal):
+        current_task.task = TaskStatus.VISUAL_SERVO
+        self.action_sequence(self.data)
+
 def publish_task(event):
     """Callback for timer which publishes the current task being attempted."""
     task_pub.publish(current_task)
@@ -355,6 +370,8 @@ if __name__ == '__main__':
     Octagon("octagon_task")
     Torpedo("torpedo_task")
     Square("square_task")
+    #TODO: check
+    Lanes("follow_lane_task")
 
     Wait()
     ChooseTask()
