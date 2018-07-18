@@ -103,6 +103,7 @@ class FollowLane(object):
             rospy.sleep(0.1)
 
         rospy.loginfo("Done centering action")
+        self.serv.stop()
 
     def turn(self):
 

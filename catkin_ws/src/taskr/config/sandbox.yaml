@@ -56,3 +56,17 @@ follow_lane:
 roulette:
   actions:
     - roulette: "not needed"
+
+dice:
+  actions:
+    - dice_servo:
+        diceName: 'dice6'
+    - move:
+        distance: 1.5
+    - move:
+        distance: -1.5
+    - dice_servo:
+        diceName: 'dice5'
+    - move:
+        distance: 1.5
+

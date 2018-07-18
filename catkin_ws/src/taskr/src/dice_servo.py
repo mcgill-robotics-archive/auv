@@ -1,26 +1,25 @@
 #!/usr/bin/env python
 import rospy
-from cv.detectors import roulette_detector
+from cv.detectors import dice_detector
 from controls.maintainers import yaw_maintainer, depth_maintainer
 from controls.controllers import visual_servo
 
-
-class RouletteT(object):
+class DiceServo(object):
 
     def __init__(self, data):
 
         self.preempted = False
 
+        #TODO: activate
         # self.yaw_maintainer = yaw_maintainer.YawMaintainer()
         # self.depth_maintainer = depth_maintainer.DepthMaintainer()
-        self.foundCounts = rospy.get_param("/taskr/roulette/foundCounts", 20)
-        self.centerStableCounts = rospy.get_param("/taskr/roulette/centerStableCounts", 20)
-        self.centerMaxError = rospy.get_param("/taskr/roulette/centerMaxError", 0.4)
+        self.foundCounts = rospy.get_param("/taskr/dice/foundCounts", 100)
+        self.centerStableCounts = rospy.get_param("/taskr/dice/centerStableCounts", 300)
+        self.centerMaxError = rospy.get_param("/taskr/dice/centerMaxError", 0.4)
+        self.diceName = data["diceName"]
+
 
     def start(self, server, feedback_msg):
-        # TODO: start the CV stuff
-        self.roul_detector = roulette_detector.RouletteDetector()
-        rospy.loginfo("Roulette Task started.")
 
         # TODO: leave?
         """
@@ -30,12 +29,13 @@ class RouletteT(object):
         if not self.depth_maintainer.is_active():
             self.depth_maintainer.start()
         """
-        self.findRoulette()
+
+        self.diceDetector = dice_detector.DiceDetector(self.diceName)
+        self.findDie()
         if self.preempted:
             return
-        self.servoToCenter()
-        if self.preempted:
-            return
+        self.servoDie()
+
 
     def stop(self):
         self.preempted = True
@@ -45,35 +45,33 @@ class RouletteT(object):
             self.depth_maintainer.stop()
         if self.yaw_maintainer.is_active():
             self.yaw_maintainer.stop()
-        
         """
-        # TODO: stop the lane_detector?
-        self.roul_detector.stop()
+        self.diceDetector.stop()
 
-
-    def findRoulette(self):
-
-        roulFoundCounts = 0
-        while roulFoundCounts < self.foundCounts:
+    def findDie(self):
+        diceFoundCounts = 0
+        while diceFoundCounts < self.foundCounts:
 
             if self.preempted:
                 return
 
-            found = self.roul_detector.getRouletteFound()
+            found = self.diceDetector.foundCorrectDie
             if (found):
-                roulFoundCounts += 1
+                diceFoundCounts += 1
             else:
-                roulFoundCounts = 0
+                diceFoundCounts = 0
 
-            rospy.loginfo("{} / {} roulette found.".format(
-                roulFoundCounts, self.foundCounts))
+            rospy.loginfo("{} / {} frames with {} found".format(
+                diceFoundCounts, self.foundCounts,self.diceName))
             rospy.sleep(0.1)
 
-        rospy.loginfo("Roulette successfully found.")
+        rospy.loginfo("{} correctly found.".format(self.diceName))
 
-    def servoToCenter(self):
-        rospy.loginfo("Centering over Roulette:")
-        self.serv = visual_servo.DownVisualServoController()
+
+    def servoDie(self):
+        #TODO: make sure the low refreshrate is taken into account
+        #TODO: change thrust_decay or something
+        self.serv = visual_servo.FrontVisualServoController()
         self.serv.start()
 
         stable_counts = 0
@@ -100,6 +98,7 @@ class RouletteT(object):
 
             rospy.sleep(0.1)
 
-        rospy.loginfo("Done centering action")
+        rospy.loginfo("Done centering action on {}.".format(self.diceName))
         self.serv.stop()
+
 
