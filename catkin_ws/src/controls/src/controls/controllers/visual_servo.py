@@ -9,7 +9,7 @@ from std_msgs.msg import Float64
 from cv.msg import CvTarget
 from controls.utils import AsyncServoController, PID, trans_gains
 
-
+hardFact = 0.001
 class FrontVisualServoController(object):
     def __init__(self, setpoint=None):
         # Get Params
@@ -19,8 +19,8 @@ class FrontVisualServoController(object):
         self.params["img_width"] = rospy.get_param('/cameras/img_width', 1296)
         self.params["img_height"] = rospy.get_param('/cameras/img_height', 964)
 
-        self.img_center_x = self.img_width / 2
-        self.img_center_y = self.img_height / 2
+        self.params["img_center_x"] = self.params["img_width"] / 2
+        self.params["img_center_y"] = self.params["img_height"] / 2
 
         self.params["is_front"] = True
 
@@ -171,7 +171,7 @@ class VisualServoSway(AsyncServoController):
 
     def get_error(self, msg):
         if msg.probability > self.params["prob_thresh"]:
-            self.error = msg.gravity.x - self.aimed_x
+            self.error = (msg.gravity.x - self.aimed_x) * hardFact
         else:
             self.error = None
 
@@ -201,7 +201,7 @@ class VisualServoHeave(AsyncServoController):
 
     def get_error(self, msg):
         if msg.probability > self.params["prob_thresh"]:
-            self.error = msg.gravity.y - self.aimed_y
+            self.error = (msg.gravity.y - self.aimed_y) * hardFact
         else:
             self.error = None
 

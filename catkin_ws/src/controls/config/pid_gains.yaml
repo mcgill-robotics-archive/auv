@@ -2,7 +2,7 @@
 translation_gains:
     surge: [0.15, 0.0, 0.0]
     sway: [0.01, 0.0, 0.0]
-    heave: [100.0, 3.0, 1.0]
+    heave: [1.0, 1.0, 1.0]
 
 rotation_gains:
     pitch: [5.0, 0.0, 0.0]
