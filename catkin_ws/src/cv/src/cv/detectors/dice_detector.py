@@ -8,7 +8,7 @@ class DiceDetector():
     def __init__(self,diceName):
 
         self.pub = rospy.Publisher('cv/front_cam_target',CvTarget,queue_size = 1)
-        self.sub = rospy.Subscriber("/darknet_ros/bounding_boxes",BoundingBoxes, callback)
+        self.sub = rospy.Subscriber("/darknet_ros/bounding_boxes",BoundingBoxes, self.callback)
         self.diceName = diceName
         self.foundCorrectDie = False
 
@@ -27,8 +27,11 @@ class DiceDetector():
 
         if (correctDie == None):
             self.foundCorrectDie = False
+            msg = CvTarget()
+            self.pub.publish(msg)
 
         else:
+            self.foundCorrectDie = True
             xmin = correctDie.xmin
             xmax = correctDie.xmax
             #Xcenter of Die
@@ -50,3 +53,6 @@ class DiceDetector():
             msg.gravity.z = 0
             msg.probability.data = probability
             self.pub.publish(msg)
+
+    def stop(self):
+        self.sub.unregister()
