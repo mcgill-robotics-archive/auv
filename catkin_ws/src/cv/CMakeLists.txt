@@ -5,13 +5,16 @@ find_package(catkin REQUIRED COMPONENTS
   geometry_msgs
   message_generation
   std_msgs
+  rospy
 )
-
+find_package(darknet_ros REQUIRED)
 ## Generate messages in the 'msg' folder
 add_message_files(
   FILES
   CvTarget.msg
 )
+
+catkin_python_setup()
 
 ## Generate added messages and services with any dependencies listed here
 generate_messages(
@@ -19,6 +22,7 @@ generate_messages(
   geometry_msgs
   std_msgs
 )
+
 
 catkin_package(CATKIN_DEPENDS
   pointgrey_camera_driver

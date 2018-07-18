@@ -3,8 +3,8 @@ import rospy
 from math import fabs
 from std_msgs.msg import Float64
 
-from controls.servo_controller import DepthMaintainer
-from controls.acoustic_servo import AcousticServoController
+from controls.maintainers import DepthMaintainer
+from controls.controllers import AcousticServoController
 from controls.utils import normalize_angle
 
 
