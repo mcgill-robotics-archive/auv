@@ -12,9 +12,9 @@ class MoveAll(object):
     RATE = rospy.get_param("taskr/vel_cmd_rate", default=10)
     VEL_COEFFICIENT = rospy.get_param("taskr/vel_coefficient", default=1)
     SWAY_VEL_COEFFICIENT = rospy.get_param("taskr/sway_vel_coefficient", default=2)
-    MAX_STABLE_COUNTS = rospy.get_param("taskr/max_stable_counts", default=15)
+    MAX_STABLE_COUNTS = rospy.get_param("taskr/max_stable_counts", default=30)
     YAW_THRESH = rospy.get_param("taskr/yaw_threshold", default=0.15)
-    DEPTH_THRESH = rospy.get_param("taskr/depth_threshold", default=0.3)
+    DEPTH_THRESH = rospy.get_param("taskr/depth_threshold", default=0.2)
 
     def __init__(self, point):
         """Constructor for the Move object."""
@@ -64,14 +64,6 @@ class MoveAll(object):
         self.wait_for_depth()
         rospy.loginfo("Depth reached.")
 
-        if self.depth is not None:
-            if self.depth <= 0.0:
-                rospy.loginfo("We're trying to submerge!")
-                self.depth_maintainer.stop()
-                rospy.sleep(5)
-                rospy.loginfo("Hopefully that worked...")
-                return
-
         # Next turn.
         rospy.loginfo("Trying to go to yaw")
         self.wait_for_yaw()
@@ -102,7 +94,7 @@ class MoveAll(object):
     def get_time(self, distance):
         """Get the time for which to travel at the given velocity to achieve
         desired distance."""
-        return distance / self.VELOCITY * 2
+        return distance / self.VELOCITY
 
     def stop(self):
         self.preempted = True
