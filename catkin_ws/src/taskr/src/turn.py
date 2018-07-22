@@ -22,8 +22,8 @@ class Turn(object):
         depth_maintainer.start()
 
         stable_counts = 0
-        while stable_counts < 30:
-            rospy.loginfo("{} / 30 stable periods achieved".format(
+        while stable_counts < 60:
+            rospy.loginfo("{} / 60 stable periods achieved".format(
                 stable_counts))
 
             if self.preempted:

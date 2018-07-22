@@ -11,11 +11,11 @@ class RouletteT(object):
 
         self.preempted = False
 
-        # self.yaw_maintainer = yaw_maintainer.YawMaintainer()
-        # self.depth_maintainer = depth_maintainer.DepthMaintainer()
+        self.yaw_maintainer = yaw_maintainer.YawMaintainer()
+        self.depth_maintainer = depth_maintainer.DepthMaintainer(setpoint= 1.7)
         self.foundCounts = rospy.get_param("/taskr/roulette/foundCounts", 20)
-        self.centerStableCounts = rospy.get_param("/taskr/roulette/centerStableCounts", 20)
-        self.centerMaxError = rospy.get_param("/taskr/roulette/centerMaxError", 0.4)
+        self.centerStableCounts = rospy.get_param("/taskr/roulette/centerStableCounts", 150)
+        self.centerMaxError = rospy.get_param("/taskr/roulette/centerMaxError", 0.1)
 
     def start(self, server, feedback_msg):
         # TODO: start the CV stuff
@@ -23,13 +23,11 @@ class RouletteT(object):
         rospy.loginfo("Roulette Task started.")
 
         # TODO: leave?
-        """
         if not self.yaw_maintainer.is_active():
             self.yaw_maintainer.start()
 
         if not self.depth_maintainer.is_active():
             self.depth_maintainer.start()
-        """
         self.findRoulette()
         if self.preempted:
             return
@@ -40,13 +38,11 @@ class RouletteT(object):
     def stop(self):
         self.preempted = True
 
-        """
         if self.depth_maintainer.is_active():
             self.depth_maintainer.stop()
         if self.yaw_maintainer.is_active():
             self.yaw_maintainer.stop()
-        
-        """
+
         # TODO: stop the lane_detector?
         self.roul_detector.stop()
 

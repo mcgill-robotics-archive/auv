@@ -35,7 +35,7 @@ class LaneDetector():
         if angle < 0:
             angle = -(90 + angle)
 
-        self.angle_top_lane = angle
+        self.angle_top_lane = math.radians(angle)
 
         #print("Turn by {} degrees!".format(angle))
 

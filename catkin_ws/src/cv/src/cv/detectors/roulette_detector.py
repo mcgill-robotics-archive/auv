@@ -22,7 +22,7 @@ class RouletteDetector():
             img = self.bridge.imgmsg_to_cv2(data, "bgr8")
         except CvBridgeError as e:
             print(e)
-
+        #img[:,:,0] = 0
         MIN_SIZE_GREEN = rospy.get_param("cv/roulette/green_cnt_size", 3000)
 
         #blur img
@@ -30,8 +30,12 @@ class RouletteDetector():
         #convert to hvt
         img_hvt = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
         #TODO: adapt values as adequate
-        lower_green = np.array([70, 160, 30])
-        upper_green = np.array([90, 255, 255])
+        lower_green = np.array([87, 140, 0])
+        upper_green = np.array([93, 255, 150])
+        #lower_green = np.array([55,210,50])
+        #upper_green = np.array([65,255,110])
+
+
         mask = cv2.inRange(img_hvt, lower_green, upper_green)
 
         im2,cnt,hier = cv2.findContours(mask,cv2.RETR_LIST,cv2.CHAIN_APPROX_NONE)
@@ -77,8 +81,10 @@ class RouletteDetector():
                 self.rouletteFound = True
             else:
                 self.rouletteFound = False
+        else:
+            print("No green contours found!")
 
-        small = cv2.resize(img,(0,0),fx=0.5,fy=0.5)
+        small = cv2.resize(img,(0,0),fx=0.4,fy=0.4)
         cv2.imshow("RouletteImage",small)
         cv2.waitKey(20)
 
