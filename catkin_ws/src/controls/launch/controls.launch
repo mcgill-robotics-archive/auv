@@ -17,9 +17,9 @@
     </node>
 
     <!-- If specified by the arguments, launch controls subsets -->
-    <group if="$(arg launch_maintainers)">
+    <!--group if="$(arg launch_maintainers)">
         <include file="$(find controls)/launch/maintainers.launch" />
-    </group>
+    </group-->
 
     <!-- group if="$(arg launch_controllers)">
         <include file="$(find controls)/launch/controllers.launch" />

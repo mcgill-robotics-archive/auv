@@ -6,7 +6,7 @@
 
     <param name="velocity" value="0.5" />
     <param name="vel_cmd_rate" value="10" />
-    <param name="vel_coefficient" value="65" />
+    <param name="vel_coefficient" value="50" />
     <param name="task_file" value="$(arg task_file)" />
   </node>
 </launch>

@@ -11,6 +11,7 @@ class Dive(object):
     def __init__(self, data):
         self.preempted = False
         self.depth = data["depth"]
+        self.stablePeriods = rospy.get_param("taskr/dive/stablePeriods",50)
         self.yaw_maintainer = YawMaintainer()
         self.depth_maintainer = DepthMaintainer(self.depth)
 
@@ -23,9 +24,9 @@ class Dive(object):
             self.depth_maintainer.start()
 
         stable_counts = 0
-        while stable_counts < 30:
-            rospy.loginfo("{} / 30 stable periods achieved".format(
-                stable_counts))
+        while stable_counts < self.stablePeriods:
+            rospy.loginfo("{} / {} stable periods achieved".format(
+                stable_counts,self.stablePeriods))
 
             if self.preempted:
                 return
@@ -33,7 +34,7 @@ class Dive(object):
             err = self.depth_maintainer.error
             if err is None:
                 pass
-            elif abs(err) < 0.3:
+            elif abs(err) < 0.15:
                 stable_counts += 1
             else:
                 stable_counts = 0

@@ -10,12 +10,12 @@ class FollowLane(object):
 
         self.preempted = False
 
-        #self.yaw_maintainer = yaw_maintainer.YawMaintainer()
-        #self.depth_maintainer = depth_maintainer.DepthMaintainer()
-        self.foundCounts = rospy.get_param("/taskr/lanes/foundCounts",5)
-        self.centerStableCounts = rospy.get_param("/taskr/lanes/centerStableCounts", 20)
+        self.yaw_maintainer = yaw_maintainer.YawMaintainer()
+        self.depth_maintainer = depth_maintainer.DepthMaintainer()
+        self.foundCounts = rospy.get_param("/taskr/lanes/foundCounts",15)
+        self.centerStableCounts = rospy.get_param("/taskr/lanes/centerStableCounts", 50)
         self.centerMaxError = rospy.get_param("/taskr/lanes/centerMaxError", 0.4)
-        self.turnStableCounts = rospy.get_param("/taskr/lanes/turnStableCount",20)
+        self.turnStableCounts = rospy.get_param("/taskr/lanes/turnStableCount",50)
         self.turnMaxError = rospy.get_param("/taskr/lanes/turnMaxError",0.1)
 
 
@@ -28,7 +28,7 @@ class FollowLane(object):
         """
         if not self.yaw_maintainer.is_active():
             self.yaw_maintainer.start()
-        
+
         if not self.depth_maintainer.is_active():
             self.depth_maintainer.start()
         """
@@ -107,13 +107,13 @@ class FollowLane(object):
 
     def turn(self):
 
-        #end yaw_maintainer to create new
-        if self.yaw_maintainer.is_active():
-            self.yaw_maintainer.stop()
 
+        #TODO: check if this causes problems when going over/under pi
         angle = lane_detector.getAngle()
-        self.yaw_maintainer = yaw_maintainer.YawMaintainer(angle)
-        self.yaw_maintainer.start()
+        currentYaw = self.yaw_maintainer.get_current_yaw()
+        sp = currentYaw + angle
+
+        yaw_maintainer.set_setpoint(sp)
 
         stable_counts = 0
         while stable_counts < self.turnStableCounts:

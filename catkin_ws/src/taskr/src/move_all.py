@@ -11,8 +11,8 @@ class MoveAll(object):
     VELOCITY = rospy.get_param("taskr/velocity", default=1)
     RATE = rospy.get_param("taskr/vel_cmd_rate", default=10)
     VEL_COEFFICIENT = rospy.get_param("taskr/vel_coefficient", default=1)
-    SWAY_VEL_COEFFICIENT = rospy.get_param("taskr/sway_vel_coefficient", default=2)
-    MAX_STABLE_COUNTS = rospy.get_param("taskr/max_stable_counts", default=30)
+    SWAY_VEL_COEFFICIENT = rospy.get_param("taskr/sway_vel_coefficient", default=70)
+    MAX_STABLE_COUNTS = rospy.get_param("taskr/max_stable_counts", default=15)
     YAW_THRESH = rospy.get_param("taskr/yaw_threshold", default=0.15)
     DEPTH_THRESH = rospy.get_param("taskr/depth_threshold", default=0.2)
 
@@ -42,7 +42,11 @@ class MoveAll(object):
     def start(self, server, feedback_msg):
         """Do the move action."""
         rate = rospy.Rate(self.RATE)
-        time = self.get_time(fabs(self.distance))
+        if not self.sway:
+            time = self.get_time(fabs(self.distance))
+        else:
+            time = self.get_time(fabs(self.sway))
+
         start = rospy.Time.now()
 
         surge = self.VELOCITY * self.VEL_COEFFICIENT
