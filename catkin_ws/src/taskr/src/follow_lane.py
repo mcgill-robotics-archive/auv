@@ -3,6 +3,7 @@ import rospy
 from cv.detectors import lane_detector
 from controls.maintainers import yaw_maintainer, depth_maintainer
 from controls.controllers import visual_servo
+from controls.utils.utils import normalize_angle
 
 class FollowLane(object):
 
@@ -20,18 +21,16 @@ class FollowLane(object):
 
 
     def start(self, server, feedback_msg):
-        #TODO: start the CV stuff
         self.lane_detector = lane_detector.LaneDetector()
         rospy.loginfo("Looking for lane action")
 
-        #TODO: leave?
-        """
+
         if not self.yaw_maintainer.is_active():
             self.yaw_maintainer.start()
 
         if not self.depth_maintainer.is_active():
             self.depth_maintainer.start()
-        """
+        
         self.findLane()
         if self.preempted:
             return
@@ -39,7 +38,6 @@ class FollowLane(object):
         if self.preempted:
             return
         self.turn()
-
 
 
     def stop(self):
@@ -107,11 +105,10 @@ class FollowLane(object):
 
     def turn(self):
 
-
-        #TODO: check if this causes problems when going over/under pi
         angle = lane_detector.getAngle()
+
         currentYaw = self.yaw_maintainer.get_current_yaw()
-        sp = currentYaw + angle
+        sp = normalize_angle(currentYaw + angle)
 
         yaw_maintainer.set_setpoint(sp)
 

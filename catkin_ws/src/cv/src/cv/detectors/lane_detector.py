@@ -6,6 +6,7 @@ import numpy as np
 from cv.msg import CvTarget
 from sensor_msgs.msg import Image
 from cv_bridge import CvBridge, CvBridgeError
+from collections import deque
 
 class LaneDetector():
 
@@ -17,6 +18,9 @@ class LaneDetector():
         self.angle_top_lane = None
         self.laneFound = False
 
+        self.smoothQueue = deque([])
+
+
     def getAngleOfTopLine(self, points, difSlopes, img):
         # find the line with higher YCoordinate
         maxY = np.inf
@@ -27,8 +31,10 @@ class LaneDetector():
                 maxY = y
 
         # debug
-        cv2.circle(img, points[maxIdx], 25, (0, 255, 255), -1)
+        #cv2.circle(img, points[maxIdx], 25, (0, 255, 255), -1)
+
         angle = math.degrees(math.atan(difSlopes[maxIdx]))
+
         # angle = math.atan(difSlopes[maxIdx])
         if angle >= 0:
             angle = 90 - angle
@@ -37,7 +43,7 @@ class LaneDetector():
 
         self.angle_top_lane = math.radians(angle)
 
-        #print("Turn by {} degrees!".format(angle))
+        print("Turn by {} degrees! = {} rad".format(angle,self.angle_top_lane))
 
 
     def callback(self,data):
@@ -169,7 +175,7 @@ class LaneDetector():
                     #print("NOT 2 LINEGROUPS, calculating center")
                     xPoint = int((np.mean(lg, 0)[0, 0] + np.mean(lg, 0)[0, 2]) / 2)
                     yPoint = int((np.mean(lg, 0)[0, 1] + np.mean(lg, 0)[0, 3]) / 2)
-                    cv2.circle(img, (xPoint, yPoint), 30, (255, 0, 0), -1)
+                    #cv2.circle(img, (xPoint, yPoint), 30, (255, 0, 0), -1)
                     xReturn = xPoint
                     yReturn = yPoint
 
@@ -183,7 +189,7 @@ class LaneDetector():
                         intercept = yPoint - (xPoint * difSlopes[i])
                         intercepts.append(intercept)
                         #debug
-                        cv2.circle(img, (xPoint, yPoint), 10, (0, 255, 0), -1)
+                        #cv2.circle(img, (xPoint, yPoint), 10, (0, 255, 0), -1)
                         centerPoints.append((xPoint, yPoint))
 
                     #only look at the 2 most occuring slopes
@@ -200,7 +206,7 @@ class LaneDetector():
 
                     if abs(angle) > 30:
                         # this is the normal case of 2 lane parts found
-                        cv2.circle(img, (intersectionX, intersectionY), 30, (0, 255, 0), -1)
+                        #cv2.circle(img, (intersectionX, intersectionY), 30, (0, 255, 0), -1)
                         xReturn = intersectionX
                         yReturn = intersectionY
 
@@ -217,15 +223,20 @@ class LaneDetector():
                         xMean = int(xMean / 2.0)
                         yMean = int(yMean / 2.0)
 
-                        cv2.circle(img, (xMean, yMean), 30, (255, 0, 255), -1)
+                        #cv2.circle(img, (xMean, yMean), 30, (255, 0, 255), -1)
                         xReturn = xMean
                         yReturn = yMean
-
+                """
                 small = cv2.resize(img, (0, 0), fx=0.5, fy=0.5)
                 cv2.imshow("image", small)
                 cv2.waitKey(5)
-
+                """
                 if (xReturn != None):
+                    #new
+                    xReturn,yReturn = self.smoothPoint(xReturn,yReturn)
+
+                    cv2.circle(img, (int(xReturn), int(yReturn)), 10, (255, 0, 255), -1)
+
                     msg = CvTarget()
                     msg.gravity.x = xReturn
                     msg.gravity.y = yReturn
@@ -233,6 +244,10 @@ class LaneDetector():
                     msg.probability.data = 1.0
                     self.pub.publish(msg)
                     self.laneFound = True
+
+                small = cv2.resize(img, (0, 0), fx=0.5, fy=0.5)
+                cv2.imshow("image", small)
+                cv2.waitKey(5)
 
     def getAngle(self):
         return self.angle_top_lane
@@ -242,4 +257,22 @@ class LaneDetector():
 
     def stop(self):
         self.sub.unregister()
+
+    def smoothPoint(self,xVal,yVal):
+        if len(self.smoothQueue) < 3:
+            self.smoothQueue.append((xVal,yVal))
+        else:
+            self.smoothQueue.popleft()
+            self.smoothQueue.append((xVal, yVal))
+
+        meanX = 0.0
+        meanY = 0.0
+        for x,y in self.smoothQueue:
+            meanX += x
+            meanY += y
+
+        meanX = meanX / len(self.smoothQueue)
+        meanY = meanY / len(self.smoothQueue)
+
+        return meanX, meanY
 
