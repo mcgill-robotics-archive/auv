@@ -50,7 +50,8 @@ def wrench_to_thrust(thrust_char):
         msg = [0] * len(thrusters)
         for t, x in zip(thrusters, thrusterCmds.tolist()[0]):
             msg[t] = x
-
+        #debug
+        print(msg)
         thrust_pub.publish(ThrusterCommands(msg))
 
     return helper
@@ -61,7 +62,6 @@ def pwm(thrust, t100):
     pwm = interp(thrust, t100[:, 0], t100[:, 1])
     pwm[abs(thrust) < min_thrust] = 0
     return pwm
-
 
 if __name__ == '__main__':
     rospy.init_node('thrust_mapper')
@@ -77,5 +77,4 @@ if __name__ == '__main__':
     sub = rospy.Subscriber('/controls/wrench',
                            Wrench,
                            wrench_to_thrust(t100_pwm))
-
     rospy.spin()
