@@ -8,7 +8,7 @@ from controls.controllers import visual_servo
 if __name__ == '__main__':
     rospy.init_node('ServoPractice',anonymous=True)
     serv = visual_servo.DownVisualServoController()
-    bla = servo_practice.ServoPracticeD()
+    bla = lane_detector.LaneDetector()
     serv.start()
 
     rospy.spin()

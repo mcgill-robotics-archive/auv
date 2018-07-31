@@ -30,7 +30,7 @@ class FollowLane(object):
 
         if not self.depth_maintainer.is_active():
             self.depth_maintainer.start()
-        
+
         self.findLane()
         if self.preempted:
             return

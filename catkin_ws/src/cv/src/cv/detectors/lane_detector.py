@@ -53,6 +53,10 @@ class LaneDetector():
         except CvBridgeError as e:
             print(e)
 
+        xReturn = None
+        yReturn = None
+
+
         # This is orange_filter:
         MIN_CONTOUR_SIZE = rospy.get_param("/cv/lanes/orange_cnt_size", 10000)
         img_hvt = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
@@ -66,7 +70,7 @@ class LaneDetector():
             #print("No lane of sufficient size found")
             self.laneFound = False
             self.angle_top_lane = None
-            return
+            #return
 
         else:
             #Contours were found
@@ -78,7 +82,7 @@ class LaneDetector():
                 #print("No lane of sufficient size found")
                 self.laneFound = False
                 self.angle_top_lane = None
-                return
+                #return
             else:
                 # draw in blue the contours that were found
                 cv2.drawContours(img, [biggestCont], -1, (255, 0, 0), 3, 8)
@@ -231,23 +235,33 @@ class LaneDetector():
                 cv2.imshow("image", small)
                 cv2.waitKey(5)
                 """
-                if (xReturn != None):
-                    #new
-                    xReturn,yReturn = self.smoothPoint(xReturn,yReturn)
+            if (xReturn != None):
+                #new
+                xReturn,yReturn = self.smoothPoint(xReturn,yReturn)
 
-                    cv2.circle(img, (int(xReturn), int(yReturn)), 10, (255, 0, 255), -1)
+                cv2.circle(img, (int(xReturn), int(yReturn)), 10, (255, 0, 255), -1)
 
-                    msg = CvTarget()
-                    msg.gravity.x = xReturn
-                    msg.gravity.y = yReturn
-                    msg.gravity.z = 0
-                    msg.probability.data = 1.0
-                    self.pub.publish(msg)
-                    self.laneFound = True
+                msg = CvTarget()
+                msg.gravity.x = xReturn
+                msg.gravity.y = yReturn
+                msg.gravity.z = 0
+                msg.probability.data = 1.0
+                self.pub.publish(msg)
+                self.laneFound = True
+            else:
+                #If no correct lane is found we want to make sure to turn the servo off
+                print("no lane")
+                msg = CvTarget()
+                #This makes sure the servo turns off
+                msg.probability.data = 0.0
+                self.pub.publish(msg)
+                #also clear the queue
+                self.smoothQueue = deque([])
+                self.laneFound = False
 
-                small = cv2.resize(img, (0, 0), fx=0.5, fy=0.5)
-                cv2.imshow("image", small)
-                cv2.waitKey(5)
+            small = cv2.resize(img, (0, 0), fx=0.5, fy=0.5)
+            cv2.imshow("image", small)
+            cv2.waitKey(5)
 
     def getAngle(self):
         return self.angle_top_lane
