@@ -20,6 +20,9 @@ from auv_msgs.msg import HydrophonesAction, HydrophonesFeedback, HydrophonesResu
 from follow_lane import FollowLane
 from roulette import RouletteT
 from dice_servo import DiceServo
+from vacuum import Vacuum
+#from torpedo import Torpedo
+from roll import Roll
 
 current_task = TaskStatus()
 current_task.task = TaskStatus.TASK_IDLE
@@ -37,7 +40,9 @@ action_object_map = {"move_all": MoveAll,
                      "sonar_servo": SonarServo,
                      "follow_lane": FollowLane,
                      "roulette": RouletteT,
-                     "dice_servo": DiceServo}
+                     "dice_servo": DiceServo,
+                     "vacuum": Vacuum,
+                     "roll": Roll}
 
 action_state_map = {"move_all": TaskStatus.MOVE,
                     "move": TaskStatus.MOVE,
@@ -47,11 +52,12 @@ action_state_map = {"move_all": TaskStatus.MOVE,
                     "turn": TaskStatus.MOVE,
                     "dive": TaskStatus.MOVE,
                     "bins_servo": TaskStatus.VISUAL_SERVO,
-                    "dive": TaskStatus.MOVE,
                     "sonar_servo": TaskStatus.MOVE,
                     "follow_lane": TaskStatus.VISUAL_SERVO, #TODO: change TaskStatus?
                     "roulette": TaskStatus.VISUAL_SERVO, #TODO: change TaskStatus?
-                    "dice_servo": TaskStatus.VISUAL_SERVO} #TODO: change TaskStatus?
+                    "dice_servo": TaskStatus.VISUAL_SERVO,
+                    "vacuum": TaskStatus.SHOOT,
+                    "roll": TaskStatus.MOVE} #TODO: change TaskStatus?
 
 
 class Task(object):

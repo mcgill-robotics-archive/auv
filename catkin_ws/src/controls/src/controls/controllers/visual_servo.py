@@ -11,7 +11,7 @@ class FrontVisualServoController(object):
         # Get Params
         self.params = {}
         self.params["downscale_factor"] = rospy.get_param('/cameras/downscale_factor', 0.001)
-        self.params["cam_offset"] = rospy.get_param('/cameras/offset', 0)
+        self.params["cam_offset"] = rospy.get_param('/cameras/offset', 1)
         self.params["prob_thresh"] = rospy.get_param('/cameras/prob_thresh', 0.5)
         self.params["img_width"] = rospy.get_param('/cameras/img_width', 1296)
         self.params["img_height"] = rospy.get_param('/cameras/img_height', 964)
@@ -46,12 +46,15 @@ class FrontVisualServoController(object):
         x_0 = self.servo_sway.error
         y_0 = self.servo_heave.error
 
-        x_n = ((np.cos(self.params["cam_offset"]) * x_0) -
-               (np.sin(self.params["cam_offset"]) * y_0))
+        #x_n = ((np.cos(self.params["cam_offset"]) * x_0) -
+        #       (np.sin(self.params["cam_offset"]) * y_0))
 
-        y_n = ((np.sin(self.params["cam_offset"]) * x_0) +
-               (np.cos(self.params["cam_offset"]) * y_0))
+        #y_n = ((np.sin(self.params["cam_offset"]) * x_0) +
+        #       (np.cos(self.params["cam_offset"]) * y_0))
 
+        x_n = x_0
+        y_n = y_0
+        
         return (x_n, y_n)
 
     def is_active(self):
@@ -63,7 +66,7 @@ class DownVisualServoController(object):
         # Get Params
         self.params = {}
         self.params["downscale_factor"] = rospy.get_param('/cameras/downscale_factor', 0.001)
-        self.params["cam_offset"] = rospy.get_param('/cameras/offset', 1.18)
+        self.params["cam_offset"] = rospy.get_param('/cameras/offset', 1)
         self.params["prob_thresh"] = rospy.get_param('/cameras/prob_thresh', 0.5)
         self.params["img_width"] = rospy.get_param('/cameras/img_width', 1296)
         self.params["img_height"] = rospy.get_param('/cameras/img_height', 964)
@@ -98,11 +101,13 @@ class DownVisualServoController(object):
         x_0 = self.servo_sway.error
         y_0 = self.servo_surge.error
 
-        x_n = ((np.cos(self.params["cam_offset"]) * x_0) -
-               (np.sin(self.params["cam_offset"]) * y_0))
+        x_n = self.servo_sway.error
+        y_n = self.servo_surge.error
+        #x_n = ((np.cos(self.params["cam_offset"]) * x_0) -
+        #       (np.sin(self.params["cam_offset"]) * y_0))
 
-        y_n = ((np.sin(self.params["cam_offset"]) * x_0) +
-               (np.cos(self.params["cam_offset"]) * y_0))
+        #y_n = ((np.sin(self.params["cam_offset"]) * x_0) +
+        #       (np.cos(self.params["cam_offset"]) * y_0))
 
         return (x_n, y_n)
 
@@ -132,7 +137,7 @@ class VisualServoSurge(AsyncServoController):
                                                setpoint)
 
     def get_error(self, msg):
-        if msg.probability > self.params["prob_thresh"]:
+        if msg.probability.data > self.params["prob_thresh"]:
             self.error = (msg.gravity.y - self.aimed_y) * self.params["downscale_factor"]
         else:
             self.error = None
@@ -169,7 +174,7 @@ class VisualServoSway(AsyncServoController):
                                                   setpoint)
 
     def get_error(self, msg):
-        if msg.probability > self.params["prob_thresh"]:
+        if msg.probability.data > self.params["prob_thresh"]:
             self.error = (msg.gravity.x - self.aimed_x) * self.params["downscale_factor"]
         else:
             self.error = None
@@ -199,7 +204,7 @@ class VisualServoHeave(AsyncServoController):
                                                setpoint)
 
     def get_error(self, msg):
-        if msg.probability > self.params["prob_thresh"]:
+        if msg.probability.data > self.params["prob_thresh"]:
             self.error = (msg.gravity.y - self.aimed_y) * self.params["downscale_factor"]
         else:
             self.error = None

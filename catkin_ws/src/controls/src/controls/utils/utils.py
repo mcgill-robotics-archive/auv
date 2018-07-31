@@ -149,7 +149,7 @@ class AsyncServoController(object):
 
         if error is None:
             self.pid.reset()
-            self.pub.publish(0)
+            self.pub.publish(0.0)
             return
 
         res = self.pid.update(error, last_duration)
