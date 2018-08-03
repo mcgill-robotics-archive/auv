@@ -1,29 +1,45 @@
 #include "thrusters.h"
 
-int boundCheck(int input) {
-  if (abs(input) > 500) {
-    nh.logerror("Thruster command out of bound!");
-    return max(-300, min(300, input));
+int thrusterBoundCheck(int input) {
+  if (abs(input) > THRUSTER_OUTPUT_BOUND) {
+    nh.logerror("Thrusters command out of bound!");
+    return max(-THRUSTER_OUTPUT_BOUND, min(THRUSTER_OUTPUT_BOUND, input));
   }
   return input;
 }
 
+int thrusterSlopeCheck(int last_input, int new_input) {
+  int output = max(last_input - THRUSTER_MAX_INCREMENT, new_input);
+  output = min(last_input + THRUSTER_MAX_INCREMENT, new_input);
+  return output;
+}
+
 void thrustersCallback(const auv_msgs::ThrusterCommands& msg) {
   if (mission_enabled) {
-    thruster_reset_schedule = millis() + THRUSTER_TIMEOUT;
+    thrusters_reset_schedule = millis() + THRUSTER_TIMEOUT;
 
     for (uint8_t i = 0; i < THRUSTER_COUNT; i++) {
-      int16_t value = boundCheck(msg.thruster_commands[i]);
-      int16_t last_thruster_command = last_thruster_commands[i];
-
-      value = max(last_thruster_command - THRUSTER_MAX_INCREMENT, value);
-      value = min(last_thruster_command + THRUSTER_MAX_INCREMENT, value);
-
+      int16_t value = thrusterBoundCheck(msg.thruster_commands[i]);
+      value = thrusterSlopeCheck(last_thruster_commands[i], value);
       thrusters[i].writeMicroseconds(THRUSTER_RST_VALUE + value);
+
       last_thruster_commands[i] = value;
     }
   } else {
-    nh.logwarn("Mission off, thrusterCommands IGNORED!!");
+    nh.logwarn("Mission off, thrusters command IGNORED!!");
+  }
+}
+
+void vacuumCallback(const std_msgs::Int16& msg) {
+  if (mission_enabled) {
+    vacuum_reset_schedule = millis() + THRUSTER_TIMEOUT;
+
+    int16_t value = thrusterBoundCheck(msg.data);
+    value = thrusterSlopeCheck(last_vacuum_command, value);
+    vacuum.writeMicroseconds(THRUSTER_RST_VALUE + value);
+    last_vacuum_command = value;
+  } else {
+    nh.logwarn("Mission off, vacuum command IGNORED!!");
   }
 }
 
@@ -42,8 +58,19 @@ void thrustersInit() {
   resetThrusters();
 }
 
+void resetVacuum() {
+  last_vacuum_command = 0;
+  vacuum.writeMicroseconds(THRUSTER_RST_VALUE);
+  nh.loginfo("Vacuum reset!!");
+}
+
+void vacuumInit() {
+  vacuum.attach(vacuum_pin);
+  resetVacuum();
+}
+
 void gpioInit() {
-  pinMode(VOLTAGE_PIN, INPUT);
+//  pinMode(VOLTAGE_PIN, INPUT);
   pinMode(MISSION_PIN, INPUT);
   pinMode(LED_PIN, OUTPUT);
 }
@@ -51,13 +78,15 @@ void gpioInit() {
 void rosInit() {
   nh.initNode();
 
-  //nh.advertise(voltage_pub);
+//  nh.advertise(voltage_pub);
   nh.advertise(mission_pub);
-  nh.subscribe(thruster_sub);
+  nh.subscribe(vacuum_sub);
+  nh.subscribe(thrusters_sub);
 }
 
 void setup() {
   thrustersInit();
+  vacuumInit();
   gpioInit();
   rosInit();
   if (MCUSR & MCUSR_WDRF) {
@@ -77,13 +106,24 @@ void voltageReportTask(unsigned long time_now) {
   }
 }
 
-void thursterResetTask(unsigned long time_now) {
-  if (thruster_reset_schedule < time_now) {
+void thurstersResetTask(unsigned long time_now) {
+  if (thrusters_reset_schedule < time_now) {
     if (mission_enabled) {
-      nh.logwarn("Motor commands timeout!");
+      nh.logwarn("Thrusters command timeout!");
     }
     resetThrusters();
-    thruster_reset_schedule = time_now + TRRUSTER_RESET_INTERVAL;
+    thrusters_reset_schedule = time_now + TRRUSTER_RESET_INTERVAL;
+    toggleLed();
+  }
+}
+
+void vacuumResetTask(unsigned long time_now) {
+  if (vacuum_reset_schedule < time_now) {
+    if (mission_enabled) {
+      nh.logwarn("Vacuum command timeout!");
+    }
+    resetVacuum();
+    vacuum_reset_schedule = time_now + TRRUSTER_RESET_INTERVAL;
     toggleLed();
   }
 }
@@ -101,9 +141,10 @@ void loop() {
   unsigned long time_now = millis();
   mission_enabled = digitalRead(MISSION_PIN);
 
-  thursterResetTask(time_now);
+  thurstersResetTask(time_now);
+  vacuumResetTask(time_now);
   missionReportTask(time_now);
-  //voltageReportTask(time_now);
+//  voltageReportTask(time_now);
 
   nh.spinOnce();
 }

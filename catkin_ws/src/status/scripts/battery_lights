@@ -2,7 +2,7 @@
 import roslib; roslib.load_manifest('blinky')
 import rospy
 
-from std_msgs.msg import Float32
+from std_msgs.msg import Float64
 from blinky.msg import *
 from blinky.srv import *
 
@@ -15,10 +15,10 @@ RED = RGB(255,0,0)
 # Minimum and maximum battery voltage values in volts
 # Ask power section for accurate values
 
-MIN_COMPUTER_VOLTAGE = 21.0
-MAX_COMPUTER_VOLTAGE = 25.0
-MIN_MOTOR_VOLTAGE= 10.2
-MAX_MOTOR_VOLTAGE= 12.5
+MIN_COMPUTER_VOLTAGE = 14.0
+MAX_COMPUTER_VOLTAGE = 16.5
+MIN_MOTOR_VOLTAGE= 14.0
+MAX_MOTOR_VOLTAGE= 16.5
 
 LOW_BATTERY = False
 
@@ -134,8 +134,8 @@ def warn_low_battery(state):
 
 def BatteryListener():
     rospy.init_node('battery_lights')
-    rospy.Subscriber("electrical_interface/computer_voltage", Float32, process_computer_voltage)
-    rospy.Subscriber("electrical_interface/motor_voltage", Float32, process_motor_voltage)
+    rospy.Subscriber("dcdc_nuc/input_voltage", Float64, process_computer_voltage)
+    rospy.Subscriber("dcdc_nuc/input_voltage", Float64, process_motor_voltage)
     rospy.spin()
 
 
