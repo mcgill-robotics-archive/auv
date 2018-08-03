@@ -17,22 +17,26 @@ class RouletteDetector():
 
         self.rouletteFound = False
         self.MIN_SIZE_GREEN = rospy.get_param("cv/roulette/green_cnt_size", 3000)
-        self.MIN_SIZE_RED = rospy.get_param("cv/roulette/red_cnt_size", 3000)
+        self.MIN_SIZE_RED = rospy.get_param("cv/roulette/red_cnt_size", 20000)
 
     def callback(self,data):
         try:
             img = self.bridge.imgmsg_to_cv2(data, "bgr8")
         except CvBridgeError as e:
             print(e)
-
-        #blur img
+        print("image received")
+        #increase red
+        img[:,:,2] = np.multiply(img[:,:,2], 2)
+        #print(img)
+        np.clip(img,0,255)
         img = cv2.GaussianBlur(img,(7,7),2)
+        #print(img[:,:,2])
         #convert to hvt
         img_hvt = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
 
         redCenter = self.findRedCenter(img_hvt,img)
-        greenCenter = self.findGreenCenter(img_hvt,img)
-
+        #greenCenter = self.findGreenCenter(img_hvt,img)
+        greenCenter = redCenter
 
         if redCenter is None or greenCenter is None:
             print("No green AND red found.")
@@ -40,6 +44,9 @@ class RouletteDetector():
             msg.probability.data = 0.0
             self.pub.publish(msg)
             self.rouletteFound = False
+            small = cv2.resize(img, (0, 0), fx=0.4, fy=0.4)
+            cv2.imshow("SUPER", small)
+            cv2.waitKey(20)
             return
         else:
             rouletteCenter = (int((redCenter[0] + greenCenter[0]) / 2) , int((redCenter[1] + greenCenter[1])) / 2)
@@ -59,7 +66,7 @@ class RouletteDetector():
 
 
     def findRedCenter(self,img_hvt,img):
-
+        """
         lower_red1 = np.array([0, 50, 0])
         upper_red1 = np.array([15, 255, 255])
         lower_red2 = np.array([165, 50, 0])
@@ -69,6 +76,12 @@ class RouletteDetector():
         mask2 = cv2.inRange(img_hvt, lower_red2, upper_red2)
 
         mask = np.bitwise_or(mask1, mask2)
+        """
+
+        #COMP VALUES
+        lower_red = np.array([110, 0, 120])
+        upper_red = np.array([180,130,255])
+        mask = cv2.inRange(img_hvt, lower_red, upper_red)
 
         im2, cnt, hier = cv2.findContours(mask, cv2.RETR_LIST, cv2.CHAIN_APPROX_NONE)
 
@@ -82,6 +95,7 @@ class RouletteDetector():
                     #TODO: ADD ABORT CONDITIONS
                     print("No contour of sufficient size found")
                     break
+                print(cv2.contourArea(c))
                 # draw in red the contours that were found
                 cv2.drawContours(img, [c], -1, (0,0,255),3,8)
                 #calculate centroid
