@@ -12,9 +12,9 @@ class MoveAll(object):
     RATE = rospy.get_param("taskr/vel_cmd_rate", default=10)
     VEL_COEFFICIENT = rospy.get_param("taskr/vel_coefficient", default=1)
     SWAY_VEL_COEFFICIENT = rospy.get_param("taskr/sway_vel_coefficient", default=70)
-    MAX_STABLE_COUNTS = rospy.get_param("taskr/move_all/max_stable_counts", default=15)
-    YAW_THRESH = rospy.get_param("taskr/move_all/yaw_threshold", default=0.15)
-    DEPTH_THRESH = rospy.get_param("taskr/move_all/depth_threshold", default=0.2)
+    MAX_STABLE_COUNTS = rospy.get_param("taskr/move_all/max_stable_counts", default=20)
+    YAW_THRESH = rospy.get_param("taskr/move_all/yaw_threshold", default=0.1)
+    DEPTH_THRESH = rospy.get_param("taskr/move_all/depth_threshold", default=0.1)
 
     def __init__(self, point):
         """Constructor for the Move object."""
@@ -56,6 +56,10 @@ class MoveAll(object):
         if self.distance < 0:
             surge *= -0.3  # surge seems to go faster backwards so we only use half the coefficient
             sway *= -1
+
+        if self.sway != False:
+            if self.sway < 0:
+                sway *= -1
 
         # We want to maintain both yaw and depth as we move.
         if not self.yaw_maintainer.is_active():

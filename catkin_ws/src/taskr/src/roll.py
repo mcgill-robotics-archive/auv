@@ -7,12 +7,15 @@ class Roll(object):
         self.preempted = False
         self.angle = data["angle"]
 
-        self.ROLL_DURATION = rospy.get_param("taskr/roll/roll_duration")
+        self.ROLL_DURATION = rospy.get_param("taskr/roll/roll_duration",30)
+        self.depth_maintainer = DepthMaintainer(data["depth"])
         self.yaw_maintainer = YawMaintainer()
         self.roll_maintainer = RollMaintainer(self.angle)
 
     def start(self, server, feedback_msg):
-        rospy.loginfo("Starting turn action")
+        rospy.loginfo("Starting roll action")
+        if not self.depth_maintainer.is_active():
+            self.depth_maintainer.start()
 
         if not self.yaw_maintainer.is_active():
             self.yaw_maintainer.start()
@@ -35,7 +38,8 @@ class Roll(object):
 
     def stop(self):
         self.preempted = True
-
+        if self.depth_maintainer.is_active():
+            self.depth_maintainer.stop()
         if self.yaw_maintainer.is_active():
             self.yaw_maintainer.stop()
         if self.roll_maintainer.is_active():
