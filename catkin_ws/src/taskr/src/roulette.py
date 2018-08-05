@@ -13,7 +13,8 @@ class RouletteT(object):
         self.preempted = False
 
         self.yaw_maintainer = yaw_maintainer.YawMaintainer()
-        self.depth_maintainer = depth_maintainer.DepthMaintainer(setpoint= 2.5)
+        self.depth = data["depth"]
+        self.depth_maintainer = depth_maintainer.DepthMaintainer(self.depth)
         self.foundCounts = rospy.get_param("/taskr/roulette/foundCounts", 20)
         self.centerStableCounts = rospy.get_param("/taskr/roulette/centerStableCounts", 150)
         self.centerMaxError = rospy.get_param("/taskr/roulette/centerMaxError", 0.1)
@@ -87,7 +88,8 @@ class RouletteT(object):
 
             err = self.serv.get_error()
             # debug:
-            print("Error = {}".format(err))
+            if err != (None, None):
+                print("Error = {}".format(abs(err[0]) + abs(err[1])))
 
             if err == (None, None):
                 stable_counts = 0
