@@ -2,8 +2,8 @@
 
 move_all:
   max_stable_counts: 15
-  yaw_threshold: 0.15
-  depth_threshold: 0.2
+  yaw_threshold: 0.1
+  depth_threshold: 0.1
 
 dive:
   stablePeriods: 50
@@ -11,16 +11,16 @@ dive:
 
 lanes:
   foundCounts: 10
-  centerStableCounts: 30
-  centerMaxError: 0.4
+  centerStableCounts: 60
+  centerMaxError: 2.0
   turnStableCount: 30
   turnMaxError: 0.1
 
 
 roulette:
-  foundCounts: 30
-  centerStableCounts: 100
-  centerMaxError: 0.4
+  foundCounts: 15
+  centerStableCounts: 150
+  centerMaxError: 3.0
 
 dice:
   foundCounts: 100
@@ -30,3 +30,6 @@ dice:
 vacuum:
   suckDuration: 100
   suckingPower: 400
+
+roll:
+  rollDuration: 20

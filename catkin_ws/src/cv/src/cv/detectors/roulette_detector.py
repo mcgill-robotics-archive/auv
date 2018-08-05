@@ -24,7 +24,7 @@ class RouletteDetector():
             img = self.bridge.imgmsg_to_cv2(data, "bgr8")
         except CvBridgeError as e:
             print(e)
-        print("image received")
+        #print("image received")
         #increase red
         img[:,:,2] = np.multiply(img[:,:,2], 2)
         #print(img)
@@ -93,9 +93,9 @@ class RouletteDetector():
                 #check contour size
                 if (cv2.contourArea(c) < self.MIN_SIZE_RED):
                     #TODO: ADD ABORT CONDITIONS
-                    print("No contour of sufficient size found")
+                    #print("No contour of sufficient size found")
                     break
-                print(cv2.contourArea(c))
+                #print(cv2.contourArea(c))
                 # draw in red the contours that were found
                 cv2.drawContours(img, [c], -1, (0,0,255),3,8)
                 #calculate centroid
