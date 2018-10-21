@@ -12,6 +12,7 @@ windows:
         panes:
           - roslaunch cv camera_front_1.launch --wait
           - roslaunch cv camera_front_2.launch --wait
+          - roslaunch cv camera_down.launch --wait
     - sonar:
         panes:
           - roslaunch tritech_micron tritech_micron.launch --wait

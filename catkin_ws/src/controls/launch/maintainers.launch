@@ -1,0 +1,9 @@
+<!-- Note that this file is meant to be included in the main controls
+     launch file. If this file is launched manually, please note that
+     it depends on the pid parameter server, thrust_mapper, and superimposer -->
+
+<launch>
+    <node name="depth_maintainer" pkg="controls" type="depth_maintainer.py" />
+    <node name="yaw_maintainer" pkg="controls" type="yaw_maintainer.py" />
+    <node name="roll_maintainer" pkg="controls" type="roll_maintainer.py" />
+</launch>

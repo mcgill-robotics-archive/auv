@@ -1,8 +1,10 @@
+#!/usr/bin/env python
+
 import rospy
 from std_msgs.msg import Float64
 
-from utils import normalize_angle
-from servo_controller import YawMaintainer
+from controls.utils import normalize_angle
+from controls.maintainers import YawMaintainer
 
 
 class AcousticServoController(YawMaintainer):
@@ -19,7 +21,8 @@ class AcousticServoController(YawMaintainer):
 
     def start(self):
         super(AcousticServoController, self).start()
-        self.sub = rospy.Subscriber('/hydrophones/heading', Float64,
+        self.sub = rospy.Subscriber('/hydrophones/heading',
+                                    Float64,
                                     self._update_pinger_heading)
 
     def stop(self):

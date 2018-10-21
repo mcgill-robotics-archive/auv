@@ -2,7 +2,7 @@
 import rospy
 from std_msgs.msg import Float64
 
-from controls.servo_controller import DepthMaintainer, YawMaintainer, BinsVisualServoMaintainer
+from controls.maintainers import DepthMaintainer, YawMaintainer#, BinsVisualServoMaintainer
 from std_srvs.srv import SetBool
 
 
