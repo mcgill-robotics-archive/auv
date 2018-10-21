@@ -8,7 +8,6 @@ find_package(catkin REQUIRED COMPONENTS
   auv_msgs
   cmake_modules
   cv_bridge
-  darknet_ros
   eigen_conversions
   geometry_msgs
   nav_msgs
