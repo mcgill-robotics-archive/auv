@@ -22,7 +22,6 @@ find_package(catkin REQUIRED COMPONENTS
 
 find_package(Boost REQUIRED COMPONENTS)
 find_package(OpenCV REQUIRED)
-find_package(darknet_ros REQUIRED)
 find_package(Eigen3 REQUIRED)
 
 ## Generate messages in the 'msg' folder
@@ -46,6 +45,7 @@ catkin_package(CATKIN_DEPENDS
   auv_msgs
   boost
   cv_bridge
+  darknet_ros
   eigen_conversions
   pointgrey_camera_driver
   roscpp
