@@ -1,16 +1,6 @@
 pipeline {
   agent any
   stages {
-    stage('Clean') {
-      steps {
-        dir(path: 'catkin_ws') {
-          sh '''
-            . /opt/ros/kinetic/setup.sh
-            catkin clean -y
-          '''
-        }
-      }
-    }
     stage('Build') {
       steps {
         sh 'printenv'
