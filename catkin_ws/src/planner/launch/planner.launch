@@ -3,6 +3,6 @@
 
   <node name="planner" pkg="planner" type="planner_node" output="screen">
     <param name="tasks" value="$(arg task_file)" />
-    <param name="mission_topic" value="/mission" />
+    <param name="mission_topic" value="/electrical_interface/mission" />
   </node>
 </launch>

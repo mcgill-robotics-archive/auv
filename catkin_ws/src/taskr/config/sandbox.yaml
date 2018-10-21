@@ -42,6 +42,52 @@ octagon:
 square:
   actions:
     - move_all:
-        yaw: 0.0
+        distance: 5.0
+        depth: 2.0
+    - move_all:
+        distance: 2.0
+        depth: 1.0
+    - move_all:
+        distance: 6.5
+        depth: 0.6
+    - move_all:
+        depth: 0.6
+        yaw: -1.57
+        distance: 1.1
+    - move_all:
+        depth: 0.6
+        yaw: 2.8
+        distance: 8.0
+    - move_all:
+        distance: 8.0
+        depth: 2.0
+
+
+  #  - move_all:
+  #      distance: 5.0
+  #      depth: 1.0
+#FOLLOW LANE
+#Finds a Lane, servos to center and turns
+follow_lane:
+  actions:
+    - follow_lane: "not needed"
+
+#ROULETTE TASK
+#Looks for roulette and servos to the center
+roulette:
+  actions:
+    - roulette: "not needed"
+
+dice:
+  actions:
+    - dice_servo:
+        diceName: 'dice6'
+    - move:
         distance: 1.5
-        depth: 0.0
+    - move:
+        distance: -1.5
+    - dice_servo:
+        diceName: 'dice5'
+    - move:
+        distance: 1.5
+

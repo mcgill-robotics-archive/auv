@@ -24,17 +24,18 @@ def wrench_to_thrust(thrust_char):
         ThrusterCommands.HEAVE_STERN_PORT,
         ThrusterCommands.HEAVE_STERN_STARBOARD
     ]
+
     thrusterToForce = matrix([
         # Fx Fy Fz Mx My Mz
-        [1, 0, 0, 0, 0, 0.207],         # surge_port
-        [1, 0, 0, 0, 0, -0.207],        # surge_starboard
-        [0, 1, 0, 0, 0, 0.488],         # sway_bow
-        [0, 1, 0, 0, 0, -0.459],        # sway_stern
+        [0.9, 0, 0, 0, 0, 0],      # surge_port
+        [1.1, 0, 0, 0, 0, 0],     # surge_starboard
+        [0, 1, 0, 0, 0, -0.510],       # sway_bow
+        [0, 1, 0, 0, 0, 0.314],        # sway_stern
 
-        [0, 0, 1, -0.207, -0.372, 0],   # heave_bow_port
-        [0, 0, 1, 0.215, -0.372, 0],    # heave_bow_starboard
-        [0, 0, 1, -0.215, 0.327, 0],    # heave_stern_port
-        [0, 0, 1, 0.207, 0.327, 0]      # heave_stern_starboard
+        [0, 0, 1, -0.162, -0.250, 0],   # heave_bow_port
+        [0, 0, 1, 0.162, -0.250, 0],    # heave_bow_starboard
+        [0, 0, 1, -0.162, 0.450, 0],   # heave_stern_port
+        [0, 0, 1, 0.162, 0.450, 0]      # heave_stern_starboard
     ]).T
 
     forceToThruster = pinv(thrusterToForce)
@@ -46,10 +47,11 @@ def wrench_to_thrust(thrust_char):
 
         thrusterCmds = pwm(forceToThruster * Fxyz_Mxyz, thrust_char).T
 
-        msg = [0]*len(thrusters)
+        msg = [0] * len(thrusters)
         for t, x in zip(thrusters, thrusterCmds.tolist()[0]):
             msg[t] = x
-
+        #debug
+        print(msg)
         thrust_pub.publish(ThrusterCommands(msg))
 
     return helper
@@ -61,17 +63,18 @@ def pwm(thrust, t100):
     pwm[abs(thrust) < min_thrust] = 0
     return pwm
 
-
 if __name__ == '__main__':
     rospy.init_node('thrust_mapper')
 
     # Loads the characterizations for the thrusters
     char_file = RosPack().get_path('controls') + \
         '/config/t100_characterization.csv'
+
     t100_pwm = genfromtxt(char_file, delimiter=',')
     t100_pwm = t100_pwm[t100_pwm[:, 1].argsort()]
 
     thrust_pub = rospy.Publisher('thrust_cmds', ThrusterCommands, queue_size=5)
-    sub = rospy.Subscriber('/controls/wrench', Wrench,
+    sub = rospy.Subscriber('/controls/wrench',
+                           Wrench,
                            wrench_to_thrust(t100_pwm))
     rospy.spin()

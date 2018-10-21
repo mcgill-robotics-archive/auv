@@ -2,7 +2,7 @@
 import rospy
 from math import fabs
 from std_msgs.msg import Float64
-from controls.servo_controller import YawMaintainer, DepthMaintainer
+from controls.maintainers import YawMaintainer, DepthMaintainer
 
 
 class MoveAll(object):
@@ -11,10 +11,10 @@ class MoveAll(object):
     VELOCITY = rospy.get_param("taskr/velocity", default=1)
     RATE = rospy.get_param("taskr/vel_cmd_rate", default=10)
     VEL_COEFFICIENT = rospy.get_param("taskr/vel_coefficient", default=1)
-    SWAY_VEL_COEFFICIENT = rospy.get_param("taskr/sway_vel_coefficient", default=2)
-    MAX_STABLE_COUNTS = rospy.get_param("taskr/max_stable_counts", default=15)
-    YAW_THRESH = rospy.get_param("taskr/yaw_threshold", default=0.15)
-    DEPTH_THRESH = rospy.get_param("taskr/depth_threshold", default=0.3)
+    SWAY_VEL_COEFFICIENT = rospy.get_param("taskr/sway_vel_coefficient", default=70)
+    MAX_STABLE_COUNTS = rospy.get_param("taskr/move_all/max_stable_counts", default=15)
+    YAW_THRESH = rospy.get_param("taskr/move_all/yaw_threshold", default=0.15)
+    DEPTH_THRESH = rospy.get_param("taskr/move_all/depth_threshold", default=0.2)
 
     def __init__(self, point):
         """Constructor for the Move object."""
@@ -42,7 +42,11 @@ class MoveAll(object):
     def start(self, server, feedback_msg):
         """Do the move action."""
         rate = rospy.Rate(self.RATE)
-        time = self.get_time(fabs(self.distance))
+        if not self.sway:
+            time = self.get_time(fabs(self.distance))
+        else:
+            time = self.get_time(fabs(self.sway))
+
         start = rospy.Time.now()
 
         surge = self.VELOCITY * self.VEL_COEFFICIENT
@@ -63,14 +67,6 @@ class MoveAll(object):
         rospy.loginfo("Trying to go to depth")
         self.wait_for_depth()
         rospy.loginfo("Depth reached.")
-
-        if self.depth is not None:
-            if self.depth <= 0.0:
-                rospy.loginfo("We're trying to submerge!")
-                self.depth_maintainer.stop()
-                rospy.sleep(5)
-                rospy.loginfo("Hopefully that worked...")
-                return
 
         # Next turn.
         rospy.loginfo("Trying to go to yaw")
@@ -102,7 +98,7 @@ class MoveAll(object):
     def get_time(self, distance):
         """Get the time for which to travel at the given velocity to achieve
         desired distance."""
-        return distance / self.VELOCITY * 2
+        return distance / self.VELOCITY
 
     def stop(self):
         self.preempted = True
