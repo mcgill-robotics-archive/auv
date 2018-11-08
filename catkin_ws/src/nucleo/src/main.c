@@ -48,7 +48,7 @@ int main(void)
   Add_ADC_Channel(&hadc1, ADC_CHANNEL_14, 1);
   Add_ADC_Channel(&hadc2, ADC_CHANNEL_12, 1);
   Add_ADC_Channel(&hadc3, ADC_CHANNEL_5, 1);
-  Add_ADC_Channel(&hadc4, ADC_CHANNEL_3, 1);
+  Add_ADC_Channel(&hadc4, ADC_CHANNEL_5, 1);
 
   // Calibrate ADCs.
   log_debug("Calibrating ADCs...");
