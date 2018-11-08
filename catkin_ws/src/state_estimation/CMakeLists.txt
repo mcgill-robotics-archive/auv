@@ -14,7 +14,6 @@ find_package(catkin REQUIRED COMPONENTS
   geometry_msgs
   sensor_msgs
   tf
-  cv_bridge
   rospy
   auv_msgs
   angles
@@ -43,7 +42,6 @@ catkin_package(
   angles
   tf_conversions
   eigen_conversions
-  cv_bridge
 )
 
 include_directories(${Boost_INCLUDE_DIRS} ${catkin_INCLUDE_DIRS} ${OpenCV_INCLUDE_DIRS})
@@ -56,4 +54,3 @@ add_subdirectory(pose)
 add_subdirectory(tf)
 add_subdirectory(ukf)
 add_subdirectory(servo)
-add_subdirectory(detectors)
