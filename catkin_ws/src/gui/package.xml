@@ -9,6 +9,7 @@
   <license>LGPLv3</license>
   <author email="todo@todo.com">Jerome</author> -->
 
+  <build_depend>roslaunch</build_depend>
   <buildtool_depend>catkin</buildtool_depend>
 
   <!--   <test_depend>gtest</test_depend> -->
