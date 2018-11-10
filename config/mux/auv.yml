@@ -1,7 +1,7 @@
 # ~/.tmuxinator/auv.yml
 
 name: MAIN
-root: /home/robotics/auv
+root: /home/jerome/Projects/Robotics/auv
 
 pre: mv ~/.zhistory ~/.zhistory.old && strings ~/.zhistory.old > ~/.zhistory && export SHELL=/bin/zsh && export PATH=/usr/local/sbin/:/usr/local/bin/:/usr/sbin:${PATH}:/sbin:/usr/games:/usr/local/games
 
@@ -32,3 +32,4 @@ windows:
         - roslaunch gui gui.launch --wait
     - gui2:
          - rosrun rospy_tutorials add_two_ints_server --wait
+         - roslaunch gui gui.launch --wait
