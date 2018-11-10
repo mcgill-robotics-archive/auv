@@ -28,6 +28,7 @@ windows:
     - hydrophones: roslaunch hydrophones hydrophones.launch --wait
     - auto_shutdown: rosrun status auto_shutdown
     - bag: /home/robotics/record.sh
-    - gui: 
-         - rosrun rospy_tutorials add_two_ints_server
-         - roslaunch gui gui.launch
+    - gui:
+        - roslaunch gui gui.launch --wait
+    - gui2:
+         - rosrun rospy_tutorials add_two_ints_server --wait
