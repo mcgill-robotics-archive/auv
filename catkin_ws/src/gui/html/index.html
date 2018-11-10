@@ -45,23 +45,18 @@
         data: 5.0
     });
 
+    
     //Publish the data. This represents the robot talking to us.
     cmdVel.publish(twist);
 
     // Subscribing to a Topic
     // ----------------------
 
-    var listener = new ROSLIB.Topic({
-        ros: ros,
-        name: '/state_estimation/depth',
-        messageType: 'std_msgs/String'
+    cmdVel.subscribe(function (message) {
+        console.log('Received message on ' + message.name + ': ' + message.data);
+        cmdVel.unsubscribe();
     });
-
-    listener.subscribe(function (message) {
-        console.log('Received message on ' + listener.name + ': ' + message.data);
-        listener.unsubscribe();
-    });
-
+/*
     // Calling a service
     // -----------------
 
@@ -85,20 +80,9 @@
 
     // Getting and setting a param value
     // ---------------------------------
-
-    ros.getParams(function (params) {
-        console.log(params);
-    });
-
-    var maxVelX = new ROSLIB.Param({
-        ros: ros,
-        name: 'max_vel_y'
-    });
-
-    maxVelX.set(0.8);
-    maxVelX.get(function (value) {
-        console.log('MAX VAL: ' + value);
-    });/*  */
+*/
+    
+    /*  */
 
 </script>
 </head>
