@@ -78,7 +78,7 @@ void gpioInit() {
 void rosInit() {
   nh.initNode();
 
-//  nh.advertise(voltage_pub);
+  nh.advertise(voltage_pub);
   nh.advertise(mission_pub);
   nh.subscribe(vacuum_sub);
   nh.subscribe(thrusters_sub);
@@ -144,7 +144,7 @@ void loop() {
   thurstersResetTask(time_now);
   vacuumResetTask(time_now);
   missionReportTask(time_now);
-//  voltageReportTask(time_now);
+  voltageReportTask(time_now);
 
   nh.spinOnce();
 }
