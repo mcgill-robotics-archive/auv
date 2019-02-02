@@ -20,10 +20,10 @@ DMA_HandleTypeDef hdma_adc3;
 DMA_HandleTypeDef hdma_adc4;
 
 // Define which ADC is connected to the hydrophone from which quadrant.
-#define QUADRANT_I ADC3
+#define QUADRANT_I ADC1
 #define QUADRANT_II ADC2
-#define QUADRANT_III ADC4
-#define QUADRANT_IV ADC1
+#define QUADRANT_III ADC3
+#define QUADRANT_IV ADC4
 
 // Set the buffersize as a number of samples to collect per ADC.
 // The duration in seconds is equal to the sampling frequncy * BUFFERSIZE.

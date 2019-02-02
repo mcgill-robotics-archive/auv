@@ -124,8 +124,8 @@ void HAL_ADC_MspInit(ADC_HandleTypeDef* hadc)
     ADC34_CLK_ENABLED++;
 
     // ADC4 GPIO Configuration.
-    // PB12 ------> ADC4_IN3
-    GPIO_InitStruct.Pin = GPIO_PIN_12;
+    // PB15 ------> ADC4_IN5
+    GPIO_InitStruct.Pin = GPIO_PIN_15;
     GPIO_InitStruct.Mode = GPIO_MODE_ANALOG;
     GPIO_InitStruct.Pull = GPIO_NOPULL;
     HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);

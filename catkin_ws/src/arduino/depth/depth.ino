@@ -12,7 +12,6 @@
 
 #include "depth.h"
 
-
 void resetPressureSensor() {
   Wire.beginTransmission(MS5803_I2C_ADDR);
   switch (Wire.endTransmission()) {
