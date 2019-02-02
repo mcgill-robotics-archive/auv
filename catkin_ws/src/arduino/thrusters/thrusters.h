@@ -21,7 +21,7 @@ ros::NodeHandle nh;
 #define TRRUSTER_RESET_INTERVAL 10000
 
 unsigned long thrusters_reset_schedule = 0;
-const uint8_t thruster_pins[THRUSTER_COUNT] = {12, 11, 10, 9, 8, 7, 6, 5};
+const uint8_t thruster_pins[THRUSTER_COUNT] = {A3, A2, A0, A1, 3, 2, 4, 5};
 int16_t last_thruster_commands[THRUSTER_COUNT] = {0};
 Servo thrusters[THRUSTER_COUNT];
 
@@ -30,7 +30,7 @@ ros::Subscriber<auv_msgs::ThrusterCommands> thrusters_sub("~thrusters",
                                                           &thrustersCallback);
 
 unsigned long vacuum_reset_schedule = 0;
-const uint8_t vacuum_pin = 3;
+const uint8_t vacuum_pin = A4;
 int16_t last_vacuum_command = 0;
 Servo vacuum;
 
