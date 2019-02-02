@@ -30,6 +30,12 @@ def analyze(msg):
 
         yaw = Float64()
         yaw.data = math.atan2(tdx, tdy)
+
+        if yaw.data > 0:
+            yaw.data -= math.pi
+        else:
+            yaw.data += math.pi
+
         pub.publish(yaw)
 
 if __name__ == "__main__":

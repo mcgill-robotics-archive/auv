@@ -15,8 +15,15 @@ from actionlib import SimpleActionServer
 from auv_msgs.msg import TaskStatus
 from std_msgs.msg import Float64
 from planner.msg import TaskFeedback, TaskResult, TaskAction
-from controls.servo_controller import DepthMaintainer
+from controls.maintainers import DepthMaintainer
 from auv_msgs.msg import HydrophonesAction, HydrophonesFeedback, HydrophonesResult
+from follow_lane import FollowLane
+from roulette import RouletteT
+from dice_servo import DiceServo
+from vacuum import Vacuum
+#from torpedo import Torpedo
+from roll import Roll
+from sleep import Sleep
 
 current_task = TaskStatus()
 current_task.task = TaskStatus.TASK_IDLE
@@ -31,7 +38,13 @@ action_object_map = {"move_all": MoveAll,
                      "bins_servo": BinServo,
                      "initialize": Initializer,
                      "acoustic_servo": AcousticServo,
-                     "sonar_servo": SonarServo}
+                     "sonar_servo": SonarServo,
+                     "follow_lane": FollowLane,
+                     "roulette": RouletteT,
+                     "dice_servo": DiceServo,
+                     "vacuum": Vacuum,
+                     "roll": Roll,
+                     "sleep": Sleep}
 
 action_state_map = {"move_all": TaskStatus.MOVE,
                     "move": TaskStatus.MOVE,
@@ -41,8 +54,13 @@ action_state_map = {"move_all": TaskStatus.MOVE,
                     "turn": TaskStatus.MOVE,
                     "dive": TaskStatus.MOVE,
                     "bins_servo": TaskStatus.VISUAL_SERVO,
-                    "dive": TaskStatus.MOVE,
-                    "sonar_servo": TaskStatus.MOVE}
+                    "sonar_servo": TaskStatus.MOVE,
+                    "follow_lane": TaskStatus.VISUAL_SERVO, #TODO: change TaskStatus?
+                    "roulette": TaskStatus.VISUAL_SERVO, #TODO: change TaskStatus?
+                    "dice_servo": TaskStatus.VISUAL_SERVO,
+                    "vacuum": TaskStatus.SHOOT,
+                    "roll": TaskStatus.MOVE,
+                    "sleep": TaskStatus.MOVE} #TODO: change TaskStatus?
 
 
 class Task(object):
@@ -272,7 +290,6 @@ class Wait(object):
         result.success = True
         self._as.set_succeeded(result)
 
-
 class ChooseTask(object):
     """Choose which task to do based on hydrophones."""
 
@@ -331,6 +348,37 @@ class ChooseTask(object):
         self.goals.append(msg.data)
 
 
+#TODO: check what the hell im doing
+class Lanes(Task):
+    YAML = "follow_lane.yaml"
+    def __init__(self, name):
+        super(Lanes, self).__init__(name, self.execute_cb)
+
+        self.data = rospy.get_param("taskr/follow_lane")
+    def execute_cb(self, goal):
+        current_task.task = TaskStatus.VISUAL_SERVO
+        self.action_sequence(self.data)
+
+class Roulette(Task):
+    YAML = "roulette.yaml"
+    def __init__(self, name):
+        super(Roulette, self).__init__(name, self.execute_cb)
+
+        self.data = rospy.get_param("taskr/roulette")
+    def execute_cb(self, goal):
+        current_task.task = TaskStatus.VISUAL_SERVO
+        self.action_sequence(self.data)
+
+class Dice(Task):
+    YAML = "dice.yaml"
+    def __init__(self, name):
+        super(Dice, self).__init__(name, self.execute_cb)
+
+        self.data = rospy.get_param("taskr/dice")
+    def execute_cb(self, goal):
+        current_task.task = TaskStatus.VISUAL_SERVO
+        self.action_sequence(self.data)
+
 def publish_task(event):
     """Callback for timer which publishes the current task being attempted."""
     task_pub.publish(current_task)
@@ -355,6 +403,10 @@ if __name__ == '__main__':
     Octagon("octagon_task")
     Torpedo("torpedo_task")
     Square("square_task")
+    #TODO: check
+    Lanes("follow_lane_task")
+    Roulette("roulette_task")
+    Dice("dice_task")
 
     Wait()
     ChooseTask()

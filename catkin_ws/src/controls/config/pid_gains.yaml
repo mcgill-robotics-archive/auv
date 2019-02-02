@@ -1,10 +1,10 @@
 # Lists represent the K_p, K_i, K_d gains respectively
 translation_gains:
-    surge: [0.15, 0.0, 0.0]
-    sway: [0.01, 0.0, 0.0]
-    heave: [180.0, 4.0, 10]
+    surge: [11.0, 0.5, 3.0]
+    sway: [0.3, 0.0, 0.0]
+    heave: [50.0, 5.0, 20.0]
 
 rotation_gains:
-    pitch: [5.0, 0.0, 0.0]
-    roll: [1.0, 0.0, 0.0]
-    yaw: [50.0, 0.5, 5.0]
+    pitch: [0.15, 0.0, 0.50]
+    roll: [50.0, 0.0, 0.50]
+    yaw: [2.0, 0.1, 1.0]
