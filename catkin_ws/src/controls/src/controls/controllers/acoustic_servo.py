@@ -36,6 +36,5 @@ class AcousticServoController(YawMaintainer):
         self.last_heading_time = rospy.Time.now()
         current_yaw = self.get_current_yaw()
         self.set_setpoint(normalize_angle(current_yaw + msg.data))
-
     def heard_pinger(self):
         return self.is_pinger_heard
