@@ -1,0 +1,37 @@
+.csocial h2 {
+  color: $white;
+}
+
+.csocial a {
+  text-align: center;
+  height: 5rem;
+  width: 5rem;
+  font-size: 200%;
+  background: rgba(255, 255, 255, 0.10);
+  border-radius: 100%;
+  line-height: 5rem;
+  color: $secondary;
+}
+
+.csocial a:hover {
+  background: rgba(255, 255, 255, 0.75);
+}
+
+.contactForm label {
+  font-size: 120%;
+  color: $white;
+}
+
+.contactForm small {
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.contactForm button {
+  font-size: 120%;
+  color: $primary;
+}
+
+
+.contactForm button:hover {
+  color: $white;
+}

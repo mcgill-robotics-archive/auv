@@ -1,0 +1,15 @@
+#aboutPic {
+  width: 75%;
+}
+
+.content p {
+  color: $white;
+  font-size: 1rem;
+  text-align: justify;
+}
+
+@media (min-width: 768px) {
+  #aboutPic {
+    width: 50%;
+  }
+}
