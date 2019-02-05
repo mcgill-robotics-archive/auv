@@ -23,6 +23,7 @@ from dice_servo import DiceServo
 from vacuum import Vacuum
 #from torpedo import Torpedo
 from roll import Roll
+from sleep import Sleep
 
 current_task = TaskStatus()
 current_task.task = TaskStatus.TASK_IDLE
@@ -42,7 +43,8 @@ action_object_map = {"move_all": MoveAll,
                      "roulette": RouletteT,
                      "dice_servo": DiceServo,
                      "vacuum": Vacuum,
-                     "roll": Roll}
+                     "roll": Roll,
+                     "sleep": Sleep}
 
 action_state_map = {"move_all": TaskStatus.MOVE,
                     "move": TaskStatus.MOVE,
@@ -57,7 +59,8 @@ action_state_map = {"move_all": TaskStatus.MOVE,
                     "roulette": TaskStatus.VISUAL_SERVO, #TODO: change TaskStatus?
                     "dice_servo": TaskStatus.VISUAL_SERVO,
                     "vacuum": TaskStatus.SHOOT,
-                    "roll": TaskStatus.MOVE} #TODO: change TaskStatus?
+                    "roll": TaskStatus.MOVE,
+                    "sleep": TaskStatus.MOVE} #TODO: change TaskStatus?
 
 
 class Task(object):
@@ -286,7 +289,6 @@ class Wait(object):
         result = TaskResult()
         result.success = True
         self._as.set_succeeded(result)
-
 
 class ChooseTask(object):
     """Choose which task to do based on hydrophones."""

@@ -3,6 +3,7 @@ import rospy
 from cv.detectors import roulette_detector
 from controls.maintainers import yaw_maintainer, depth_maintainer
 from controls.controllers import visual_servo
+from std_msgs.msg import Float64
 
 
 class RouletteT(object):
@@ -12,10 +13,13 @@ class RouletteT(object):
         self.preempted = False
 
         self.yaw_maintainer = yaw_maintainer.YawMaintainer()
-        self.depth_maintainer = depth_maintainer.DepthMaintainer(setpoint= 1.7)
+        self.depth = data["depth"]
+        self.depth_maintainer = depth_maintainer.DepthMaintainer(self.depth)
         self.foundCounts = rospy.get_param("/taskr/roulette/foundCounts", 20)
         self.centerStableCounts = rospy.get_param("/taskr/roulette/centerStableCounts", 150)
         self.centerMaxError = rospy.get_param("/taskr/roulette/centerMaxError", 0.1)
+        self.SPEED = 10.0
+        self.surge_pub = rospy.Publisher('/controls/superimposer/surge', Float64, queue_size=1)
 
     def start(self, server, feedback_msg):
         # TODO: start the CV stuff
@@ -51,6 +55,7 @@ class RouletteT(object):
 
         roulFoundCounts = 0
         while roulFoundCounts < self.foundCounts:
+            self.surge_pub.publish(self.SPEED)
 
             if self.preempted:
                 return
@@ -66,6 +71,7 @@ class RouletteT(object):
             rospy.sleep(0.1)
 
         rospy.loginfo("Roulette successfully found.")
+        self.surge_pub.publish(0.0)
 
     def servoToCenter(self):
         rospy.loginfo("Centering over Roulette:")
@@ -82,7 +88,8 @@ class RouletteT(object):
 
             err = self.serv.get_error()
             # debug:
-            print("Error = {}".format(err))
+            if err != (None, None):
+                print("Error = {}".format(abs(err[0]) + abs(err[1])))
 
             if err == (None, None):
                 stable_counts = 0
