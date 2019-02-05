@@ -11,15 +11,15 @@ class Dive(object):
     def __init__(self, data):
         self.preempted = False
         self.depth = data["depth"]
-        self.stablePeriods = rospy.get_param("taskr/dive/stablePeriods",50)
-        self.yaw_maintainer = YawMaintainer()
+        self.stablePeriods = rospy.get_param("taskr/dive/stablePeriods",15000)
+        # self.yaw_maintainer = YawMaintainer()
         self.depth_maintainer = DepthMaintainer(self.depth)
 
     def start(self, server, feedback_msg):
         rospy.loginfo("Starting dive action")
 
-        if not self.yaw_maintainer.is_active():
-            self.yaw_maintainer.start()
+        #if not self.yaw_maintainer.is_active():
+        #    self.yaw_maintainer.start()
         if not self.depth_maintainer.is_active():
             self.depth_maintainer.start()
 
@@ -47,5 +47,5 @@ class Dive(object):
 
         if self.depth_maintainer.is_active():
             self.depth_maintainer.stop()
-        if self.yaw_maintainer.is_active():
-            self.yaw_maintainer.stop()
+        #if self.yaw_maintainer.is_active():
+        #    self.yaw_maintainer.stop()

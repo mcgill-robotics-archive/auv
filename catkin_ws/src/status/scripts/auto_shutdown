@@ -1,7 +1,7 @@
 #! /usr/bin/env python2.7
 import os
 import rospy
-from std_msgs.msg import Float32
+from std_msgs.msg import Float64
 from auv_msgs.msg import CPUTemperature
 import numpy as np
 import time
@@ -74,12 +74,12 @@ if __name__ == '__main__':
     global last_warning
     rospy.init_node('auto_shutdown')
     computer_present_threshold = rospy.get_param('computer_present', 10)
-    computer_warn = rospy.get_param('computer_warn', 21)
-    computer_hardoff = rospy.get_param('computer_hardoff', 20)
-    computer_init = rospy.get_param('computer_init', 22)
+    computer_warn = rospy.get_param('computer_warn', 14)
+    computer_hardoff = rospy.get_param('computer_hardoff', 13)
+    computer_init = rospy.get_param('computer_init', 16.5)
     motor_present_threshold = rospy.get_param('motor_present', 5)
-    motor_warn = rospy.get_param('motor_warn', 10)
-    motor_hardoff = rospy.get_param('motor_hardoff', 9)
+    motor_warn = rospy.get_param('motor_warn', 14)
+    motor_hardoff = rospy.get_param('motor_hardoff', 13)
     temperature_warn = rospy.get_param('temperature_warn', 85)
 
     rospy.loginfo('{}: Computer voltage warning at {} V'
@@ -96,9 +96,9 @@ if __name__ == '__main__':
             .format(node_name, temperature_warn))
     last_warning = rospy.Time.now()
     s1 = rospy.Subscriber(
-        'electrical_interface/motor_voltage', Float32, motor_voltage_cb)
+        'dcdc_nuc/input_voltage', Float64, motor_voltage_cb)
     s2 = rospy.Subscriber(
-        'electrical_interface/computer_voltage', Float32, computer_voltage_cb)
+        'dcdc_nuc/input_voltage', Float64, computer_voltage_cb)
     rospy.loginfo('{}: node started.'.format(node_name))
     rospy.spin()
 

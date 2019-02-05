@@ -14,7 +14,7 @@ class LaneDetector():
         self.pub = rospy.Publisher('cv/down_cam_target', CvTarget, queue_size=1)
         self.bridge = CvBridge()
         self.sub = rospy.Subscriber("/camera_down/image_raw", Image, self.callback)
-
+        print("starting laneDetector")
         self.angle_top_lane = None
         self.laneFound = False
 
@@ -56,12 +56,27 @@ class LaneDetector():
         xReturn = None
         yReturn = None
 
+        #blur
+        img = cv2.GaussianBlur(img, (7, 7), 2)
+
+        #img[:,:,1] = 0
+
+        # increase red
+        img[:, :, 2] = np.multiply(img[:, :, 2], 3 )
+        # print(img)
+        np.clip(img, 0, 255)
+
 
         # This is orange_filter:
-        MIN_CONTOUR_SIZE = rospy.get_param("/cv/lanes/orange_cnt_size", 10000)
+        MIN_CONTOUR_SIZE = rospy.get_param("/cv/lanes/orange_cnt_size", 40000)
         img_hvt = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
-        lower_orange = np.array([5, 50, 50])
-        upper_orange = np.array([30, 255, 255])
+        #lower_orange = np.array([165, 50, 50])
+        #upper_orange = np.array([180, 255, 255])
+
+        #NEW COMP VALUES
+        lower_orange = np.array([87, 50, 175])
+        upper_orange = np.array([107, 255, 255])
+
         mask = cv2.inRange(img_hvt, lower_orange, upper_orange)
 
         im2, cnt, hier = cv2.findContours(mask, cv2.RETR_LIST, cv2.CHAIN_APPROX_NONE)
@@ -85,7 +100,7 @@ class LaneDetector():
                 #return
             else:
                 # draw in blue the contours that were found
-                cv2.drawContours(img, [biggestCont], -1, (255, 0, 0), 3, 8)
+                cv2.drawContours(img, [biggestCont], -1, (255, 255, 0), 3, 8)
 
                 # create emptyImage for mask
                 contourMask = np.zeros(img.shape, np.uint8)
@@ -273,7 +288,7 @@ class LaneDetector():
         self.sub.unregister()
 
     def smoothPoint(self,xVal,yVal):
-        if len(self.smoothQueue) < 3:
+        if len(self.smoothQueue) < 4:
             self.smoothQueue.append((xVal,yVal))
         else:
             self.smoothQueue.popleft()
