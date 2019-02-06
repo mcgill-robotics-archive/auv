@@ -51,6 +51,7 @@ $cyan:    #17a2b8 !default;
 $gblue:   #A9B7C0 !default;
 $minty:   #C7D8C6 !default;
 $peach:   #EFD9C1 !default;
+$steel:   #EDEDED !default;
 
 $colors: () !default;
 // stylelint-disable-next-line scss/dollar-variable-default
@@ -73,13 +74,13 @@ $colors: map-merge(
   $colors
 );
 
-$primary:       $gblue !default;
+$primary:       $steel !default;
 $secondary:     $peach !default;
 $success:       $green !default;
 $info:          $cyan !default;
 $warning:       $yellow !default;
 $danger:        $red !default;
-$light:         $gray-100 !default;
+$light:         $gray-200 !default;
 $dark:          $gray-800 !default;
 
 $theme-colors: () !default;
