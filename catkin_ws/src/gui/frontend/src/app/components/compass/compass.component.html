@@ -1,4 +1,4 @@
-<section class="container p-3">
+<section id="compass-wrapper" class="container border boarder-primary rounded p-4">
   <div #compass id="compass" class="container p-0">
     <div id="deg0" class="radial-mark"><p>0</p></div>
     <div id="deg45" class="radial-mark"><p>45&deg;</p></div>
@@ -17,6 +17,13 @@
     </div>
     <div #pingerBlip id="ping-container" class="ping-container">
       <div id="ping" class="ping animate-ping"></div>
+    </div>
+  </div>
+  <div id="legend" class="card mt-4 justify-content-center">
+    <div id="legend-body" class="card-body">
+      <p><b>Heading:</b> {{heading}} rad | {{heading_deg}}&deg;</p>
+      <p><b>Setpoint:</b> {{setpoint}} rad | {{setpoint_deg}}&deg;</p>
+      <p><b>Pinger:</b> {{pinger}} rad | {{pinger_deg}}&deg;</p>
     </div>
   </div>
 </section>

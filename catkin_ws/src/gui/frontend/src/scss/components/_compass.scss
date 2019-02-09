@@ -1,6 +1,6 @@
-$outer-d: 40vw;
-$inner-d: 10vw;
-$mark-w: 4vw;
+$outer-d: 40vh;
+$inner-d: 10vh;
+$mark-w: 4vh;
 
 #compass {
 	width: $outer-d;
@@ -8,7 +8,7 @@ $mark-w: 4vw;
   border-radius: 100%;
   margin: 0 auto;
   background: $gray-100;
-  position: absolute;
+  position: relative;
   box-shadow: 0 0 1px 8px $gray-400,
               0px 3px 20px;
 }
@@ -24,12 +24,25 @@ $mark-w: 4vw;
 	top: (($outer-d/2) - ($inner-d/2));
 }
 
+#legend {
+  width: 40vh;
+  margin: 0 auto;
+  box-shadow: 0px 3px 5px $gray-400;
+}
+
+#legend-body p {
+  padding: 0.25vh 0;
+  margin: 0;
+  line-height: 1.25em;
+  font-size: 0.75em;
+}
+
 .arrow-container {
   height: 100%;
-  width: 2vw;
+  width: 2vh;
   margin: 0;
   padding: 0;
-	left: (($outer-d/2) - 1vw);
+	left: (($outer-d/2) - 1vh);
   position: absolute;
   box-sizing:border-box;
 }
@@ -39,8 +52,8 @@ $mark-w: 4vw;
 	height: 0;
   margin: 0 !important;
   padding: 0 !important;
-	border-left: 1vw solid transparent;
-	border-right: 1vw solid transparent;
+	border-left: 1vh solid transparent;
+	border-right: 1vh solid transparent;
 	position: relative;
 }
 
@@ -90,17 +103,17 @@ $mark-w: 4vw;
 
 .ping-container {
   height: 100%;
-  width: 4vw;
+  width: 4vh;
   margin: 0;
   padding: 0;
-	left: (($outer-d/2) - 2vw);
+	left: (($outer-d/2) - 2vh);
   position: absolute;
   box-sizing:border-box;
 }
 
 .ping {
-  width: 4vw;
-  height: 4vw;
+  width: 4vh;
+  height: 4vh;
   border-radius: 100%;
   background: -webkit-radial-gradient(circle, $red, transparent);
 }
@@ -127,7 +140,7 @@ $mark-w: 4vw;
 #deg0 {
   position: absolute;
 	left: (($outer-d/2) - ($mark-w/2));
-	top: 1vw;
+	top: 1vh;
 }
 
 #deg45 {
@@ -138,7 +151,7 @@ $mark-w: 4vw;
 
 #deg90 {
   position: absolute;
-	left: 1vw;
+	left: 1vh;
 	top: (($outer-d/2) - ($mark-w/2));
 }
 
@@ -151,7 +164,7 @@ $mark-w: 4vw;
 #deg180 {
   position: absolute;
 	left: (($outer-d/2) - ($mark-w/2));
-	bottom: 1vw;
+	bottom: 1vh;
 }
 
 #deg-45 {
@@ -162,7 +175,7 @@ $mark-w: 4vw;
 
 #deg-90 {
   position: absolute;
-	right: 1vw;
+	right: 1vh;
 	top: (($outer-d/2) - ($mark-w/2));
 }
 

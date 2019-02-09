@@ -6320,30 +6320,41 @@ a.text-dark:hover, a.text-dark:focus {
     border-color: #dee2e6; } }
 
 #compass {
-  width: 40vw;
-  height: 40vw;
+  width: 40vh;
+  height: 40vh;
   border-radius: 100%;
   margin: 0 auto;
   background: #f8f9fa;
-  position: absolute;
+  position: relative;
   box-shadow: 0 0 1px 8px #ced4da, 0px 3px 20px; }
 
 #compass-inner {
   display: block;
-  width: 10vw;
-  height: 10vw;
+  width: 10vh;
+  height: 10vh;
   background-color: #343a40;
   border-radius: 100%;
   position: absolute;
-  left: 15vw;
-  top: 15vw; }
+  left: 15vh;
+  top: 15vh; }
+
+#legend {
+  width: 40vh;
+  margin: 0 auto;
+  box-shadow: 0px 3px 5px #ced4da; }
+
+#legend-body p {
+  padding: 0.25vh 0;
+  margin: 0;
+  line-height: 1.25em;
+  font-size: 0.75em; }
 
 .arrow-container {
   height: 100%;
-  width: 2vw;
+  width: 2vh;
   margin: 0;
   padding: 0;
-  left: 19vw;
+  left: 19vh;
   position: absolute;
   box-sizing: border-box; }
 
@@ -6352,15 +6363,15 @@ a.text-dark:hover, a.text-dark:focus {
   height: 0;
   margin: 0 !important;
   padding: 0 !important;
-  border-left: 1vw solid transparent;
-  border-right: 1vw solid transparent;
+  border-left: 1vh solid transparent;
+  border-right: 1vh solid transparent;
   position: relative; }
 
 #heading-arrow {
-  border-bottom: 20vw solid #343a40; }
+  border-bottom: 20vh solid #343a40; }
 
 #setpoint-arrow {
-  border-bottom: 20vw solid #adb5bd; }
+  border-bottom: 20vh solid #adb5bd; }
 
 @keyframes pingAnimation {
   0% {
@@ -6406,24 +6417,24 @@ a.text-dark:hover, a.text-dark:focus {
 
 .ping-container {
   height: 100%;
-  width: 4vw;
+  width: 4vh;
   margin: 0;
   padding: 0;
-  left: 18vw;
+  left: 18vh;
   position: absolute;
   box-sizing: border-box; }
 
 .ping {
-  width: 4vw;
-  height: 4vw;
+  width: 4vh;
+  height: 4vh;
   border-radius: 100%;
   background: -webkit-radial-gradient(circle, #dc3545, transparent); }
 
 .radial-mark {
   margin: 0;
   padding: 0;
-  width: 4vw;
-  height: 4vw;
+  width: 4vh;
+  height: 4vh;
   justify-content: center;
   align-items: center; }
 
@@ -6431,50 +6442,50 @@ a.text-dark:hover, a.text-dark:focus {
   margin: 0;
   padding: 0;
   font-size: 1.25em;
-  line-height: 4vw;
+  line-height: 4vh;
   text-align: center;
   white-space: nowrap;
   color: #ced4da; }
 
 #deg0 {
   position: absolute;
-  left: 18vw;
-  top: 1vw; }
+  left: 18vh;
+  top: 1vh; }
 
 #deg45 {
   position: absolute;
-  left: 6vw;
-  top: 6vw; }
+  left: 6vh;
+  top: 6vh; }
 
 #deg90 {
   position: absolute;
-  left: 1vw;
-  top: 18vw; }
+  left: 1vh;
+  top: 18vh; }
 
 #deg135 {
   position: absolute;
-  left: 6vw;
-  bottom: 6vw; }
+  left: 6vh;
+  bottom: 6vh; }
 
 #deg180 {
   position: absolute;
-  left: 18vw;
-  bottom: 1vw; }
+  left: 18vh;
+  bottom: 1vh; }
 
 #deg-45 {
   position: absolute;
-  right: 6vw;
-  top: 6vw; }
+  right: 6vh;
+  top: 6vh; }
 
 #deg-90 {
   position: absolute;
-  right: 1vw;
-  top: 18vw; }
+  right: 1vh;
+  top: 18vh; }
 
 #deg-135 {
   position: absolute;
-  right: 6vw;
-  bottom: 6vw; }
+  right: 6vh;
+  bottom: 6vh; }
 
 #nav {
   min-height: 56px;
