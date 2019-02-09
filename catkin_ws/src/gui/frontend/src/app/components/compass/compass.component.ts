@@ -15,9 +15,9 @@ export class CompassComponent implements OnInit {
   @ViewChild('pingerBlip') pingerBlipRef: ElementRef;
 
   // Data
-  heading: number = 1.57;
-  setpoint: number = 3.14;
-  pinger: number = 5.62;
+  heading: number = 0;
+  setpoint: number = 1.57;
+  pinger: number = 3.14;
 
   // Data | UI
   headingDeg: number = 180;
