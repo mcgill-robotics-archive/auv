@@ -17,9 +17,6 @@ export class NavbarComponent implements OnInit {
   }
 
   onOutsideClicked(event) {
-    var dropdown = document.getElementById('navbarNav');
-    if (dropdown.classList.contains('show')) {
-      dropdown.classList.remove('show');
-    }
+    // Close dropdown
   }
 }

@@ -1,0 +1,173 @@
+$outer-d: 40vw;
+$inner-d: 10vw;
+$mark-w: 4vw;
+
+#compass {
+	width: $outer-d;
+	height: $outer-d;
+  border-radius: 100%;
+  margin: 0 auto;
+  background: $gray-100;
+  position: absolute;
+  box-shadow: 0 0 1px 8px $gray-400,
+              0px 3px 20px;
+}
+
+#compass-inner {
+  display: block;
+	width: $inner-d;
+	height: $inner-d;
+	background-color: $dark;
+	border-radius: 100%;
+	position: absolute;
+	left: (($outer-d/2) - ($inner-d/2));
+	top: (($outer-d/2) - ($inner-d/2));
+}
+
+.arrow-container {
+  height: 100%;
+  width: 2vw;
+  margin: 0;
+  padding: 0;
+	left: (($outer-d/2) - 1vw);
+  position: absolute;
+  box-sizing:border-box;
+}
+
+.arrow {
+  width: 0;
+	height: 0;
+  margin: 0 !important;
+  padding: 0 !important;
+	border-left: 1vw solid transparent;
+	border-right: 1vw solid transparent;
+	position: relative;
+}
+
+#heading-arrow {
+	border-bottom: ($outer-d/2) solid $dark;
+}
+
+#setpoint-arrow {
+	border-bottom: ($outer-d/2) solid $gray-500;
+}
+
+@keyframes pingAnimation {
+  0%   { opacity: 0.0; }
+  50%  { opacity: 1.0; }
+  100% { opacity: 0.0; }
+}
+
+@-moz-keyframes pingAnimation {
+  0%   { opacity: 0.0; }
+  50%  { opacity: 1.0; }
+  100% { opacity: 0.0; }
+}
+
+@-webkit-keyframes pingAnimation {
+  0%   { opacity: 0.0; }
+  50%  { opacity: 1.0; }
+  100% { opacity: 0.0; }
+}
+
+@-o-keyframes pingAnimation {
+  0%   { opacity: 0.0; }
+  50%  { opacity: 1.0; }
+  100% { opacity: 0.0; }
+}
+
+.animate-ping {
+  -webkit-animation-timing-function: cubic-bezier();
+  -moz-animation-timing-function: cubic-bezier();
+  -o-animation-timing-function: cubic-bezier();
+  animation-timing-function: cubic-bezier();
+
+  -webkit-animation: pingAnimation 3s ease infinite;
+  -moz-animation: pingAnimation 3s ease infinite;
+  -o-animation: pingAnimation 3s ease infinite;
+  animation: pingAnimation 3s ease infinite
+}
+
+.ping-container {
+  height: 100%;
+  width: 4vw;
+  margin: 0;
+  padding: 0;
+	left: (($outer-d/2) - 2vw);
+  position: absolute;
+  box-sizing:border-box;
+}
+
+.ping {
+  width: 4vw;
+  height: 4vw;
+  border-radius: 100%;
+  background: -webkit-radial-gradient(circle, $red, transparent);
+}
+
+.radial-mark {
+  margin: 0;
+  padding: 0;
+  width: $mark-w;
+  height: $mark-w;
+  justify-content: center;
+  align-items: center;
+}
+
+.radial-mark p {
+  margin: 0;
+  padding: 0;
+  font-size: 1.25em;
+  line-height: $mark-w;
+  text-align: center;
+  white-space: nowrap;
+  color: $gray-400;
+}
+
+#deg0 {
+  position: absolute;
+	left: (($outer-d/2) - ($mark-w/2));
+	top: 1vw;
+}
+
+#deg45 {
+  position: absolute;
+  left: (($outer-d/5) - ($mark-w/2));
+  top: (($outer-d/5) - ($mark-w/2));
+}
+
+#deg90 {
+  position: absolute;
+	left: 1vw;
+	top: (($outer-d/2) - ($mark-w/2));
+}
+
+#deg135 {
+  position: absolute;
+  left: (($outer-d/5) - ($mark-w/2));
+  bottom: (($outer-d/5) - ($mark-w/2));
+}
+
+#deg180 {
+  position: absolute;
+	left: (($outer-d/2) - ($mark-w/2));
+	bottom: 1vw;
+}
+
+#deg-45 {
+  position: absolute;
+  right: (($outer-d/5) - ($mark-w/2));
+  top: (($outer-d/5) - ($mark-w/2));
+}
+
+#deg-90 {
+  position: absolute;
+	right: 1vw;
+	top: (($outer-d/2) - ($mark-w/2));
+}
+
+#deg-135 {
+  position: absolute;
+  right: (($outer-d/5) - ($mark-w/2));
+  bottom: (($outer-d/5) - ($mark-w/2));
+}
