@@ -1,4 +1,9 @@
 import { Component, OnInit } from '@angular/core';
+import { Component, ElementRef, OnInit, ViewChild } from '@angular/core';
+import {Subscription} from 'rxjs/Subscription';
+import * as ROSLIB from 'roslib';
+
+import { RosService } from 'app/services/ros.service';
 
 @Component({
   selector: 'app-battery',
@@ -6,11 +11,59 @@ import { Component, OnInit } from '@angular/core';
 })
 export class BatteryComponent implements OnInit {
 
-  voltage: number = 14.2;
+  @ViewChild('batLevel') voltageGaugeRef: ElementRef;
 
-  constructor() { }
+  // Data
+  voltage: number = 15.1;
 
-  ngOnInit() {
+  // Limits
+  readonly minVoltage: number = 13;
+  readonly maxVoltage: number = 17;
+
+  // UI
+  readonly maxGaugeSize: number = 15.5;
+  voltageGauge: number = 0;
+
+  // ROS
+  connection: Subscription;
+  voltageSub: any;
+
+  constructor(private rosService: RosService) {
+    this.connection = this.rosService.connection$.subscribe(data => {
+      if (data) {
+        this.listen();
+      }
+    });
   }
 
+  ngOnInit() {
+    this.update();
+  }
+
+  listen() {
+    this.voltageSub = new ROSLIB.Topic({
+      ros : this.rosService.getRos(),
+      name : '/dcdc_nuc/input_voltage',
+      messageType : 'std_msgs/Float64'
+    });
+    this.voltageSub.subscribe(function(message) {
+      this.voltage = message.data;
+      this.update();
+    }.bind(this));
+  };
+
+  detach() {
+    // TODO unsubscribe from ROS topic
+  }
+
+  update() {
+    this.voltageGauge = ((this.voltage - this.minVoltage) /
+        (this.maxVoltage - this.minVoltage)) * this.maxGaugeSize;
+
+    this.voltageGaugeRef.nativeElement.style.width = this.voltageGauge + 'vh';
+  }
+
+  ngOnDestroy() {
+    this.connection.unsubscribe();
+  }
 }
