@@ -1,12 +1,16 @@
-<!-- Header -->
-<header>
-  <h1>HI</h1>
-  <p> The voltage is {{ data.voltage}}</p>
-  <p> Current orientation {{data.orientation}}</p>
-  <p> Current Status {{data.OnOrOff}}</p>
-  <p> Current depth {{data.depth}}</p>
-
-  <button (click) ="onClick"> 
-    Send Data
-  </button>
-</header>
+<div class="container w-100 mb-5">
+  <div class="row">
+    <div class="my-auto col-lg-6 col-xs-12">
+      <app-connection></app-connection>
+    </div>
+    <div class="my-auto col-lg-6 col-xs-12">
+      <app-battery></app-battery>
+    </div>
+    <div class="my-auto col-lg-6 col-xs-12">
+      <app-depth></app-depth>
+    </div>
+    <div class="my-auto col-lg-6 col-xs-12">
+      <app-compass></app-compass>
+    </div>
+  </div>
+</div>
