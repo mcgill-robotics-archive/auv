@@ -1,4 +1,8 @@
 import { Component, ElementRef, ViewChild, OnInit } from '@angular/core';
+import {Subscription} from 'rxjs/Subscription';
+import * as ROSLIB from 'roslib';
+
+import { RosService } from 'app/services/ros.service';
 
 @Component({
   selector: 'app-compass',
@@ -10,18 +14,58 @@ export class CompassComponent implements OnInit {
   @ViewChild('headingArrow') headingArrowRef: ElementRef;
   @ViewChild('pingerBlip') pingerBlipRef: ElementRef;
 
+  // Data
   heading: number = 1.57;
   setpoint: number = 3.14;
   pinger: number = 5.62;
 
-  heading_deg: number = 180;
-  setpoint_deg: number = 45;
-  pinger_deg: number = 315;
+  // Data | UI
+  headingDeg: number = 180;
+  setpointDeg: number = 45;
+  pingerDeg: number = 315;
 
-  constructor() { }
+  // ROS
+  connection: Subscription;
+  headingSub: any;
+  setpointSub: any;
+  pingerSub: any;
+
+  constructor(private rosService: RosService) {
+    this.connection = this.rosService.connection$.subscribe(data => {
+      if (data) {
+        this.listen();
+      }
+    });
+  }
 
   ngOnInit() {
     this.update();
+  }
+
+  listen() {
+    this.headingSub = new ROSLIB.Topic({
+      ros : this.rosService.getRos(),
+      name : '/state_estimation/yaw',
+      messageType : 'std_msgs/Float64'
+    });
+    this.headingSub.subscribe(function(message) {
+      this.heading = message.data;
+      this.update();
+    }.bind(this));
+
+    this.pingerSub = new ROSLIB.Topic({
+      ros : this.rosService.getRos(),
+      name : '/hydrophones/heading',
+      messageType : 'std_msgs/Float64'
+    });
+    this.pingerSub.subscribe(function(message) {
+      this.pinger = message.data;
+      this.update();
+    }.bind(this));
+  };
+
+  detach() {
+    // TODO unsubscribe from ROS topic
   }
 
   rad2Deg(rad) {
@@ -31,21 +75,25 @@ export class CompassComponent implements OnInit {
   update() {
     // TODO mmight be better to move this elsewhere when the rest of
     // the system is implemented
-    this.heading_deg = this.rad2Deg(this.heading);
-    this.setpoint_deg = this.rad2Deg(this.setpoint);
-    this.pinger_deg = this.rad2Deg(this.pinger);
+    this.headingDeg = this.rad2Deg(this.heading);
+    this.setpointDeg = this.rad2Deg(this.setpoint);
+    this.pingerDeg = this.rad2Deg(this.pinger);
     // END TODO
 
     this.headingArrowRef.nativeElement.style.transform =
-        'rotate(' + this.heading_deg + 'deg)';
+        'rotate(' + this.headingDeg + 'deg)';
     this.setpointArrowRef.nativeElement.style.transform =
-        'rotate(' + this.setpoint_deg + 'deg)';
+        'rotate(' + this.setpointDeg + 'deg)';
     if (this.pinger > 0) {
       this.pingerBlipRef.nativeElement.style.visibility = 'visible';
       this.pingerBlipRef.nativeElement.style.transform =
-          'rotate(' + this.pinger_deg + 'deg)';
+          'rotate(' + this.pingerDeg + 'deg)';
     } else {
       this.pingerBlipRef.nativeElement.style.visibility = 'hidden';
     }
+  }
+
+  ngOnDestroy() {
+    this.connection.unsubscribe();
   }
 }

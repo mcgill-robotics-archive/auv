@@ -3,27 +3,24 @@
   width: 18vh;
   height: 6vh;
   border: 1vh solid $gray-400;
+}
 
-  &:before {
-    content: '';
-    display: block;
-    height: 4vh;
-    width: 1vh;
-    margin: auto 17vh;
-    background: $gray-400;
-  }
+.nubbin {
+  display: block;
+  height: 4vh;
+  width: 1vh;
+  margin: auto 17vh;
+  background: $gray-400;
+}
 
-  &:after {
-    position: absolute;
-    top: 0;
-    content: '';
-    display: block;
-    border: 1.75vh solid $red;
-    height: 0;
-    margin: 0.4vh;
-    animation: 6s ease-in-out charging infinite;
-    animation-direction: alternate;
-  }
+.batLevel {
+  position: absolute;
+  top: 0;
+  display: block;
+  border: 1.75vh solid $red;
+  width: 0;
+  height: 0;
+  margin: 0.4vh;
 }
 
 .battery-text {
@@ -33,12 +30,4 @@
 
 .battery-note {
   font-size: 0.6em;
-}
-
-@keyframes charging {
-  @for $i from 1 to 101 {
-    #{$i}% {
-      width: #{$i / 100 * 15.5}vh;
-    }
-  }
 }

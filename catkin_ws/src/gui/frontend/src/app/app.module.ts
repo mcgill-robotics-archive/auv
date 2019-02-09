@@ -5,6 +5,8 @@ import { FlashMessagesModule } from 'angular2-flash-messages';
 
 import { environment } from '../environments/environment';
 
+import { RosService } from 'app/services/ros.service';
+
 import { AppComponent } from './app.component';
 import { NavbarComponent } from './components/navbar/navbar.component';
 import { HomeComponent } from './components/home/home.component';
@@ -34,7 +36,11 @@ const routes: Routes = [
     RouterModule.forRoot(routes),
     FlashMessagesModule.forRoot(),
   ],
-  providers: [],
-  bootstrap: [AppComponent]
+  providers: [
+    RosService
+  ],
+  bootstrap: [
+    AppComponent
+  ]
 })
 export class AppModule { }
