@@ -11,6 +11,7 @@ import { HomeComponent } from './components/home/home.component';
 import { TestComponent } from './components/test/test.component';
 import { CompassComponent } from './components/compass/compass.component';
 import { BatteryComponent } from './components/battery/battery.component';
+import { DepthComponent } from './components/depth/depth.component';
 
 const routes: Routes = [
   {path: '', component: HomeComponent},
@@ -25,7 +26,8 @@ const routes: Routes = [
     HomeComponent,
     TestComponent,
     CompassComponent,
-    BatteryComponent
+    BatteryComponent,
+    DepthComponent
   ],
   imports: [
     BrowserModule,

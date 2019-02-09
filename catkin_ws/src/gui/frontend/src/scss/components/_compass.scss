@@ -9,8 +9,7 @@ $mark-w: 4vh;
   margin: 0 auto;
   background: $gray-100;
   position: relative;
-  box-shadow: 0 0 1px 8px $gray-400,
-              0px 3px 20px;
+  box-shadow: 0 0 1px 8px $gray-400;
 }
 
 #compass-inner {
@@ -62,7 +61,7 @@ $mark-w: 4vh;
 }
 
 #setpoint-arrow {
-	border-bottom: ($outer-d/2) solid $gray-500;
+	border-bottom: ($outer-d/2) solid $gray-400;
 }
 
 @keyframes pingAnimation {

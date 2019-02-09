@@ -6326,7 +6326,7 @@ a.text-dark:hover, a.text-dark:focus {
   margin: 0 auto;
   background: #f8f9fa;
   position: relative;
-  box-shadow: 0 0 1px 8px #ced4da, 0px 3px 20px; }
+  box-shadow: 0 0 1px 8px #ced4da; }
 
 #compass-inner {
   display: block;
@@ -6371,7 +6371,7 @@ a.text-dark:hover, a.text-dark:focus {
   border-bottom: 20vh solid #343a40; }
 
 #setpoint-arrow {
-  border-bottom: 20vh solid #adb5bd; }
+  border-bottom: 20vh solid #ced4da; }
 
 @keyframes pingAnimation {
   0% {
@@ -6719,6 +6719,108 @@ a.text-dark:hover, a.text-dark:focus {
     width: 15.345vh; }
   100% {
     width: 15.5vh; } }
+
+.depth-wrapper {
+  width: 20vh;
+  height: 30vh; }
+
+.depth-gauge {
+  position: relative;
+  width: 10vh;
+  height: 35vh;
+  border-left: 1vh solid #ced4da;
+  border-right: 1vh solid #ced4da;
+  background: #6699CC; }
+
+#depth-data {
+  width: 20vh;
+  margin: 0 auto;
+  box-shadow: 0px 3px 5px #ced4da; }
+
+#depth-data-body p {
+  padding: 0.25vh 0;
+  margin: 0;
+  line-height: 1.25em;
+  font-size: 0.75em; }
+
+.level {
+  width: 8vh;
+  height: 1vh; }
+
+#depth-level {
+  position: absolute;
+  left: 0;
+  top: 0;
+  background: #343a40; }
+
+#setpoint-level {
+  position: absolute;
+  left: 0;
+  top: 5vh;
+  background: #ced4da; }
+
+.tick-label p {
+  width: 4vh;
+  padding: 0;
+  margin: 0;
+  padding-right: 0.75vh;
+  font-size: 0.8em;
+  text-align: right; }
+
+.tick-mark {
+  width: 5vh;
+  height: 1vh;
+  background: #ced4da; }
+
+#tick1 {
+  position: absolute;
+  left: -5vh;
+  top: 0; }
+
+#tick2 {
+  position: absolute;
+  left: -5vh;
+  top: 8.25vh; }
+
+#tick3 {
+  position: absolute;
+  left: -5vh;
+  top: 17vh; }
+
+#tick4 {
+  position: absolute;
+  left: -5vh;
+  bottom: 8.25vh; }
+
+#tick5 {
+  position: absolute;
+  left: -5vh;
+  bottom: 0; }
+
+#tick1-label {
+  position: absolute;
+  left: -9vh;
+  top: 0; }
+
+#tick2-label {
+  position: absolute;
+  left: -9vh;
+  top: 8.25vh; }
+
+#tick3-label {
+  position: absolute;
+  left: -9vh;
+  top: 17vh; }
+
+#tick4-label {
+  position: absolute;
+  left: -9vh;
+  top: 25.75vh; }
+
+#tick5-label {
+  position: absolute;
+  left: -9vh;
+  top: 34vh; }
 
 #nav {
   min-height: 56px;
