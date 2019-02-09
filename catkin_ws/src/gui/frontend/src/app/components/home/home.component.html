@@ -1,4 +1,12 @@
 <!-- Header -->
 <header>
   <h1>HI</h1>
+  <p> The voltage is {{ data.voltage}}</p>
+  <p> Current orientation {{data.orientation}}</p>
+  <p> Current Status {{data.OnOrOff}}</p>
+  <p> Current depth {{data.depth}}</p>
+
+  <button (click) ="onClick"> 
+    Send Data
+  </button>
 </header>
