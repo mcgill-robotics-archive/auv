@@ -16,9 +16,14 @@ import { CompassComponent } from './components/compass/compass.component';
 import { BatteryComponent } from './components/battery/battery.component';
 import { DepthComponent } from './components/depth/depth.component';
 import { ConnectionComponent } from './components/connection/connection.component';
+import { CameraComponent } from './components/camera/camera.component';
+import { MissionComponent } from './components/mission/mission.component';
+import { VisionComponent } from './components/vision/vision.component';
 
 const routes: Routes = [
   {path: '', component: HomeComponent},
+  {path: 'mission', component: MissionComponent},
+  {path: 'vision', component: VisionComponent},
   {path: 'test', component: TestComponent},
   {path: '**', redirectTo:''}
 ]
@@ -32,7 +37,10 @@ const routes: Routes = [
     CompassComponent,
     BatteryComponent,
     DepthComponent,
-    ConnectionComponent
+    ConnectionComponent,
+    CameraComponent,
+    MissionComponent,
+    VisionComponent
   ],
   imports: [
     BrowserModule,
