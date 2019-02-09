@@ -112,10 +112,11 @@ $mark-w: 4vh;
 }
 
 .ping {
+	margin-top: 0.5vh;
   width: 4vh;
   height: 4vh;
   border-radius: 100%;
-  background: -webkit-radial-gradient(circle, $red, transparent);
+  background: $red;//-webkit-radial-gradient(circle, $red, transparent);
 }
 
 .radial-mark {
