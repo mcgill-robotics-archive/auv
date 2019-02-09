@@ -8,9 +8,12 @@ import { environment } from '../environments/environment';
 import { AppComponent } from './app.component';
 import { NavbarComponent } from './components/navbar/navbar.component';
 import { HomeComponent } from './components/home/home.component';
+import { TestComponent } from './components/test/test.component';
+import { CompassComponent } from './components/compass/compass.component';
 
 const routes: Routes = [
   {path: '', component: HomeComponent},
+  {path: 'test', component: TestComponent},
   {path: '**', redirectTo:''}
 ]
 
@@ -18,7 +21,9 @@ const routes: Routes = [
   declarations: [
     AppComponent,
     NavbarComponent,
-    HomeComponent
+    HomeComponent,
+    TestComponent,
+    CompassComponent
   ],
   imports: [
     BrowserModule,
