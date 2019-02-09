@@ -14,8 +14,8 @@ export class DepthComponent implements OnInit {
   @ViewChild('setpointLevel') setpointLevelRef: ElementRef;
 
   // Data
-  depth: number = 4.4;
-  setpoint: number = 5.2;
+  depth: number = 0;
+  setpoint: number = 1;
 
   // UI
   readonly minDisplayDepth: number = 4.0;

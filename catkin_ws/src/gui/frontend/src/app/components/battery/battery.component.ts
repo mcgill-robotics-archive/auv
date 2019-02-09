@@ -1,4 +1,3 @@
-import { Component, OnInit } from '@angular/core';
 import { Component, ElementRef, OnInit, ViewChild } from '@angular/core';
 import {Subscription} from 'rxjs/Subscription';
 import * as ROSLIB from 'roslib';
@@ -14,7 +13,7 @@ export class BatteryComponent implements OnInit {
   @ViewChild('batLevel') voltageGaugeRef: ElementRef;
 
   // Data
-  voltage: number = 15.1;
+  voltage: number = 0;
 
   // Limits
   readonly minVoltage: number = 13;

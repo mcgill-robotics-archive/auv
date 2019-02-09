@@ -1,6 +1,7 @@
 import { BrowserModule } from '@angular/platform-browser';
 import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
+import { FormsModule } from '@angular/forms';
 import { FlashMessagesModule } from 'angular2-flash-messages';
 
 import { environment } from '../environments/environment';
@@ -14,6 +15,7 @@ import { TestComponent } from './components/test/test.component';
 import { CompassComponent } from './components/compass/compass.component';
 import { BatteryComponent } from './components/battery/battery.component';
 import { DepthComponent } from './components/depth/depth.component';
+import { ConnectionComponent } from './components/connection/connection.component';
 
 const routes: Routes = [
   {path: '', component: HomeComponent},
@@ -29,11 +31,13 @@ const routes: Routes = [
     TestComponent,
     CompassComponent,
     BatteryComponent,
-    DepthComponent
+    DepthComponent,
+    ConnectionComponent
   ],
   imports: [
     BrowserModule,
     RouterModule.forRoot(routes),
+    FormsModule,
     FlashMessagesModule.forRoot(),
   ],
   providers: [
