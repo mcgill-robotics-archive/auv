@@ -1,7 +1,7 @@
 # ~/.tmuxinator/auv.yml
 
 name: MAIN
-root: /home/jerome/Projects/Robotics/auv
+root: ~
 
 pre: mv ~/.zhistory ~/.zhistory.old && strings ~/.zhistory.old > ~/.zhistory && export SHELL=/bin/zsh && export PATH=/usr/local/sbin/:/usr/local/bin/:/usr/sbin:${PATH}:/sbin:/usr/games:/usr/local/games
 
