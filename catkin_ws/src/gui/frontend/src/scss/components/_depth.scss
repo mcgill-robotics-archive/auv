@@ -36,6 +36,8 @@
 .level {
   width: 8vh;
   height: 1vh;
+  -webkit-transition: top 1s ease;
+  transition: top 1s ease;
 }
 
 #depth-level {

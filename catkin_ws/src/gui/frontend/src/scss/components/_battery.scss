@@ -17,10 +17,12 @@
   position: absolute;
   top: 0;
   display: block;
-  border: 1.75vh solid $red;
   width: 0;
-  height: 0;
+  height: 3.3vh;
   margin: 0.4vh;
+  background: $red;
+  -webkit-transition: width 1s ease;
+  transition: width 1s ease;
 }
 
 .battery-text {

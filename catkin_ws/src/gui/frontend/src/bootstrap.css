@@ -6362,7 +6362,9 @@ a.text-dark:hover, a.text-dark:focus {
   padding: 0;
   left: 19vh;
   position: absolute;
-  box-sizing: border-box; }
+  box-sizing: border-box;
+  -webkit-transition: transform 1s ease;
+  transition: transform 1s ease; }
 
 .arrow {
   width: 0;
@@ -6428,7 +6430,9 @@ a.text-dark:hover, a.text-dark:focus {
   padding: 0;
   left: 18vh;
   position: absolute;
-  box-sizing: border-box; }
+  box-sizing: border-box;
+  -webkit-transition: transform 1s ease;
+  transition: transform 1s ease; }
 
 .ping {
   margin-top: 0.5vh;
@@ -6511,10 +6515,12 @@ a.text-dark:hover, a.text-dark:focus {
   position: absolute;
   top: 0;
   display: block;
-  border: 1.75vh solid #dc3545;
   width: 0;
-  height: 0;
-  margin: 0.4vh; }
+  height: 3.3vh;
+  margin: 0.4vh;
+  background: #dc3545;
+  -webkit-transition: width 1s ease;
+  transition: width 1s ease; }
 
 .battery-text {
   font-size: 1em;
@@ -6555,7 +6561,9 @@ a.text-dark:hover, a.text-dark:focus {
 
 .level {
   width: 8vh;
-  height: 1vh; }
+  height: 1vh;
+  -webkit-transition: top 1s ease;
+  transition: top 1s ease; }
 
 #depth-level {
   position: absolute;

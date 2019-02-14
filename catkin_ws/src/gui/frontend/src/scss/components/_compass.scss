@@ -52,6 +52,8 @@ $mark-w: 4vh;
 	left: (($outer-d/2) - 1vh);
   position: absolute;
   box-sizing:border-box;
+	-webkit-transition: transform 1s ease;
+	transition: transform 1s ease;
 }
 
 .arrow {
@@ -116,6 +118,8 @@ $mark-w: 4vh;
 	left: (($outer-d/2) - 2vh);
   position: absolute;
   box-sizing:border-box;
+	-webkit-transition: transform 1s ease;
+	transition: transform 1s ease;
 }
 
 .ping {
