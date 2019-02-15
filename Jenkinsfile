@@ -7,7 +7,7 @@ pipeline {
         dir(path: 'catkin_ws') {
           sh '''
             . /opt/ros/kinetic/setup.sh
-            catkin build --no-status
+            catkin build --no-status --verbose
           '''
         }
       }
