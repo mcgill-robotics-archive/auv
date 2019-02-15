@@ -1,0 +1,28 @@
+<!-- Navbar -->
+<nav class="px-4 mb-4 navbar navbar-expand-lg navbar-light bg-light">
+  <a class="navbar-brand" href="#">
+    <img src="/assets/brandmark.png" height="32" width="32" class="mr-3 d-inline-block align-top" alt="">
+    AUV Dockside Companion
+  </a>
+
+  <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+    <span class="navbar-toggler-icon"></span>
+  </button>
+
+  <div class="collapse navbar-collapse" id="navbarSupportedContent">
+    <ul class="navbar-nav nav navbar-right ml-auto">
+      <li class="nav-item">
+        <a class="nav-link" [routerLink]="['/']">Dashboard</a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" [routerLink]="['/mission']">Misison</a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" [routerLink]="['/vision']">Vision</a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link disabled" [routerLink]="['/test']">Test Area</a>
+      </li>
+    </ul>
+  </div>
+</nav>

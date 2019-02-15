@@ -1,0 +1,130 @@
+.depth-wrapper {
+  width: 20vh;
+  height: 30vh;
+}
+
+.depth-gauge {
+  position: relative;
+  width: 10vh;
+  height: 35vh;
+  border-left: 1vh solid $gray-400;
+  border-right: 1vh solid $gray-400;
+  background: $gblue;
+}
+
+#depth-data {
+  width: 20vh;
+  margin: 0 auto;
+  box-shadow: 0px 3px 5px $gray-400;
+}
+
+#depth-data-header p {
+	padding: 0.25vh 0;
+  margin: 0;
+  line-height: 1em;
+	text-align: center;
+  font-size: 1em;
+}
+
+#depth-data-body p {
+  padding: 0.25vh 0;
+  margin: 0;
+  line-height: 1.25em;
+  font-size: 0.75em;
+}
+
+.level {
+  width: 8vh;
+  height: 1vh;
+  -webkit-transition: top 1s ease;
+  transition: top 1s ease;
+}
+
+#depth-level {
+  position: absolute;
+  left: 0;
+  top: 0;
+  background: $dark;
+}
+
+#setpoint-level {
+  position: absolute;
+  left: 0;
+  top: 5vh;
+  background: $gray-400;
+}
+
+.tick-label p {
+  width: 4vh;
+  padding: 0;
+  margin: 0;
+  padding-right: 0.75vh;
+  font-size: 0.8em;
+  text-align: right;
+}
+
+.tick-mark {
+  width: 5vh;
+  height: 1vh;
+  background: $gray-400
+}
+
+#tick1 {
+  position: absolute;
+  left: -5vh;
+  top: 0;
+}
+
+#tick2 {
+  position: absolute;
+  left: -5vh;
+  top: 8.25vh;
+}
+
+#tick3 {
+  position: absolute;
+  left: -5vh;
+  top: 17vh;
+}
+
+#tick4 {
+  position: absolute;
+  left: -5vh;
+  bottom: 8.25vh;
+}
+
+#tick5 {
+  position: absolute;
+  left: -5vh;
+  bottom: 0;
+}
+
+#tick1-label {
+  position: absolute;
+  left: -9vh;
+  top: 0;
+}
+
+#tick2-label {
+  position: absolute;
+  left: -9vh;
+  top: 8.25vh;
+}
+
+#tick3-label {
+  position: absolute;
+  left: -9vh;
+  top: 17vh;
+}
+
+#tick4-label {
+  position: absolute;
+  left: -9vh;
+  top: 25.75vh;
+}
+
+#tick5-label {
+  position: absolute;
+  left: -9vh;
+  top: 34vh;
+}
