@@ -30,6 +30,3 @@ windows:
     - bag: /home/robotics/record.sh
     - gui:
         - roslaunch gui gui.launch --wait
-    - gui2:
-         - rosrun rospy_tutorials add_two_ints_server --wait
-         - roslaunch gui gui.launch --wait
