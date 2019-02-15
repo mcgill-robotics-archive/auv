@@ -24,10 +24,10 @@ class ServoPracticeF():
             print(e)
 
         # This is orange_filter:
-        MIN_CONTOUR_SIZE = rospy.get_param("/cv/lanes/orange_cnt_size", 10000)
+        MIN_CONTOUR_SIZE = rospy.get_param("/cv/lanes/orange_cnt_size", 1000)
         img_hvt = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
-        lower_orange = np.array([5, 50, 50])
-        upper_orange = np.array([30, 255, 255])
+        lower_orange = np.array([3, 50, 50])
+        upper_orange = np.array([8, 255, 255])
         mask = cv2.inRange(img_hvt, lower_orange, upper_orange)
 
         im2, cnt, hier = cv2.findContours(mask, cv2.RETR_LIST, cv2.CHAIN_APPROX_NONE)
@@ -101,6 +101,7 @@ class ServoPracticeF():
 class ServoPracticeD():
 
     def __init__(self):
+        print("Servo started")
         self.pub = rospy.Publisher('cv/down_cam_target', CvTarget, queue_size=1)
         self.bridge = CvBridge()
         self.sub = rospy.Subscriber("/camera_down/image_raw", Image, self.callback)
@@ -114,17 +115,18 @@ class ServoPracticeD():
             print(e)
 
         # This is orange_filter:
-        MIN_CONTOUR_SIZE = rospy.get_param("/cv/lanes/orange_cnt_size", 10000)
+        MIN_CONTOUR_SIZE = rospy.get_param("/cv/lanes/orange_cnt_size", 100)
         img_hvt = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
-        lower_orange = np.array([5, 50, 50])
-        upper_orange = np.array([30, 255, 255])
+        lower_orange = np.array([0, 0, 254])
+        upper_orange = np.array([255, 255, 255])
         mask = cv2.inRange(img_hvt, lower_orange, upper_orange)
 
         im2, cnt, hier = cv2.findContours(mask, cv2.RETR_LIST, cv2.CHAIN_APPROX_NONE)
-
+        xReturn = None
+        yReturn = None
         if len(cnt) == 0:
             print("No lane of sufficient size found")
-            return
+            #return
 
         else:
             #Contours were found
@@ -134,7 +136,7 @@ class ServoPracticeD():
 
             if (cv2.contourArea(biggestCont) < MIN_CONTOUR_SIZE):
                 print("No lane of sufficient size found")
-                return
+                #return
             else:
                 # draw in blue the contours that were found
                 cv2.drawContours(img, [biggestCont], -1, (255, 0, 0), 3, 8)
@@ -151,27 +153,31 @@ class ServoPracticeD():
                 xReturn = cX
                 yReturn = cY
 
-                if (xReturn != None):
-                    #new
-                    xReturn,yReturn = self.smoothPoint(xReturn,yReturn)
+        if (xReturn != None):
+            #new
+            xReturn,yReturn = self.smoothPoint(xReturn,yReturn)
 
-                    cv2.circle(img, (int(xReturn), int(yReturn)), 10, (255, 0, 255), -1)
+            cv2.circle(img, (int(xReturn), int(yReturn)), 10, (255, 0, 255), -1)
 
-                    msg = CvTarget()
-                    msg.gravity.x = xReturn
-                    msg.gravity.y = yReturn
-                    msg.gravity.z = 0
-                    msg.probability.data = 1.0
-                    self.pub.publish(msg)
+            msg = CvTarget()
+            msg.gravity.x = xReturn
+            msg.gravity.y = yReturn
+            msg.gravity.z = 0
+            msg.probability.data = 1.0
+            self.pub.publish(msg)
 
+        else:
+            msg = CvTarget()
+            msg.probability.data = 0.0
+            self.pub.publish(msg)
 
-                small = cv2.resize(img, (0, 0), fx=0.5, fy=0.5)
-                cv2.imshow("image", small)
-                cv2.waitKey(5)
+        small = cv2.resize(img, (0, 0), fx=0.5, fy=0.5)
+        cv2.imshow("image", small)
+        cv2.waitKey(5)
 
 
     def smoothPoint(self,xVal,yVal):
-        if len(self.smoothQueue) < 3:
+        if len(self.smoothQueue) < 1:
             self.smoothQueue.append((xVal,yVal))
         else:
             self.smoothQueue.popleft()

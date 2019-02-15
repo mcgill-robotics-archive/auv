@@ -70,7 +70,7 @@ void vacuumInit() {
 }
 
 void gpioInit() {
-  pinMode(VOLTAGE_PIN, INPUT);
+//  pinMode(VOLTAGE_PIN, INPUT);
   pinMode(MISSION_PIN, INPUT);
   pinMode(LED_PIN, OUTPUT);
 }

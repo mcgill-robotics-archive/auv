@@ -93,7 +93,7 @@ class AcousticServo(object):
 
             # If angle is greater than 90, we have reached the pinger.
             rospy.loginfo("Err: {}".format(heading_diff))
-            if fabs(heading_diff) > 1.3:
+            if fabs(heading_diff) > 1.5:
                 rospy.loginfo("Pinger has been reached! Ending")
                 break
             else:
@@ -129,7 +129,7 @@ class AcousticServo(object):
 
     def wait_for_yaw(self, start_time):
         stable_counts = 0
-        while stable_counts < 15:
+        while stable_counts < 100:
             if self.preempted:
                 return
 
@@ -140,7 +140,7 @@ class AcousticServo(object):
             err = self.acoustic_servo_controller.get_error()
             if abs(err) < self.YAW_THRESH:
                 stable_counts += 1
-                rospy.loginfo("{} / {} stable yaw periods".format(stable_counts, 15))
+                rospy.loginfo("{} / {} stable yaw periods".format(stable_counts, 100))
             else:
                 stable_counts = 0
             rospy.sleep(0.1)

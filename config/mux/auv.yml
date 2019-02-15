@@ -14,11 +14,10 @@ windows:
           - roslaunch cv camera_front_1.launch --wait
           - roslaunch cv camera_front_2.launch --wait
           - roslaunch cv camera_down.launch --wait
-    - sonar:
-        layout: tiled
-        panes:
-          - roslaunch tritech_micron tritech_micron.launch --wait
-          - roslaunch sonar_proc sonar_proc.launch --wait
+#    - sonar:
+#        panes:
+#          - roslaunch tritech_micron tritech_micron.launch --wait
+#          - roslaunch sonar_proc sonar_proc.launch --wait
     - state_estimation: roslaunch state_estimation state_estimation.launch --wait
     - controls: roslaunch controls controls.launch --wait
     - status:
@@ -26,8 +25,8 @@ windows:
         panes:
           - roslaunch status status.launch --wait --screen
           - roslaunch dcdc_nuc dcdc_nuc.launch --wait
+          - rosrun status auto_shutdown
     - planner: roslaunch planner planner.launch --wait
     - taskr: roslaunch taskr taskr.launch --wait
     - hydrophones: roslaunch hydrophones hydrophones.launch --wait
-    - auto_shutdown: rosrun status auto_shutdown
     - bag: /home/robotics/record.sh
