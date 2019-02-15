@@ -10,7 +10,7 @@ class FrontVisualServoController(object):
     def __init__(self, setpoint=None):
         # Get Params
         self.params = {}
-        self.params["downscale_factor"] = rospy.get_param('/cameras/downscale_factor', 0.001)
+        self.params["downscale_factor"] = rospy.get_param('/cameras/downscale_factor', 0.004)
         self.params["cam_offset"] = rospy.get_param('/cameras/offset', 1)
         self.params["prob_thresh"] = rospy.get_param('/cameras/prob_thresh', 0.5)
         self.params["img_width"] = rospy.get_param('/cameras/img_width', 1296)
@@ -54,7 +54,7 @@ class FrontVisualServoController(object):
 
         x_n = x_0
         y_n = y_0
-        
+
         return (x_n, y_n)
 
     def is_active(self):
@@ -65,7 +65,7 @@ class DownVisualServoController(object):
     def __init__(self, setpoint=None):
         # Get Params
         self.params = {}
-        self.params["downscale_factor"] = rospy.get_param('/cameras/downscale_factor', 0.001)
+        self.params["downscale_factor"] = rospy.get_param('/cameras/downscale_factor', 0.007)
         self.params["cam_offset"] = rospy.get_param('/cameras/offset', 1)
         self.params["prob_thresh"] = rospy.get_param('/cameras/prob_thresh', 0.5)
         self.params["img_width"] = rospy.get_param('/cameras/img_width', 1296)
@@ -138,7 +138,7 @@ class VisualServoSurge(AsyncServoController):
 
     def get_error(self, msg):
         if msg.probability.data > self.params["prob_thresh"]:
-            self.error = (msg.gravity.y - self.aimed_y) * self.params["downscale_factor"]
+            self.error = -1 * (msg.gravity.y - self.aimed_y) * self.params["downscale_factor"]
         else:
             self.error = None
 
@@ -175,7 +175,7 @@ class VisualServoSway(AsyncServoController):
 
     def get_error(self, msg):
         if msg.probability.data > self.params["prob_thresh"]:
-            self.error = (msg.gravity.x - self.aimed_x) * self.params["downscale_factor"]
+            self.error = -1 * (msg.gravity.x - self.aimed_x) * self.params["downscale_factor"]
         else:
             self.error = None
 

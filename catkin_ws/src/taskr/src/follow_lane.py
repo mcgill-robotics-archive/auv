@@ -4,21 +4,24 @@ from cv.detectors import lane_detector
 from controls.maintainers import yaw_maintainer, depth_maintainer
 from controls.controllers import visual_servo
 from controls.utils.utils import normalize_angle
+from std_msgs.msg import Float64
 
 class FollowLane(object):
 
     def __init__(self, data):
 
         self.preempted = False
-
+        self.depth = data["depth"]
         self.yaw_maintainer = yaw_maintainer.YawMaintainer()
-        self.depth_maintainer = depth_maintainer.DepthMaintainer()
+        self.depth_maintainer = depth_maintainer.DepthMaintainer(self.depth)
+        self.surge_pub = rospy.Publisher('/controls/superimposer/surge', Float64,
+                                         queue_size=1)
         self.foundCounts = rospy.get_param("/taskr/lanes/foundCounts",15)
         self.centerStableCounts = rospy.get_param("/taskr/lanes/centerStableCounts", 50)
         self.centerMaxError = rospy.get_param("/taskr/lanes/centerMaxError", 0.4)
         self.turnStableCounts = rospy.get_param("/taskr/lanes/turnStableCount",50)
         self.turnMaxError = rospy.get_param("/taskr/lanes/turnMaxError",0.1)
-
+        self.SURGE_FIND = rospy.get_param("/taskr/lanes/surgeFind", 10.0)
 
     def start(self, server, feedback_msg):
         self.lane_detector = lane_detector.LaneDetector()
@@ -47,13 +50,17 @@ class FollowLane(object):
             self.depth_maintainer.stop()
         if self.yaw_maintainer.is_active():
             self.yaw_maintainer.stop()
+
         #TODO: stop the lane_detector?
         self.lane_detector.stop()
+        self.surge_pub.publish(0)
 
     def findLane(self):
 
         laneFoundCounts = 0
+
         while laneFoundCounts < self.foundCounts:
+            self.surge_pub.publish(self.SURGE_FIND)
 
             if self.preempted:
                 return
@@ -69,6 +76,7 @@ class FollowLane(object):
             rospy.sleep(0.1)
 
         rospy.loginfo("Lane found.")
+        self.surge_pub.publish(0)
 
 
     def servoToCenter(self):
@@ -105,12 +113,12 @@ class FollowLane(object):
 
     def turn(self):
 
-        angle = lane_detector.getAngle()
+        angle = self.lane_detector.getAngle()
 
         currentYaw = self.yaw_maintainer.get_current_yaw()
         sp = normalize_angle(currentYaw + angle)
 
-        yaw_maintainer.set_setpoint(sp)
+        self.yaw_maintainer.set_setpoint(sp)
 
         stable_counts = 0
         while stable_counts < self.turnStableCounts:
