@@ -7,10 +7,6 @@ catkin_ws/logs
 # Python
 *.py[cod]
 
-# Frontend
-catkin_ws/src/gui/frontend/node_modules
-catkin_ws/src/gui/frontend/package-lock.json
-
 # C extensions
 *.so
 
