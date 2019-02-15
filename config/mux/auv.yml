@@ -1,7 +1,7 @@
 # ~/.tmuxinator/auv.yml
 
 name: MAIN
-root: /home/robotics/auv
+root: ~
 
 pre: mv ~/.zhistory ~/.zhistory.old && strings ~/.zhistory.old > ~/.zhistory && export SHELL=/bin/zsh && export PATH=/usr/local/sbin/:/usr/local/bin/:/usr/sbin:${PATH}:/sbin:/usr/games:/usr/local/games
 
@@ -9,6 +9,7 @@ windows:
     - core: roscore
     - serial: roslaunch arduino arduino.launch --wait
     - cameras:
+        layout: tiled
         panes:
           - roslaunch cv camera_front_1.launch --wait
           - roslaunch cv camera_front_2.launch --wait
@@ -20,6 +21,7 @@ windows:
     - state_estimation: roslaunch state_estimation state_estimation.launch --wait
     - controls: roslaunch controls controls.launch --wait
     - status:
+        layout: tiled
         panes:
           - roslaunch status status.launch --wait --screen
           - roslaunch dcdc_nuc dcdc_nuc.launch --wait
