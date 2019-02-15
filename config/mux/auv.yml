@@ -30,3 +30,5 @@ windows:
     - taskr: roslaunch taskr taskr.launch --wait
     - hydrophones: roslaunch hydrophones hydrophones.launch --wait
     - bag: /home/robotics/record.sh
+    - gui:
+        - roslaunch gui gui.launch --wait

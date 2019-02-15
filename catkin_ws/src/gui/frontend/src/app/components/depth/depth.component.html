@@ -1,0 +1,35 @@
+<section id="depth-wrapper" class="tool-wrapper container border border-default rounded my-2 p-4 justify-content-center">
+  <div class="depth-gauge mx-auto my-4">
+    <div>
+      <div id="tick1" class="tick-mark"></div>
+      <div id="tick1-label" class="tick-label"><p>{{tick1}}m</p></div>
+    </div>
+    <div>
+      <div id="tick2" class="tick-mark"></div>
+      <div id="tick2-label" class="tick-label"><p>{{tick2}}m</p></div>
+    </div>
+    <div>
+      <div id="tick3" class="tick-mark"></div>
+      <div id="tick3-label" class="tick-label"><p>{{tick3}}m</p></div>
+    </div>
+    <div>
+      <div id="tick4" class="tick-mark"></div>
+      <div id="tick4-label" class="tick-label"><p>{{tick4}}m</p></div>
+    </div>
+    <div>
+      <div id="tick5" class="tick-mark"></div>
+      <div id="tick5-label" class="tick-label"><p>{{tick5}}m</p></div>
+    </div>
+    <div #setpointLevel id="setpoint-level" class="level"></div>
+    <div #depthLevel id="depth-level" class="level"></div>
+  </div>
+  <div id="depth-data" class="card mt-4 justify-content-center">
+    <div id="depth-data-header" class="card-header">
+      <p>Depth</p>
+    </div>
+    <div id="depth-data-body" class="card-body">
+      <p><b>Depth:</b> {{depth}}m</p>
+      <p><b>Setpoint:</b> {{setpoint}}m</p>
+    </div>
+  </div>
+</section>

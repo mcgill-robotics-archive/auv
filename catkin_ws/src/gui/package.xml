@@ -1,0 +1,16 @@
+<?xml version="1.0"?>
+<package format="2">
+  <name>gui</name>
+  <version>0.0.0</version>
+  <description>The gui package</description>
+
+  <maintainer email="jgomallette@gmail.com">Jeremy</maintainer>
+
+  <license>LGPLv3</license>
+  <author email="todo@todo.com">Jerome</author> -->
+
+  <buildtool_depend>catkin</buildtool_depend>
+
+  <!--   <test_depend>gtest</test_depend> -->
+  <!--   <doc_depend>doxygen</doc_depend> -->
+</package>
