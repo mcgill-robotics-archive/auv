@@ -45,11 +45,11 @@ export class CompassComponent implements OnInit {
   listen() {
     this.headingSub = new ROSLIB.Topic({
       ros : this.rosService.getRos(),
-      name : '/state_estimation/yaw',
-      messageType : 'std_msgs/Float64'
+      name : '/state_estimation/pose',
+      messageType : 'geometry_msgs/PoseStamped'
     });
     this.headingSub.subscribe(function(message) {
-      this.heading = message.data;
+      this.heading = message.pose.orientation.z;
       this.update();
     }.bind(this));
 
