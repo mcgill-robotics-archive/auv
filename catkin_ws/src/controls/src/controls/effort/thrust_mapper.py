@@ -49,8 +49,6 @@ def wrench_to_thrust(thrust_char):
         msg = [0] * len(thrusters)
         for t, x in zip(thrusters, thrusterCmds.tolist()[0]):
             msg[t] = x
-        #debug
-        print(msg)
         thrust_pub.publish(ThrusterCommands(msg))
 
     return helper
