@@ -28,3 +28,6 @@ catkin_ws/logs
 
 # rosbags
 *.bag
+
+# Yolo Models
+*.weights
