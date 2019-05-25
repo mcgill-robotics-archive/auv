@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<launch>
+  <!-- Config and weights folder. -->
+  <arg name="yolo_weights_path"          default="$(find cv)/config/yolo"/>
+  <arg name="yolo_config_path"           default="$(find cv)/config/yolo"/>
+
+  <!-- Load parameters -->
+  <rosparam command="load" ns="darknet_ros" file="$(find cv)/config/yolo/ros.yaml"/>
+  <rosparam command="load" ns="darknet_ros" file="$(find cv)/config/yolo/cans.yaml"/>
+
+  <!-- Start darknet and ros wrapper -->
+  <node pkg="darknet_ros"
+        type="darknet_ros"
+        name="darknet_ros"
+        output="screen"
+        launch-prefix="">
+    <param name="weights_path"          value="$(arg yolo_weights_path)" />
+    <param name="config_path"           value="$(arg yolo_config_path)" />
+  </node>
+</launch>

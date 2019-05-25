@@ -6,19 +6,27 @@ import math
 import numpy as np
 
 #from cv.msg import CvTarget
+from darknet_ros_msgs.msg import BoundingBoxes
 from sensor_msgs.msg import Image
 from std_msgs.msg import Float64
 from cv_bridge import CvBridge, CvBridgeError
 
 class GenericDetector(object):
 
-	def __init__(self, image_topic, target_topic):
+	def __init__(self, image_topic,
+				 target_topic,
+				 dark_pub_topic,
+				 dark_sub_topic):
 		self.sub = rospy.Subscriber(image_topic, Image, self.process)
 		#self.pub = rospy.Publisher(pub_topic, CvTarget, queue_size=1)
+		self.darkPub = rospy.Publisher(dark_pub_topic, Image, queue_size=1)
+		self.darkSub = rospy.Subscriber(
+			dark_sub_topic, BoundingBoxes, self.darkCb)
 
 		self.bridge = CvBridge()
 		#self.target = CvTarget()
 
+		self.color = False
 		self.display = True
 
 	def process(self, data):
@@ -38,20 +46,34 @@ class GenericDetector(object):
 		if self.display:
 			cv2.imshow('Preprocessed', pimg)
 
-		# Create HSV Copy ------------------------------------------------------
-		hsv = cv2.cvtColor(pimg, cv2.COLOR_BGR2HSV)
-		if self.display:
-			cv2.imshow('HSV Variant', hsv)
+		## FOR COLOR THRESHOLDING
+		if self.color:
+			# Create HSV Copy --------------------------------------------------
+			hsv = cv2.cvtColor(pimg, cv2.COLOR_BGR2HSV)
+			if self.display:
+				cv2.imshow('HSV Variant', hsv)
 
-		# Create Grayscale Copy ------------------------------------------------
-		gray = cv2.cvtColor(pimg, cv2.COLOR_BGR2GRAY)
-		if self.display:
-			cv2.imshow('Grayscale', gray)
+			# Threshold Based on Color -----------------------------------------
+			mask = self.cthreshold(hsv, 'orange')
+			if self.display:
+				cv2.imshow('mask', mask)
 
-		# Threshold Based on Color ---------------------------------------------
-		mask = self.threshold(hsv, 'orange')
-		if self.display:
-			cv2.imshow('mask', mask)
+		## FOR NEAR BLACK OR NEAR WHITE THRESHOLDING
+		else:
+			# Create Grayscale Copy --------------------------------------------
+			gray = cv2.cvtColor(pimg, cv2.COLOR_BGR2GRAY)
+			if self.display:
+				cv2.imshow('Grayscale', gray)
+
+			# Threshold Based on Intensity -------------------------------------
+			mask = self.bwthreshold(gray, 'black')
+			if self.display:
+				cv2.imshow('mask', mask)
+
+			# Publish Grayscale image for Darknet ------------------------------
+			recol = cv2.cvtColor(mask, cv2.COLOR_GRAY2BGR)
+			mlimg = self.bridge.cv2_to_imgmsg(recol, encoding="bgr8")
+			self.darkPub.publish(mlimg)
 
 		# Process Contours -----------------------------------------------------
 		cont = self.contours(mask)
@@ -68,7 +90,7 @@ class GenericDetector(object):
 		# (Small) Gaussian blur to smooth transformation
 		img = cv2.GaussianBlur(img, (3, 3), 0)
 		# Downsample the image using nearest neighbor method
-		img = cv2.resize(img, None, fx=0.3, fy=0.3, interpolation=cv2.INTER_NEAREST)
+		img = cv2.resize(img, None, fx=0.5, fy=0.5, interpolation=cv2.INTER_NEAREST)
 		# Decrease the blue channel
 		img[:, :, 0] = img[:, :, 0] * 0.5
 		# Increase the red channel
@@ -78,7 +100,7 @@ class GenericDetector(object):
 
 		return img
 
-	def threshold(self, img, key):
+	def cthreshold(self, img, key):
 		lower = {
 			'black': np.array([0, 0, 0]),
 			'orange': np.array([30, 150, 200]),
@@ -95,6 +117,12 @@ class GenericDetector(object):
 
 		mask = cv2.inRange(img, lower[key], upper[key])
 		mask = cv2.medianBlur(mask, 5)
+
+		return mask
+
+	def bwthreshold(self, img, key):
+		mask = cv2.adaptiveThreshold(img, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, \
+			cv2.THRESH_BINARY, 11, 4)
 
 		return mask
 
@@ -118,7 +146,11 @@ class GenericDetector(object):
 
 		return fcont
 
+	def darkCb(self, data):
+		boxes = data.bounding_boxes
+
 if __name__ == '__main__':
 	rospy.init_node('TestDetector')
-	detector = GenericDetector('camera_down/image_rect_color', 'test_target')
+	detector = GenericDetector('camera_down/image_rect_color', 'test_target',
+		'darknet_img', '/darknet_ros/bounding_boxes')
 	rospy.spin()
