@@ -3,7 +3,6 @@
 import rospy
 import numpy as np
 from move import Move
-from move_all import MoveAll
 from shoot import Shoot
 from turn import Turn
 from dive import Dive
