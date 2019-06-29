@@ -29,8 +29,7 @@ current_task.task = TaskStatus.TASK_IDLE
 current_task.action = TaskStatus.ACTION_IDLE
 
 # Maps to the objects and states.
-action_object_map = {"move_all": MoveAll,
-                     "move": Move,
+action_object_map = {"move": Move,
                      "turn": Turn,
                      "dive": Dive,
                      "shoot": Shoot,
@@ -45,8 +44,7 @@ action_object_map = {"move_all": MoveAll,
                      "roll": Roll,
                      "sleep": Sleep}
 
-action_state_map = {"move_all": TaskStatus.MOVE,
-                    "move": TaskStatus.MOVE,
+action_state_map = {"move": TaskStatus.MOVE,
                     "shoot": TaskStatus.SHOOT,
                     "initialize": TaskStatus.INITIALIZE,
                     "acoustic_servo": TaskStatus.ACOUSTIC_SERVO,
