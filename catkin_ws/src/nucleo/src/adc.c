@@ -146,7 +146,7 @@ void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef *hadc)
   uint8_t max = 0;
 
   for (uint8_t i = 0; i < 30; i++) {
-    if (data_1[i] > 250) {
+    if (data_1[i] > 200) {
       max = 1;
     }
     if (data_1[i] < 5) {
