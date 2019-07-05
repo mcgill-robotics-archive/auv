@@ -39,6 +39,7 @@ class Decomposer:
         Lookup tf transform and convert to euler angles
         '''
         try:
+            rospy.loginfo('PIN')
             trans, rot = self._listener.lookupTransform(
                     self.map_frame, self.base_link_frame, rospy.Time(0))
 
