@@ -39,22 +39,21 @@ class Decomposer:
         Lookup tf transform and convert to euler angles
         '''
         try:
-            rospy.loginfo('PIN')
             trans, rot = self._listener.lookupTransform(
                     self.map_frame, self.base_link_frame, rospy.Time(0))
 
             (roll, pitch, yaw) = euler_from_quaternion(rot)
 
-            self.rollPub.publish(roll)
-            self.pitchPub.publish(pitch)
-            self.yawPub.publish(yaw)
+            self.roll_pub.publish(roll)
+            self.pitch_pub.publish(pitch)
+            self.yaw_pub.publish(yaw)
 
             return
 
         except (tf.LookupException,
                 tf.ConnectivityException,
                 tf.ExtrapolationException) as e:
-            rospy.logdebug(e.message)
+            rospy.logwarn(e.message)
 
 
 if __name__ == "__main__":

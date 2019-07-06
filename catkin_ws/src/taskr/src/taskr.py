@@ -3,25 +3,23 @@
 import rospy
 import numpy as np
 from move import Move
-from shoot import Shoot
-from turn import Turn
-from dive import Dive
-from bin_servo import BinServo
+#from shoot import Shoot
+#from bin_servo import BinServo
 from initialize import Initializer
-from acoustic_servo import AcousticServo
-from sonar_servo import SonarServo
+#from acoustic_servo import AcousticServo
+#from sonar_servo import SonarServo
 from actionlib import SimpleActionServer
 from auv_msgs.msg import TaskStatus
 from std_msgs.msg import Float64
 from planner.msg import TaskFeedback, TaskResult, TaskAction
-from controls.maintainers import DepthMaintainer
+#from controls.maintainers import DepthMaintainer
 from auv_msgs.msg import HydrophonesAction, HydrophonesFeedback, HydrophonesResult
-from follow_lane import FollowLane
-from roulette import RouletteT
-from dice_servo import DiceServo
-from vacuum import Vacuum
+#from follow_lane import FollowLane
+#from roulette import RouletteT
+#from dice_servo import DiceServo
+#from vacuum import Vacuum
 #from torpedo import Torpedo
-from roll import Roll
+#from roll import Roll
 from sleep import Sleep
 
 current_task = TaskStatus()
@@ -30,33 +28,29 @@ current_task.action = TaskStatus.ACTION_IDLE
 
 # Maps to the objects and states.
 action_object_map = {"move": Move,
-                     "turn": Turn,
-                     "dive": Dive,
-                     "shoot": Shoot,
-                     "bins_servo": BinServo,
+                     #"shoot": Shoot,
+                     #"bins_servo": BinServo,
                      "initialize": Initializer,
-                     "acoustic_servo": AcousticServo,
-                     "sonar_servo": SonarServo,
-                     "follow_lane": FollowLane,
-                     "roulette": RouletteT,
-                     "dice_servo": DiceServo,
-                     "vacuum": Vacuum,
-                     "roll": Roll,
+                     #"acoustic_servo": AcousticServo,
+                     #"sonar_servo": SonarServo,
+                     #"follow_lane": FollowLane,
+                     #"roulette": RouletteT,
+                     #"dice_servo": DiceServo,
+                     #"vacuum": Vacuum,
+                     #"roll": Roll,
                      "sleep": Sleep}
 
 action_state_map = {"move": TaskStatus.MOVE,
-                    "shoot": TaskStatus.SHOOT,
+                    #"shoot": TaskStatus.SHOOT,
                     "initialize": TaskStatus.INITIALIZE,
-                    "acoustic_servo": TaskStatus.ACOUSTIC_SERVO,
-                    "turn": TaskStatus.MOVE,
-                    "dive": TaskStatus.MOVE,
-                    "bins_servo": TaskStatus.VISUAL_SERVO,
-                    "sonar_servo": TaskStatus.MOVE,
-                    "follow_lane": TaskStatus.VISUAL_SERVO, #TODO: change TaskStatus?
-                    "roulette": TaskStatus.VISUAL_SERVO, #TODO: change TaskStatus?
-                    "dice_servo": TaskStatus.VISUAL_SERVO,
-                    "vacuum": TaskStatus.SHOOT,
-                    "roll": TaskStatus.MOVE,
+                    #"acoustic_servo": TaskStatus.ACOUSTIC_SERVO,
+                    #"bins_servo": TaskStatus.VISUAL_SERVO,
+                    #"sonar_servo": TaskStatus.MOVE,
+                    #"follow_lane": TaskStatus.VISUAL_SERVO, #TODO: change TaskStatus?
+                    #"roulette": TaskStatus.VISUAL_SERVO, #TODO: change TaskStatus?
+                    #"dice_servo": TaskStatus.VISUAL_SERVO,
+                    #"vacuum": TaskStatus.SHOOT,
+                    #"roll": TaskStatus.MOVE,
                     "sleep": TaskStatus.MOVE} #TODO: change TaskStatus?
 
 
@@ -263,7 +257,6 @@ class Wait(object):
             auto_start=False
         )
         self._as.start()
-        self.depth_maintainer = DepthMaintainer(self.DEPTH)
 
     def execute_cb(self, goal):
         start_time = rospy.Time.now()
@@ -271,7 +264,6 @@ class Wait(object):
 
         rate = rospy.Rate(self.MOVE_RATE)
 
-        self.depth_maintainer.start()
         while (rospy.Time.now() - start_time) < rospy.Duration(self.SLEEP_TIME):
             if self._as.is_preempt_requested():
                 rospy.logerr("Wait preempted")
@@ -280,7 +272,6 @@ class Wait(object):
 
             rate.sleep()
 
-        self.depth_maintainer.stop()
         rospy.loginfo("Done sleeping")
 
         result = TaskResult()

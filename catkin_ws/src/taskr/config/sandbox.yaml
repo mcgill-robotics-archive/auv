@@ -79,62 +79,11 @@ octagon:
 square:
   actions:
   #go down
-    - move_all:
+    - move:
         depth: 1.0
-   #go forward through the gate
-    - move_all:
-        distance: 2.0
-        depth: 1.0
-   #Start moving in a square around a pole.
-   # turn left , 1.5708 is pi/2
-    - move_all:
-        yaw: -1.5708
-        depth: 1.0
-   # go forward
-    - move_all:
-        distance: 1.0
-        depth: 1.0
-   # turn right
-    - move_all:
-        yaw: 0.0
-        depth: 1.0
-   # go forward
-    - move_all:
-        distance: 1.0
-        depth: 1.0
-   #turn right
-    - move_all:
-        yaw: 1.5708
-        depth: 1.0
-   #go forward
-    - move_all:
-        distance: 1.0
-        depth: 1.0
-   #turn right
-    - move_all:
-        yaw: 3.1415
-        depth: 1.0
-   #go forward
-    - move_all:
-        distance: 1.0
-        depth: 1.0
-   #turn right
-    - move_all:
-        yaw: -1.5708
-        depth: 1.0
-   #go forward,
-    - move_all:
-        distance: 1.0
-        depth: 1.0
-   #Square is complete, go back through the gate
-   #turn left
-    - move_all:
-        yaw: 3.1415
-        depth: 1.0
-   #go forward back through the gate
-    - move_all:
-        distance: 1.0
-        depth: 1.0
+        distance: 5.0
+        heading: 0.76 # on [-pi, pi]
+
 #FOLLOW LANE
 #Finds a Lane, servos to center and turns
 follow_lane:

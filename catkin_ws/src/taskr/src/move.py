@@ -2,10 +2,10 @@
 
 import rospy
 from math import fabs
-from std_msgs.msg import Float64, Boolean
+from std_msgs.msg import Float64, Bool
 
 
-class MoveAll(object):
+class Move(object):
     '''
     Move Action.
     '''
@@ -13,7 +13,7 @@ class MoveAll(object):
     def __init__(self, data):
         '''
         Constructor for the Move Object.
-        
+
         Args:
             data: dict of movement commands (distance, heading, depth)
         '''
@@ -23,7 +23,7 @@ class MoveAll(object):
         self.surge_pub = rospy.Publisher('controls/superimposer/surge',
                                          Float64,
                                          queue_size=1)
-        
+
         # Handle Depth Functions -----------------------------------------------
         depth_setpoint_topic = rospy.get_param('taskr/depth_setpoint_topic',
                                                default='depth_pid/setpoint')
@@ -33,7 +33,7 @@ class MoveAll(object):
         depth_enable_topic = rospy.get_param('taskr/depth_enable_topic',
                                              default='depth_pid/pid_enable')
         self.depth_enable_pub = rospy.Publisher(depth_enable_topic,
-                                                Boolean,
+                                                Bool,
                                                 queue_size=1)
         self.depth_sub = rospy.Subscriber('state_estimation/depth',
                                           Float64,
@@ -42,7 +42,7 @@ class MoveAll(object):
         self.heave_pub = rospy.Publisher('controls/superimposer/heave',
                                          Float64,
                                          queue_size=1)
-        
+
         # Handle Yaw Functions -------------------------------------------------
         yaw_setpoint_topic = rospy.get_param('taskr/yaw_setpoint_topic',
                                              default='yaw_pid/setpoint')
@@ -52,7 +52,7 @@ class MoveAll(object):
         yaw_enable_topic = rospy.get_param('taskr/yaw_enable_topic',
                                             default='yaw_pid/pid_enable')
         self.yaw_enable_pub = rospy.Publisher(yaw_enable_topic,
-                                              Boolean,
+                                              Bool,
                                               queue_size=1)
         self.yaw_sub = rospy.Subscriber('state_estimation/yaw',
                                         Float64,
@@ -75,7 +75,7 @@ class MoveAll(object):
                                          default=1)
         self.vel_cmd_rate = rospy.get_param('taskr/move/vel_cmd_rate',
                                             default=10)
-                
+
         # Depth Params ---------------------------------------------------------
         self.depth_thresh = rospy.get_param('taskr/move/depth_thresh',
                                             default=0.1)
@@ -101,6 +101,11 @@ class MoveAll(object):
         self.depth_err = None
         self.preempted = False
 
+        rospy.loginfo("Move initialized with:\n" +
+                      "Depth: {}\n".format(self.depth) +
+                      "Heading: {}\n".format(self.yaw) +
+                      "Distance: {}\n...".format(self.distance));
+
     def start(self, server, feedback_msg):
         '''
         Do the move action.
@@ -113,7 +118,7 @@ class MoveAll(object):
         start = rospy.Time.now()    # Used to track time since initialization
         rospy.loginfo('Starting [Move]...')
 
-        rate = rospy.Rate(self.RATE)                 # Rate in Hz for controls
+        rate = rospy.Rate(self.vel_cmd_rate)                 # Rate in Hz for controls
         time = (fabs(self.distance) / self.velocity) # Est time to travel dist
         surge = self.velocity * self.vel_coeff       # Metric --> Thrust cmd
 
@@ -195,7 +200,7 @@ class MoveAll(object):
 
             if self.depth_err is None:
                 pass
-            elif fabs(depth_err) < self.depth_thresh:
+            elif fabs(self.depth_err) < self.depth_thresh:
                 stable_counts += 1
                 rospy.loginfo(
                     '{}/{} valid depth periods'.format(stable_counts,
@@ -229,7 +234,7 @@ class MoveAll(object):
         Callback for receiving depth message.
         '''
         # We don't care unless given a setpoint
-        if self.depth is not None:
+        if self.depth:
             self.depth_err = (self.depth - msg.data)
 
     def yaw_cb(self, msg):
@@ -237,5 +242,5 @@ class MoveAll(object):
         Callback for receiving yaw message
         '''
         # We don't care unless given a setpoint
-        if self.yaw is not None:
+        if self.yaw:
             self.yaw_err = (self.yaw - msg.data)
