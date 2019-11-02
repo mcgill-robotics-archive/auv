@@ -2,4 +2,4 @@
 
 # TODO : These are temporary credentials
 alias robosh='mosh nvidia@10.10.10.100'
-alias robotx='ssh -Y robotics@10.10.10.100'
+alias robotx='ssh -Y nvidia@10.10.10.100'
