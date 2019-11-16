@@ -8,9 +8,6 @@
 [submodule "catkin_ws/src/dcdc_nuc"]
 	path = catkin_ws/src/dcdc_nuc
 	url = git@github.com:mcgill-robotics/ros-dcdc-nuc.git
-[submodule "catkin_ws/src/teledyne_navigator"]
-	path = catkin_ws/src/teledyne_navigator
-	url = git@github.com:mcgill-robotics/ros-teledyne-navigator.git
 [submodule "catkin_ws/src/pointgrey_camera_driver"]
 	path = catkin_ws/src/pointgrey_camera_driver
 	url = git@github.com:ros-drivers/pointgrey_camera_driver.git
