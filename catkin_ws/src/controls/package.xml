@@ -18,6 +18,7 @@
   <depend>actionlib_msgs</depend>
   <depend>genmsg</depend>
   <depend>geometry_msgs</depend>
+  <depend>pid</depend>
   <depend>python-numpy</depend>
   <depend>python-rospkg</depend>
   <depend>rospy</depend>

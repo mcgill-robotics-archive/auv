@@ -35,11 +35,30 @@ To update the submodules, do:
 git pull && git submodule update --init --recursive
 ```
 
+## Compiling the Repository
+McGill Robotics is using Catkin Command Line Tools, which has some nice
+advanced features over the standard `catkin_make`.
+
+Though the tools are gaining traction overall, they are not in many of the
+beginner tutorials yet. Using `catkin_make` will not work because it
+requires a top-level CMakeLists.txt that the repository no longer has (and
+please don't add one).
+
+To build the repository:
+1. `cd <path/to/catkin_ws>`
+2. `catkin build`
+
+You may build a single package by using `catkin build <package_name>`
+You may clean the your workspace using `catkin clean -y`
+You may clean a single package by using `catkin clean -y <package_name>`
+
+For more information about the tools see [their website](https://catkin-tools.readthedocs.io/en/latest/)
+
 ## How to Run the AUV
 
 1. Connect to the AUV's network, either by connecting the ethernet cable to our
 router and connecting to McGill Robotics WiFi, or by connecting the ethernet
-cable directly to your computer.
+:cable directly to your computer.
 2. In a terminal, type:
 
    ```bash
