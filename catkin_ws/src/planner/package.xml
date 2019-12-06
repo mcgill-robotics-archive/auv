@@ -1,28 +1,23 @@
 <?xml version="1.0"?>
-<package>
-
+<package format="2">
   <name>planner</name>
-  <version>0.1.0</version>
-  <description>The McGill Robotics mission planning package</description>
-  <maintainer email="jeremy.mallette@mail.mcgill.ca">Jeremy Mallette</maintainer>
-  <license>GPLv3</license>
+  <version>0.0.0</version>
+  <description>The McGill Robotics VRX mission planning package</description>
 
-  <url>https://github.com/mcgill-robotics/auv/wiki/How-to-Planner-and-Taskr</url>
+  <maintainer email="jgomallette@gmail.com">
+    MrCerealKiller (Jeremy)
+  </maintainer>
+
+  <license>MIT</license>
 
   <buildtool_depend>catkin</buildtool_depend>
-
-  <build_depend>actionlib</build_depend>
-  <build_depend>actionlib_msgs</build_depend>
-  <build_depend>geometry_msgs</build_depend>
-  <build_depend>std_msgs</build_depend>
-
-  <run_depend>actionlib</run_depend>
-  <run_depend>actionlib_msgs</run_depend>
-  <run_depend>geometry_msgs</run_depend>
-  <run_depend>std_msgs</run_depend>
-
-  <export>
-      <!-- Possibly use to embed planner and taskr in the same package -->
-  </export>
-
+  <depend>actionlib_msgs</depend>
+  <depend>geographic_msgs</depend>
+  <depend>geometry_msgs</depend>
+  <depend>rospy</depend>
+  <depend>message_generation</depend>
+  <depend>smach</depend>
+  <depend>smach_ros</depend>
+  <depend>std_msgs</depend>
+  <depend>vrx_gazebo</depend>
 </package>
