@@ -6,7 +6,6 @@ import rospy
 import tf
 
 from geometry_msgs.msg import PoseStamped
-from navigation.srv import GeoToUTM
 from planner.msg import NavigateAction, NavigateFeedback, NavigateResult
 from std_msgs.msg import Bool
 from tf.transformations import euler_from_quaternion
@@ -18,22 +17,20 @@ class NavigateServer(object):
 
 	def __init__(self, add_wp_topic, clr_wp_topic):
 		self._feedback = NavigateFeedback()
-		self._result = NavigateResult()
-		self._name = self.NAME
+		self._result   = NavigateResult()
+		self._name     = self.NAME
 
 		self._listener = tf.TransformListener()
 
 		self.add_pub = rospy.Publisher(add_wp_topic, PoseStamped, queue_size=1)
 		self.clr_pub = rospy.Publisher(clr_wp_topic, Bool, queue_size=1)
 
-		self.geo_to_utm = rospy.ServiceProxy('/geo_to_utm', GeoToUTM)
-
 		self.server = actionlib.SimpleActionServer(
 			self._name, NavigateAction, self.execute, False)
 
 		self.final_pose = PoseStamped()
-		self.rate = rospy.Rate(self.RATE)
-		self.success = True
+		self.rate       = rospy.Rate(self.RATE)
+		self.success    = True
 
 		self.server.start()
 

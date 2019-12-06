@@ -13,7 +13,7 @@ class Initialize(smach.State):
 		smach.State.__init__(self, outcomes=outcomes)
 
 		self.task_topic = task_topic
-		self.timeout = timeout
+		self.timeout    = timeout
 
 	def execute(self, userdata):
 		rospy.loginfo('[Global] Executing initialize state')
@@ -40,8 +40,8 @@ class Wait(smach.State):
 
 		self.task_sub = rospy.Subscriber(task_topic, Task, self.task_cb)
 		self.t_remain = rospy.Duration(self.DEFAULT_TIME)
-		self.rate = rospy.Rate(give_up_rate)
-		self.zero = rospy.Duration(0)
+		self.rate     = rospy.Rate(give_up_rate)
+		self.zero     = rospy.Duration(0)
 
 	def execute(self, userdata):
 		rospy.loginfo('[Global] Executing wait state')
@@ -62,12 +62,11 @@ class Wait(smach.State):
 
 class ChooseTask(smach.State):
 	def __init__(self, target_tasks, choose_task_rate):
-		outcomes = ['station_keeping',
-					'wayfinding',
-					'perception',
-					'navigation_course',
-					'scan',
-					'scan_and_dock',
+		outcomes = ['gate',
+					'square',
+					'acoustic_servo',
+					'visual_servo',
+					'grid_search',
 					'wait',
 					'succeeded',
 					'failed',
@@ -76,9 +75,9 @@ class ChooseTask(smach.State):
 
 
 		self.target_tasks = target_tasks		
-		self.rate = rospy.Rate(choose_task_rate)
+		self.rate         = rospy.Rate(choose_task_rate)
 
-		self.task = None
+		self.task      = None
 		self.timed_out = False
 
 	def execute(self, userdata):
@@ -105,7 +104,7 @@ class ChooseTask(smach.State):
 			return 'wait'
 
 	def task_cb(self, msg):
-		self.task = msg.name
+		self.task      = msg.name
 		self.timed_out = msg.timed_out
 
 
@@ -116,19 +115,19 @@ class Planner(object):
 		rospy.loginfo('{}'.format(attempted_tasks))
 
 		outcomes = ['succeeded', 'failed', 'preempted']
-		self.sm = smach.StateMachine(outcomes=outcomes)
+		self.sm  = smach.StateMachine(outcomes=outcomes)
 
-		self.initialize = Initialize(task_topic, init_timeout)
-		self.wait = Wait(task_topic, give_up_rate)
-		self.station_keeping = StationKeeping().get_state_machine()
-		self.wayfinding = Wayfinding().get_state_machine()
-		self.perception = Perception().get_state_machine()
+		self.initialize        = Initialize(task_topic, init_timeout)
+		self.wait              = Wait(task_topic, give_up_rate)
+		self.station_keeping   = StationKeeping().get_state_machine()
+		self.wayfinding        = Wayfinding().get_state_machine()
+		self.perception        = Perception().get_state_machine()
 		self.navigation_course = NavigationCourse().get_state_machine()
-		self.scan = Scan().get_state_machine()
-		self.scan_and_dock = ScanAndDock().get_state_machine()
-		self.choose_task = ChooseTask(attempted_tasks, choose_task_rate)
+		self.scan              = Scan().get_state_machine()
+		self.scan_and_dock     = ScanAndDock().get_state_machine()
+		self.choose_task       = ChooseTask(attempted_tasks, choose_task_rate)
 
-		self.task_sub = rospy.Subscriber(task_topic, Task, self.choose_task.task_cb)
+		self.task_sub          = rospy.Subscriber(task_topic, Task, self.choose_task.task_cb)
 
 		with self.sm:
 			smach.StateMachine.add(
