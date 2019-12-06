@@ -17,6 +17,7 @@ find_package(catkin REQUIRED COMPONENTS
   std_msgs
   tf
   tf_conversions
+  dynamic_reconfigure
 )
 
 find_package(Boost REQUIRED COMPONENTS)
@@ -38,6 +39,9 @@ generate_messages(
   std_msgs
 )
 
+generate_dynamic_reconfigure_options(
+  config/laneDetectorParams.cfg
+)
 
 catkin_package(CATKIN_DEPENDS
   angles
@@ -52,11 +56,13 @@ catkin_package(CATKIN_DEPENDS
   std_msgs
   tf
   tf_conversions
+  dynamic_reconfigure
 )
 
 include_directories(
   ${catkin_INCLUDE_DIRS}
 )
+
 
 add_executable(lane_detector src/cv/opencv/lane_detector.cpp)
 target_link_libraries(lane_detector ${catkin_LIBRARIES} ${OpenCV_LIBRARIES})
