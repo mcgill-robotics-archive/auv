@@ -23,7 +23,7 @@ from cv.cfg import laneDetectorParamsConfig
 class ORBDetector():
 
     def __init__(self):
-        self.pub    = rospy.Publisher('cv/down_cam_target', CvTarget, queue_size=1)
+        self.pub    = rospy.Publisher('cv/down_cam_target', CvTarget, queue_size=1000)
         self.bridge = CvBridge()
         self.sub    = rospy.Subscriber("/camera_front_1/image_raw", Image, self.callback)
         self.targetFound        = False
@@ -45,8 +45,10 @@ class ORBDetector():
         yReturn = None
 
         # find the keypoints and descriptors with SIFT
-        kp1, des1 = self.orb.detectAndCompute(img1,None)
-        kp2, des2 = self.orb.detectAndCompute(img2,None)
+        kp1, des1 = self.orb.detectAndCompute(self.img_target,None)
+        print(len(kp1))
+        kp2, des2 = self.orb.detectAndCompute(img,None)
+        print(len(kp2))
 
         FLANN_INDEX_KDTREE = 0
         index_params       = dict(algorithm = FLANN_INDEX_KDTREE, trees = 5)
@@ -54,8 +56,8 @@ class ORBDetector():
         FLANN_INDEX_LSH    = 6
 
         index_params = dict(algorithm = FLANN_INDEX_LSH,
-                           table_number = 6, # 12
-                           key_size = 12,     # 20
+                           table_number      = 6, # 12
+                           key_size          = 12,     # 20
                            multi_probe_level = 1) #2
                            
         flann   = cv2.FlannBasedMatcher(index_params, search_params)
@@ -68,7 +70,7 @@ class ORBDetector():
             if m.distance < 0.7*n.distance:
                 good.append(m)
 
-        MIN_MATCH_COUNT = 5        
+        MIN_MATCH_COUNT = 2        
         if len(good)>MIN_MATCH_COUNT:
             src_pts = np.float32([ kp1[m.queryIdx].pt for m in good ]).reshape(-1,1,2)
             dst_pts = np.float32([ kp2[m.trainIdx].pt for m in good ]).reshape(-1,1,2)
@@ -76,11 +78,11 @@ class ORBDetector():
             M, mask     = cv2.findHomography(src_pts, dst_pts, cv2.RANSAC,5.0)
             matchesMask = mask.ravel().tolist()
 
-            h,w = img1.shape
+            h,w = self.img_target.shape
             pts = np.float32([ [0,0],[0,h-1],[w-1,h-1],[w-1,0] ]).reshape(-1,1,2)
             dst = cv2.perspectiveTransform(pts,M)
 
-            img2 = cv2.polylines(img2,[np.int32(dst)],True,255,3, cv2.LINE_AA)
+            img = cv2.polylines(img,[np.int32(dst)],True,255,3, cv2.LINE_AA)
 
         else:
             print "Not enough matches are found - %d/%d" % (len(good),MIN_MATCH_COUNT)
@@ -91,10 +93,10 @@ class ORBDetector():
                            matchesMask      = matchesMask, # draw only inliers
                            flags            = 2)
 
-        img3 = cv2.drawMatches(img1,kp1,img2,kp2,good,None,**draw_params)
+        img3 = cv2.drawMatches(self.img_target,kp1,img,kp2,good,None,**draw_params)
 
-
-        small = cv2.resize(img3, (0, 0), fx=scaling, fy=scaling)
+        scaling = 0.5
+        small   = cv2.resize(img3, (0, 0), fx=scaling, fy=scaling)
         cv2.imshow(label, small)
         #cv2.moveWindow(label, dispx,dispy);
         cv2.waitKey(1)
