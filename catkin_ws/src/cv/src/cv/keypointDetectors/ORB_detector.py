@@ -11,31 +11,36 @@ from dynamic_reconfigure.server import Server
 from cv.cfg import laneDetectorParamsConfig
 
 '''
-	Finds a lane in an image using colormasking
-	The flow of this code is
-	1) Gaussian blur
-	2) Increase red channel
-	3) Mask by color
-	4) Find contours in this mask. 
-	5) Check if they are large enough to be the lane
-	6) If they are, run canny edge detection to 
+	This Finds a target image using ORB keypoints and 
+
+	k nearest neighbors matching. 
+	I first tried to make it a subscriber, but 
+	it takes too long to run cand causes errors.
 '''
-class ORBDetector():
+class ORBDetectorServer():
 
     def __init__(self):
-        self.pub    = rospy.Publisher('cv/down_cam_target', CvTarget, queue_size=1000)
+        self.pub    = rospy.Publisher('cv/down_cam_target', 
+        	                          CvTarget, 
+        	                          queue_size=1)
+
         self.bridge = CvBridge()
-        self.sub    = rospy.Subscriber("/camera_front_1/image_raw", Image, self.callback)
+        self.sub    = rospy.Subscriber("/camera_front_1/image_raw", 
+        	                           Image, 
+        	                           self.callback)
+
         self.targetFound        = False
         self.smoothQueue        = deque([])
         self.debugimgs          = True #When true, show debugging images
+        #This should NOT be hard codedhere.
+        #TODO: Make this a parameter
         self.img_target         = cv2.imread('DarkTower.png',0) # Query Image
         self.orb                = cv2.ORB_create()
         print("starting ORB Detector")
 
 
 
-    def callback(self, data):
+    def execute(self, data):
         try:
             img = self.bridge.imgmsg_to_cv2(data, "bgr8")
         except CvBridgeError as e:

@@ -72,13 +72,13 @@ include_directories(
 )
 
 
-add_executable(lane_detector src/cv/opencv/lane_detector.cpp)
+add_executable(lane_detector src/cv/shapeAndColorDetectors/lane_detector.cpp)
 target_link_libraries(lane_detector ${catkin_LIBRARIES} ${OpenCV_LIBRARIES})
 
 
-add_executable(torpedo_target src/cv/opencv/torpedo_targeter.cpp)
+add_executable(torpedo_target src/cv/shapeAndColorDetectors/torpedo_targeter.cpp)
 target_link_libraries(torpedo_target ${catkin_LIBRARIES} ${OpenCV_LIBRARIES})
 
 
-add_executable(bin_detector src/cv/opencv/bin_detector.cpp)
+add_executable(bin_detector src/cv/shapeAndColorDetectors/bin_detector.cpp)
 target_link_libraries(bin_detector ${catkin_LIBRARIES} ${OpenCV_LIBRARIES})

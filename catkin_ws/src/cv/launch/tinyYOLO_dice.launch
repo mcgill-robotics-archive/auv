@@ -5,12 +5,12 @@
   <arg name="launch_prefix" default=""/>
 
   <!-- Config and weights folder. -->
-  <arg name="yolo_weights_path"          default="$(find cv)/dice/yolo_network_config/weights"/>
-  <arg name="yolo_config_path"           default="$(find cv)/dice/yolo_network_config/cfg"/>
+  <arg name="yolo_weights_path"          default="$(find cv)/config/dice/yolo_network_config/weights"/>
+  <arg name="yolo_config_path"           default="$(find cv)/config/dice/yolo_network_config/cfg"/>
 
   <!-- Load parameters -->
-  <rosparam command="load" ns="darknet_ros" file="$(find cv)/dice/config/ros.yaml"/>
-  <rosparam command="load" ns="darknet_ros" file="$(find cv)/dice/config/tiny_dice1256.yaml"/>
+  <rosparam command="load" ns="darknet_ros" file="$(find cv)/config/dice/config/ros.yaml"/>
+  <rosparam command="load" ns="darknet_ros" file="$(find cv)/config/dice/config/tiny_dice1256.yaml"/>
 
   <!-- Start darknet and ros wrapper -->
   <node pkg="darknet_ros" type="darknet_ros" name="darknet_ros" output="screen" launch-prefix="$(arg launch_prefix)">
