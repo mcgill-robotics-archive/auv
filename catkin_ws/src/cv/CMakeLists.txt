@@ -4,6 +4,7 @@ project(cv)
 set_directory_properties(PROPERTIES COMPILE_OPTIONS "-std=c++11")
 
 find_package(catkin REQUIRED COMPONENTS
+  actionlib_msgs
   angles
   auv_msgs
   cmake_modules
@@ -18,6 +19,11 @@ find_package(catkin REQUIRED COMPONENTS
   tf
   tf_conversions
   dynamic_reconfigure
+)
+add_action_files(
+  DIRECTORY action
+  FILES
+  Call_ORB.action
 )
 
 find_package(Boost REQUIRED COMPONENTS)
@@ -35,6 +41,7 @@ catkin_python_setup()
 ## Generate added messages and services with any dependencies listed here
 generate_messages(
   DEPENDENCIES
+  actionlib_msgs
   geometry_msgs
   std_msgs
 )
@@ -44,6 +51,7 @@ generate_dynamic_reconfigure_options(
 )
 
 catkin_package(CATKIN_DEPENDS
+  actionlib_msgs
   angles
   auv_msgs
   boost
