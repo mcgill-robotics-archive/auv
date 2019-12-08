@@ -17,16 +17,16 @@ class joystick:
                                     queue_size=1)
 
     def joy_cb(self, twist_msg):
-        twist_msg.linear.y = -twist_msg.linear.y
-        self.wrench_msg.force = twist_msg.linear
-        twist_msg.angular.z = -twist_msg.angular.z
+        twist_msg.linear.y     = -twist_msg.linear.y
+        self.wrench_msg.force  = twist_msg.linear
+        twist_msg.angular.z    = -twist_msg.angular.z
         self.wrench_msg.torque = twist_msg.angular
 
 
 if __name__ == '__main__':
     rospy.init_node('teleop_node')
 
-    js = joystick()
+    js  = joystick()
     pub = rospy.Publisher('/controls/wrench',
                           Wrench,
                           queue_size=1)
