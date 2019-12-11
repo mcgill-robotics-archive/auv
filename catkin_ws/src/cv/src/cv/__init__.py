@@ -3,7 +3,7 @@
 """CV package."""
 
 # Detectors
-from machine_learning import *
+#from machine_learning import *
 
 __author__ = 'Lino Toran Jenner, Jeremy Mallette'
 

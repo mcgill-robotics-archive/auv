@@ -3,6 +3,7 @@ import rospy
 import cv2
 import math
 import numpy as np
+from std_msgs.msg import Float32
 from cv.msg import CvTarget
 from sensor_msgs.msg import Image
 from cv_bridge import CvBridge, CvBridgeError
@@ -16,26 +17,29 @@ from cv.cfg import laneDetectorParamsConfig
 	1) Gaussian blur
 	2) Increase red channel
 	3) Mask by color
-	4) Find contours in this mask. 
+	4) Find contours in this mask.
 	5) Check if they are large enough to be the lane
-	6) If they are, run canny edge detection to 
+	6) If they are, run canny edge detection to
 '''
 class LaneDetector():
 
     def __init__(self):
-        self.pub    = rospy.Publisher('cv/down_cam_target', CvTarget, queue_size=1)
-        self.bridge = CvBridge()
-        self.sub    = rospy.Subscriber("/camera_front_1/image_raw", Image, self.callback)
-        self.angle_top_lane     = None
-        self.laneFound          = False
-        self.smoothQueue        = deque([])
-        self.debugimgs          = True #When true, show debugging images
+        self.pubTargetLines       = rospy.Publisher('cv/down_cam_target_lines'    , CvTarget, queue_size=1)
+        self.pubTargetCentroid    = rospy.Publisher('cv/down_cam_target_centroid' , CvTarget, queue_size=1)
+        self.pubHeadingFit        = rospy.Publisher('cv/down_cam_heading_Fitting' , Float32 , queue_size=1)
+        self.pubHeadingCentroid   = rospy.Publisher('cv/down_cam_heading_Centroid', Float32 , queue_size=1)
+        self.pubHeadingHoughLines = rospy.Publisher('cv/down_cam_heading_Hough'   , Float32 , queue_size=1)       
+        self.bridge               = CvBridge()
+        self.sub                  = rospy.Subscriber("/camera_front_1/image_raw", Image, self.callback)
+        self.angle_top_lane       = None
+        self.laneFound            = False
+        self.smoothQueue          = deque([])
+        self.debugimgs            = True #When true, show debugging images
         print("starting laneDetector")
 
     def getAngleOfTopLine(self, points, difSlopes, img):
-        ''' 
+        '''
         Find the line with higher YCoordinate
-    
         '''
         maxY   = np.inf
         maxIdx = -1
@@ -69,11 +73,13 @@ class LaneDetector():
         yReturn = None
 
         #blur
-        img_blur = cv2.GaussianBlur(img, (7, 7), 2)
+        img_blur = cv2.GaussianBlur(img, 
+        	           (self.blurKernelSize, self.blurKernelSize), 
+        	            self.blurSigma)
         self.display_debug_image(self.debugimgs,img_blur,'Blurred',0.5,-6000,6000)
 
         # increase red
-        img[:, :, 2] = np.multiply(img_blur[:, :, 2], 1)
+        img[:, :, 2] = np.multiply(img_blur[:, :, 2], self.redChannelXFactor)
         img_redbump  = np.clip(img_blur, 0, 255)
         self.display_debug_image(self.debugimgs,img_redbump,'Red Channel Increased',0.5,-6000,6000)
 
@@ -81,31 +87,39 @@ class LaneDetector():
         img_hvt          = cv2.cvtColor(img_redbump, cv2.COLOR_BGR2HSV)
 
     	#define lower and upper colormask bounds
-        lower_cm_bound = np.array([self.hueLowerBound, 
+        lower_cm_bound = np.array([self.hueLowerBound,
         	                       self.satLowerBound,
         	                       self.valLowerBound])
-        upper_cm_bound = np.array([self.hueUpperBound, 
+        upper_cm_bound = np.array([self.hueUpperBound,
         	                       self.satUpperBound,
         	                       self.valUpperBound])
 
         #Generate and display an image that indicates the masking bounds
-        img_bounds       = self.generate_mask_color_image(img_hvt,lower_cm_bound,upper_cm_bound) 
+        img_bounds       = self.generate_mask_color_image(img_hvt,lower_cm_bound,upper_cm_bound)
         self.display_debug_image(self.debugimgs,img_bounds,'Colormask bounds',0.5,-6000,6000)
 
         # Filter by Color to obtain a colormask
-        MIN_CONTOUR_SIZE = rospy.get_param("/cv/lanes/orange_cnt_size", 40000)   
+        MIN_CONTOUR_SIZE = rospy.get_param("/cv/lanes/orange_cnt_size", 40000)
         mask             = cv2.inRange(img_hvt, lower_cm_bound, upper_cm_bound)
         self.display_debug_image(self.debugimgs,mask,'Colormask Output',0.5,-6000,6000)
-        
-        ######################################################################
-        #Using the colormask, find contours
-        #This line does heavy lifting with opencv
-        ######################################################################
-        im2, cnt, hier = cv2.findContours(mask, cv2.RETR_LIST, cv2.CHAIN_APPROX_NONE)
 
         
+        #Using the colormask, find contours
+        #This line does heavy lifting with opencv
+       
+        im2, cnt, hier = cv2.findContours(mask, cv2.RETR_LIST, cv2.CHAIN_APPROX_NONE)
+
+
+		######################################################################
+        #This is where the methods diverge. The Next bit is 
+        #the 'old' method uses hough lines to find the lines on an 
+        #Edge detected image. It appears to me that this method it
+        #Extremely noisy with the current parameters, but perhaps 
+        #With tweaking it could be improved.  
+        ######################################################################
+
         if len(cnt) == 0:
-            print("No lane of sufficient size found") 
+            print("No lane of sufficient size found")
             self.laneFound      = False
             self.angle_top_lane = None
             #return
@@ -127,16 +141,22 @@ class LaneDetector():
                 # create emptyImage for mask
                 contourMask = np.zeros(img.shape, np.uint8)
                 cv2.drawContours(contourMask, [biggestCont], -1, (255, 255, 255), cv2.FILLED, 8)
-                edges = cv2.Canny(contourMask, 100, 200)
+                
+
+                edges = cv2.Canny(contourMask,
+                                  self.cannyLowerThreshold,
+                                  self.cannyUpperThreshold)
+                self.display_debug_image(self.debugimgs,edges,'Canny Edges',0.5,-6000,6000)
+
 
                 # TODO: check if these values work reliably
-                # Hough Lines
-                rho             = 1  # distance resolution in pixels of the Hough grid
-                theta           = np.pi / 180  # angular resolution in radians of the Hough grid
-                threshold       = 20  # minimum number of votes (intersections in Hough grid cell)
-                min_line_length = 40  # minimum number of pixels making up a line
-                max_line_gap    = 100  # maximum gap in pixels between connectable line segments
-                line_image      = np.copy(img) * 0  # creating a blank to draw lines on
+                # Hough Lines Parameter update
+                rho             = self.houghRho            # distance resolution in pixels of the Hough grid
+                theta           = self.houghTheta          # angular resolution in radians of the Hough grid
+                threshold       = self.houghThreshold      # minimum number of votes (intersections in Hough grid cell)
+                min_line_length = self.houghMinLineLength  # minimum number of pixels making up a line
+                max_line_gap    = self.houghMaxLineGap     # maximum gap in pixels between connectable line segments
+                line_image      = np.copy(img) * 0         # creating a blank to draw lines on
                 # Run Hough on edge detected image
                 # Output "lines" is an array containing endpoints of detected line segments
                 lines = cv2.HoughLinesP(edges, rho, theta, threshold, np.array([]),
@@ -189,7 +209,8 @@ class LaneDetector():
                         slopeCollection.append([slope])
                         lineGroups.append([lines[no]])
 
-                print("Number of Found Slopes: {}".format(len(difSlopes)))
+                #Debugging, TC
+                #print("Number of Found Slopes: {}".format(len(difSlopes)))
 
                 # find the mean point of lineGroup to calculate intersection
                 # sort LineGroup by size to get the groups with most entries
@@ -266,11 +287,6 @@ class LaneDetector():
                         #cv2.circle(img, (xMean, yMean), 30, (255, 0, 255), -1)
                         xReturn = xMean
                         yReturn = yMean
-                """
-                small = cv2.resize(img, (0, 0), fx=0.5, fy=0.5)
-                cv2.imshow("image", small)
-                cv2.waitKey(5)
-                """
             if (xReturn != None):
                 #new
                 xReturn,yReturn = self.smoothPoint(xReturn,yReturn)
@@ -282,7 +298,7 @@ class LaneDetector():
                 msg.gravity.y = yReturn
                 msg.gravity.z = 0
                 msg.probability.data = 1.0
-                self.pub.publish(msg)
+                self.pubTargetLines.publish(msg)
                 self.laneFound = True
             else:
                 #If no correct lane is found we want to make sure to turn the servo off
@@ -290,7 +306,7 @@ class LaneDetector():
                 msg = CvTarget()
                 #This makes sure the servo turns off
                 msg.probability.data = 0.0
-                self.pub.publish(msg)
+                self.pubTargetLines.publish(msg)
                 #also clear the queue
                 self.smoothQueue = deque([])
                 self.laneFound = False
@@ -298,6 +314,74 @@ class LaneDetector():
             small = cv2.resize(img, (0, 0), fx=0.5, fy=0.5)
             cv2.imshow("Final Image", small)
             cv2.waitKey(5)
+
+		######################################################################
+        #This is where the new methods begins
+        #To get the center, use the centroid formula 
+        #To get the angle, either use fancy centroid formulas, or rely on
+        #OpenCV line fitting algorithms!
+        ######################################################################    
+        #First, find the convex hull
+        hull     = cv2.convexHull(biggestCont)  
+        hull_img = np.zeros(img.shape, np.uint8)
+        cv2.drawContours(hull_img ,[hull],0, (255, 255, 255),cv2.FILLED, 8)
+		
+		# convert image to grayscale image
+        gray_img   = cv2.cvtColor(hull_img, cv2.COLOR_BGR2GRAY)
+        # convert the grayscale image to binary image
+        ret,thresh = cv2.threshold(gray_img,127,255,cv2.THRESH_BINARY)
+        #The above two steps are necessary because cv2.moments needs 
+        #A binary, single channel, input!
+
+        #Now, with this binary convex hull, compute the moments! 
+        M = cv2.moments(thresh) 
+
+        #The centroid can be found using these moments as
+        xCentroid = M["m10"]/M["m00"]
+        yCentroid = M["m01"]/M["m00"]
+        #Let's slap this centroid on the image and display it 
+        cv2.circle(hull_img, (int(xCentroid), int(yCentroid)), 10, (255, 0, 255), -1)
+
+        #Okay, now shit is going to get a bit wild. 
+        #We need to use some hard math to get the orientation. Check this link out
+        #http://raphael.candelier.fr/?blog=Image%20Moments
+        #I'm going to start out with an intermediary step to make life easier 
+        a = M["m20"]/M["m00"]    - xCentroid**2;
+        b = 2*(M["m11"]/M["m00"] - xCentroid*yCentroid);
+        c = M["m02"]/M["m00"]    - xCentroid**2;
+        d = b/(a-c)
+
+        #With these wacky bois in hand, we can find the orientation
+        thetaCentroid = (1.0/2.0)*np.arctan(d)
+
+        #alternatively, we could be less smart and just use CVs line fitting
+        img, cnts ,heir  = cv2.findContours(thresh, cv2.RETR_LIST, cv2.CHAIN_APPROX_SIMPLE)
+        cnt              = cnts[0]
+        rows,cols        = hull_img.shape[:2]
+        [vx,vy,x,y]      = cv2.fitLine(cnt, cv2.DIST_L2,0,0.01,0.01)
+        lefty            = int((-x*vy/vx) + y)
+        righty           = int(((cols-x)*vy/vx)+y)
+        hull_img         = cv2.line(hull_img,(cols-1,righty),(0,lefty),(0,255,0),2)
+        self.display_debug_image(self.debugimgs,hull_img,'Convex Hull',0.5,-6000,6000)
+
+        #let's spit everything to a topic so we can do some plotting 
+        #### First, the CV Targets ########################################
+
+        msgCentroid                  = CvTarget()
+        msgCentroid.gravity.x        = xCentroid
+        msgCentroid.gravity.y        = yCentroid
+        msgCentroid.gravity.z        = 0
+        msgCentroid.probability.data = 1.0
+        self.pubTargetCentroid.publish(msgCentroid)   
+
+        ## (The other one is published above in the code where it is generated)
+        #### Next, the headings ########################################
+        self.pubHeadingCentroid.publish(thetaCentroid) 
+        self.pubHeadingFit.publish(np.arctan(vy/vx)) 
+        self.pubHeadingHoughLines.publish(self.angle_top_lane) 
+
+
+        
 
     def getAngle(self):
         return self.angle_top_lane
@@ -309,7 +393,7 @@ class LaneDetector():
         self.sub.unregister()
 
     def smoothPoint(self,xVal,yVal):
-        if len(self.smoothQueue) < 4:
+        if len(self.smoothQueue) < self.smoothQueueSize:
             self.smoothQueue.append((xVal,yVal))
         else:
             self.smoothQueue.popleft()
@@ -328,31 +412,45 @@ class LaneDetector():
 
     def dyn_reconf_cb(self, config, level):
     	'''
-    	%This is the dynamic reconfigure callback. 
-    	This function updates all of the 
+    	%This is the dynamic reconfigure callback.
+    	This function updates all of the
     	reconfigurable parameters. It is fed into the Server
     	and updates everything defined in the .cfg file
     	'''
 
+    	#Debugging
     	#rospy.loginfo('{}'.format(config))
 
     	#These are values for color masking
-    	self.hueLowerBound = config.hueLowerBound
-    	self.hueUpperBound = config.hueUpperBound
-    	self.satLowerBound = config.satLowerBound
-    	self.satUpperBound = config.satUpperBound
-        self.valLowerBound = config.valLowerBound
-        self.valUpperBound = config.valUpperBound
+    	self.hueLowerBound       = config.hueLowerBound
+    	self.hueUpperBound       = config.hueUpperBound
+    	self.satLowerBound       = config.satLowerBound
+    	self.satUpperBound       = config.satUpperBound
+        self.valLowerBound       = config.valLowerBound
+        self.valUpperBound       = config.valUpperBound
+        #These values are for the canny edge detection
+        self.cannyLowerThreshold = config.cannyLowerThreshold
+        self.cannyUpperThreshold = config.cannyUpperThreshold
         #These values are for the hough line detection
-
+        self.houghRho            = config.houghRho 
+        self.houghTheta          = config.houghTheta
+        self.houghThreshold      = config.houghThreshold
+        self.houghMinLineLength  = config.houghMinLineLength
+        self.houghMaxLineGap     = config.houghMaxLineGap
         #These are values for gaussian blurring
+        self.blurKernelSize      = config.blurKernelSize
+        self.blurSigma           = config.blurSigma
+        #This is for the smoothing of the output target
+        self.smoothQueueSize     = config.smoothQueueSize
+ 		#This is for artificially inflating The red channel
+        self.redChannelXFactor   = config.redChannelXFactor
 
     	return config
 
     def generate_mask_color_image(self,img,lower_cm_bound,upper_cm_bound):
     	###################################################
     	#This function makes a dummy image that sets half
-    	#of the image to the lower bound color, and 
+    	#of the image to the lower bound color, and
     	#the other half to the upper bound color
     	###################################################
         row,col,plane = img.shape
@@ -374,7 +472,7 @@ class LaneDetector():
 
     def display_debug_image(self,debug,img,label,scaling,dispx,dispy):
     	'''
-    	This function displays the input image. 
+    	This function displays the input image.
     	I call it a lot for debugging, so the function
     	is convenient.
     	Only does anything if debug == True
