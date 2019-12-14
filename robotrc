@@ -1,4 +1,5 @@
 # McGill Robotics AUV RC File
 
-alias robosh='mosh robotics@auv'
-alias robotx='ssh -Y robotics@auv'
+# TODO : These are temporary credentials
+alias robosh='mosh nvidia@10.10.10.100'
+alias robotx='ssh -Y nvidia@10.10.10.100'
