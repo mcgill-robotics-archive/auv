@@ -1,5 +1,5 @@
 #goal definition
-uint32 TargetIndex
+sensor_msgs/Image TargetImage
 ---
 #result definition
 CvTarget target

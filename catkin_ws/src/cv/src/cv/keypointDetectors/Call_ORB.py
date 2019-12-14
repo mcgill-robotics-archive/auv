@@ -3,9 +3,7 @@ import rospy
 import cv2
 import math
 import numpy as np
-import actionlib
 from cv.msg import CvTarget
-from cv.msg import Call_ORBAction 
 from sensor_msgs.msg import Image
 from cv_bridge import CvBridge, CvBridgeError
 from collections import deque
@@ -31,9 +29,6 @@ class ORBDetectorServer():
         #self.sub    = rospy.Subscriber("/camera_front_1/image_raw", 
         #	                           Image, 
         #	                           self.callback)
-        self.server = actionlib.SimpleActionServer(
-            'ORB_detector', Call_ORBAction, self.execute, False)
-        self.server.start()
 
         self.targetFound        = False
         self.smoothQueue        = deque([])
@@ -46,12 +41,12 @@ class ORBDetectorServer():
 
 
 
-    def execute(self, data):   
-        print(data) 	
+    def execute(self, data):
         try:
-            img = self.bridge.imgmsg_to_cv2(data.data, "bgr8")
+            img = self.bridge.imgmsg_to_cv2(data, "bgr8")
         except CvBridgeError as e:
-            print(e)        
+            print(e)
+
         print('inside Execute')
 
         xReturn = None
@@ -203,7 +198,7 @@ class ORBDetectorServer():
 
 
 if __name__ == '__main__':
-    rospy.init_node('ORB_detector',anonymous=False)
+    rospy.init_node('ORBDetector',anonymous=True)
     #bla = ORBDetector()
     #srv = Server(laneDetectorParamsConfig, bla.dyn_reconf_cb)
     server = ORBDetectorServer()
