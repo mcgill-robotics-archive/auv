@@ -47,9 +47,10 @@ class ORBDetectorServer():
 
 
     def execute(self, data):   
-        print(data) 	
+        #$print(data) 	
         try:
-            img = self.bridge.imgmsg_to_cv2(data.data, "bgr8")
+            #img = self.bridge.imgmsg_to_cv2(data.TargetImage, "bgr8")
+            img = self.bridge.imgmsg_to_cv2(data.TargetImage, "8UC1")
         except CvBridgeError as e:
             print(e)        
         print('inside Execute')
@@ -60,6 +61,7 @@ class ORBDetectorServer():
         # find the keypoints and descriptors with SIFT
         kp1, des1 = self.orb.detectAndCompute(self.img_target,None)
         print(len(kp1))
+        img= self.img_target #DUMMY! SHOULD BE REPLACED WITH CURRENT CAMERA IMAGE
         kp2, des2 = self.orb.detectAndCompute(img,None)
         print(len(kp2))
 
@@ -110,7 +112,7 @@ class ORBDetectorServer():
 
         scaling = 0.5
         small   = cv2.resize(img3, (0, 0), fx=scaling, fy=scaling)
-        cv2.imshow(label, small)
+        cv2.imshow('Matches', small)
         #cv2.moveWindow(label, dispx,dispy);
         cv2.waitKey(1)
         
