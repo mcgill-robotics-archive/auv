@@ -28,18 +28,18 @@ void ADC_Config(ADC_HandleTypeDef* hadc, ADC_TypeDef* adc)
 #else
   hadc->Init.Resolution = ADC_RESOLUTION8b;
 #endif
-  hadc->Init.DataAlign = ADC_DATAALIGN_RIGHT;
-  hadc->Init.ScanConvMode = ENABLE;
-  hadc->Init.EOCSelection = EOC_SINGLE_CONV;
-  hadc->Init.LowPowerAutoWait = DISABLE;
-  hadc->Init.ContinuousConvMode = ENABLE;
-  hadc->Init.NbrOfConversion = 1;
+  hadc->Init.DataAlign             = ADC_DATAALIGN_RIGHT;
+  hadc->Init.ScanConvMode          = ENABLE;
+  hadc->Init.EOCSelection          = EOC_SINGLE_CONV;
+  hadc->Init.LowPowerAutoWait      = DISABLE;
+  hadc->Init.ContinuousConvMode    = ENABLE;
+  hadc->Init.NbrOfConversion       = 1;
   hadc->Init.DiscontinuousConvMode = DISABLE;
-  hadc->Init.NbrOfDiscConversion = 0;
-  hadc->Init.ExternalTrigConv = ADC_SOFTWARE_START;
-  hadc->Init.ExternalTrigConvEdge = ADC_EXTERNALTRIGCONVEDGE_NONE;
+  hadc->Init.NbrOfDiscConversion   = 0;
+  hadc->Init.ExternalTrigConv      = ADC_SOFTWARE_START;
+  hadc->Init.ExternalTrigConvEdge  = ADC_EXTERNALTRIGCONVEDGE_NONE;
   hadc->Init.DMAContinuousRequests = ENABLE;
-  hadc->Init.Overrun = OVR_DATA_OVERWRITTEN;
+  hadc->Init.Overrun               = OVR_DATA_OVERWRITTEN;
 
   if (HAL_ADC_Init(hadc) != HAL_OK)
   {
@@ -141,20 +141,69 @@ void Stop_ADC(ADC_HandleTypeDef* hadc)
 
 
 void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef *hadc)
+  //The Conversion complete callback. This function checks
+  //if we satisfy the maximum and minimum voltage thresholds
+  //to qualify this data as being 'in a ping'. If it turns out that
+  //we ARE in a ping, we turn on ALL of the ADCs!
+  //
+  //I have also added a debugging statement that writes the largest
+  //and smallest voltages received on the port. This should give us a bit of
+  //insight about what voltages we are receiving both inside and outside of a
+  //ping
+  //
+  //This function expects only one ADC to be running. This ADC is started by
+  //the main.c script!
 {
-  uint8_t min = 0;
-  uint8_t max = 0;
+  //Booleans to determine if we are in a ping
+  uint8_t min_received = 0;
+  uint8_t max_received = 0;
+  //Variables to hold the max and min values received
+  uint8_t max_voltage  = 0;   //artificially low
+  uint8_t min_voltage  = 255; //artificially high
+  //Threshold Values
+  uint8_t max_threshold = 200;
+  uint8_t min_threshold = 5;
 
+  //Loop through 30 points of data
   for (uint8_t i = 0; i < 30; i++) {
-    if (data_1[i] > 200) {
-      max = 1;
+    //First, check if these data points satisfy the maximum or
+    //minimum voltage thresholds
+    if (data_1[i] > max_threshold) {
+      max_received = 1;
     }
-    if (data_1[i] < 5) {
-      min = 1;
+    if (data_1[i] < min_threshold) {
+      min_received = 1;
     }
-  }
+    //Then, update the max and min voltage values if required
+    if(data_1[i]>max_voltage){
+      max_voltage = data_1[i]
+    }
+    if(data_1[i]<min_voltage){
+      min_voltage=data_1[i]
+    }
 
-  if (min && max) {
+    //Send the min and max voltages via the serial port
+    //This is interpreted by "nucleo.py", which will run the "iter_date()"
+    //function if it has "DATA" in the header, and will run rospy.logdebug if it has
+    //"[DEBUG]" in the header. Let's have these sent as debug messages to not cloud the 
+    //Data stream.
+
+    //First, spit out the Minimum value
+    write_buffer("[DEBUG]", 7);
+    write_buffer("Lowest Voltage Received ", 24)
+    write_buffer((uint8_t*) min_voltage,3)
+    write_buffer(" \n",3)
+
+    //Now do the same thing with the higher value
+    write_buffer("[DEBUG]", 7);
+    write_buffer("Highest Voltage Received ", 25)
+    write_buffer((uint8_t*) min_voltage,3)
+    write_buffer(" \n",3)
+
+  //If you have satisfied both the upper and lower voltage thresholds,
+  //Fire up all 4 ADCs becuase YOU"RE RECIEVING A PING!
+
+  if (min_recieved && max_received) {
     Stop_ADC(&hadc1);
     in_ping = 1;
     Start_ADC(&hadc1, (uint32_t*) data_1);
@@ -168,6 +217,7 @@ void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef *hadc)
 void HAL_ADC_ConvHalfCpltCallback(ADC_HandleTypeDef* hadc)
 {
   // ADC conversion half-complete.
+  // This function expect all 4 ADCs to be running. It
   uint32_t sum = 0;
   char energy_buff[30];
   if (in_ping) {
