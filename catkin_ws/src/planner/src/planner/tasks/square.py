@@ -12,10 +12,10 @@ class Placeholder(smach.State):
 		smach.State.__init__(self, outcomes=outcomes)
 
 	def execute(self, userdata):
-		rospy.logdebug('[Perception] Executing placeholder state')
+		rospy.logdebug('[Square] Executing placeholder state')
 		return 'succeeded'
 
-class Perception(object):
+class Square(object):
 	def __init__(self):
 		outcomes = ['succeeded', 'failed', 'preempted']
 		self.sm = smach.StateMachine(outcomes=outcomes)

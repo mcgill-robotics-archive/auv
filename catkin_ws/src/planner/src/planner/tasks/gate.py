@@ -2,7 +2,6 @@ import rospy
 import smach
 import smach_ros
 
-
 class Placeholder(smach.State):
 	"""
 	Placeholder smach state that automatically succeeds
@@ -12,10 +11,10 @@ class Placeholder(smach.State):
 		smach.State.__init__(self, outcomes=outcomes)
 
 	def execute(self, userdata):
-		rospy.logdebug('[Navigation Course] Executing placeholder state')
+		rospy.logdebug('[Gate] Executing placeholder state')
 		return 'succeeded'
 
-class NavigationCourse(object):
+class Gate(object):
 	def __init__(self):
 		outcomes = ['succeeded', 'failed', 'preempted']
 		self.sm = smach.StateMachine(outcomes=outcomes)
