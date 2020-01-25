@@ -85,7 +85,7 @@ class TeledyneNavigator(object):
             # Wait for data ID byte.
             while not self._conn.read() == chr(self.DATA_ID):
                 rospy.loginfo_throttle(5.0, "Waiting for packet start byte...")
-                #print(self._conn.read_all())
+                print(self._conn.read_all())
                 if rospy.is_shutdown():
                     break
 

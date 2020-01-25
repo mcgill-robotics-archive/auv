@@ -7,9 +7,9 @@
         <arg name="joy_dev" value="$(arg joy_dev)" />
     </include>
     <!-- Joystick node. -->
-    <node name="joystick" pkg="controls" type="joystick" respawn="false" output="screen"/>
+    <node name="joystick" pkg="controls" type="joystick.py" respawn="false" output="screen"/>
     <!-- Thrust mapper. -->
-    <node name="thrust_mapper" pkg="controls" type="thrust_mapper" respawn="false" output="screen">
-      <remap from="thrust_cmds" to="electrical_interface/motor"/>
+    <node name="thrust_mapper" pkg="controls" type="thrust_mapper.py" respawn="false" output="screen">
+      <remap from="thrust_cmds" to="electrical_interface/thrusters"/>
     </node>
 </launch>
