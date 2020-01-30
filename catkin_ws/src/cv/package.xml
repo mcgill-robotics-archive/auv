@@ -20,6 +20,7 @@
   <depend>eigen_conversions</depend>
   <depend>geometry_msgs</depend>
   <depend>message_generation</depend>
+  <depend>message_runtime</depend>
   <depend>nav_msgs</depend>
   <depend>pointgrey_camera_driver</depend>
   <depend>roscpp</depend>
