@@ -15,12 +15,18 @@ sensors:
         type: 'PointCloud'
       - name: '/sonar_proc/full_scan'
         type: 'PointCloud'
+  - name: 'Hydrophones'
+    topics:
+      - name: '/hydrophones/heading'
+        type: 'Float64'
 
 thrusters:
   topic: 'electrical_interface/thrusters'
 
 cameras:
-  - name: 'Front Camera'
-    topic: '/camera_front/image_raw'
+  - name: 'Front Camera 1'
+    topic: '/camera_front_1/image_raw'
+  - name: 'Front Camera 2'
+    topic: '/camera_front_2/image_raw'
   - name: 'Down Camera'
     topic: '/camera_down/image_raw'

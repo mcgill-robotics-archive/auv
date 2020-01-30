@@ -1,0 +1,8 @@
+<section id="connection-wrapper" class="tool-wrapper container border border-default rounded my-2 p-4 justify-content-center">
+  <form class="form-inline" (submit)="onConnectSubmit()">
+    <div class="form-group mx-auto">
+      <input type="text" id="url" class="form-control mx-2" placeholder="ws://localhost:9090/" [(ngModel)]="url" name="url">
+      <button type="submit" class="btn btn-primary">Connect to Host</button>
+    </div>
+  </form>
+</section>
