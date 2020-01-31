@@ -3,7 +3,7 @@ import rospy
 import cv2
 import math
 import numpy as np
-from std_msgs.msg import Float32
+from std_msgs.msg import Float64
 from cv.msg import CvTarget
 from sensor_msgs.msg import Image
 from cv_bridge import CvBridge, CvBridgeError
@@ -26,9 +26,9 @@ class LaneDetector():
     def __init__(self):
         self.pubTargetLines       = rospy.Publisher('cv/down_cam_target_lines'    , CvTarget, queue_size=1)
         self.pubTargetCentroid    = rospy.Publisher('cv/down_cam_target_centroid' , CvTarget, queue_size=1)
-        self.pubHeadingFit        = rospy.Publisher('cv/down_cam_heading_Fitting' , Float32 , queue_size=1)
-        self.pubHeadingCentroid   = rospy.Publisher('cv/down_cam_heading_Centroid', Float32 , queue_size=1)
-        self.pubHeadingHoughLines = rospy.Publisher('cv/down_cam_heading_Hough'   , Float32 , queue_size=1)       
+        self.pubHeadingFit        = rospy.Publisher('cv/down_cam_heading_Fitting' , Float64 , queue_size=1)
+        self.pubHeadingCentroid   = rospy.Publisher('cv/down_cam_heading_Centroid', Float64 , queue_size=1)
+        self.pubHeadingHoughLines = rospy.Publisher('cv/down_cam_heading_Hough'   , Float64 , queue_size=1)       
         self.bridge               = CvBridge()
         self.sub                  = rospy.Subscriber("/camera_front_1/image_raw", Image, self.callback)
         self.angle_top_lane       = None
