@@ -5,7 +5,7 @@ import time
 import bitstring as bitstring
 import serial as serial
 from teledyne_navigator.msg import Ensemble
-from teledyne_navigator import serializer
+from teledyne_navigator.serializer import deserialize
 
 def _get_ensemble(rawPacket):
 	# Read all ensemble data.
@@ -28,7 +28,7 @@ if __name__ == "__main__":
 	pub = rospy.Publisher("~ensemble", Ensemble, queue_size=1)  # settings for publishing ensemble to ROS
 
 	conn = serial.Serial(
-	port=port, baudrate=baudrate, timeout=timeout, write_timeout=0.3)
+	port=port, baudrate=baudrate)
 	#conn= serial.Serial(port= "/dev/dvl",baudrate=115200, write_timeout=0.3)
 	uninitialized = True
 
@@ -49,15 +49,15 @@ if __name__ == "__main__":
 
 	print("Sending params")
 
-	#conn.write("PD5/n")
-	#time.sleep(0.1)
-	#conn.read_all()
-	#conn.write("EX1111/n")
-	#time.sleep(0.1)
-	#conn.read_all()
-	conn.write("CS/n")
-	#time.sleep(0.1)
-	#conn.read_all()
+	conn.write("PD5\n")
+	time.sleep(0.1)
+	conn.read_all()
+	conn.write("EX1111\n")
+	time.sleep(0.1)
+	conn.read_all()
+	conn.write("CS\n")
+	time.sleep(0.1)
+	conn.read_all()
 
 	print("Starting read/publish loop")
         #conn.flush()
@@ -68,6 +68,7 @@ if __name__ == "__main__":
 
 	while running:
                 print(conn.in_waiting)
+               # conn.write("CS/n")
 	        thisByte = conn.read()
 	        print(thisByte)
 	        if thisByte == chr(0x7D):
