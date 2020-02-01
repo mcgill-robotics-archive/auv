@@ -39,8 +39,11 @@ class TeledyneNavigator(object):
         """Opens serial connection."""
         if not self._conn.isOpen():
             self._conn.open()
-        #Minimum accepted break duration is 0.3 seconds
-        self._conn.send_break(duration=0.35)
+
+        # TODO: Figure out why we need to send this twice sometimes.
+        # self._conn.send_break()
+        # self._conn.send_break()
+        self._conn.send_break(duration=0.3)
         self._conn.flush()
 
     def close(self):
@@ -53,7 +56,7 @@ class TeledyneNavigator(object):
         Args:
             message (str): Message.
         """
-        rospy.loginfo("Writing: %s", message)
+        rospy.logdebug("Writing: %s", message)
         self._conn.write(message)
 
     def read(self, size=1):
@@ -85,7 +88,6 @@ class TeledyneNavigator(object):
             # Wait for data ID byte.
             while not self._conn.read() == chr(self.DATA_ID):
                 rospy.loginfo_throttle(5.0, "Waiting for packet start byte...")
-                print(self._conn.read_all())
                 if rospy.is_shutdown():
                     break
 
@@ -132,8 +134,7 @@ class TeledyneNavigator(object):
                 Called with args=(TeledyneNavigator, Ensemble).
         """
         self._preempted = False
-        self._conn.send_break(duration=0.35)
-        print(self._conn.read_all())
+
         # Set PD5 output format.
         self.write("PD5\n")
 
@@ -150,10 +151,8 @@ class TeledyneNavigator(object):
                 return
 
             try:
-                #print('         Before Ensemble call')
                 ensemble = self._get_ensemble()
                 callback(self, ensemble)
-                # print('         After Callback call')
             except Exception as e:
                 rospy.logerr_throttle(1.0, str(e))
                 continue
