@@ -7,5 +7,5 @@ generate_arduino_firmware(firmware
   SRCS ms5803_i2c.cpp ${ROS_LIB_DIR}/time.cpp
   HDRS depth.h ms5803_i2c.h ros.h
   BOARD leonardo
-  PORT /dev/ttyACM0
+  PORT /dev/depth
 )
