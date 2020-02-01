@@ -17,10 +17,10 @@ from std_msgs.msg import Float64
 from planner.msg import TaskFeedback, TaskResult, TaskAction
 from controls.maintainers import DepthMaintainer
 from auv_msgs.msg import HydrophonesAction, HydrophonesFeedback, HydrophonesResult
-#from follow_lane import FollowLane
-#from roulette import RouletteT
-#from dice_servo import DiceServo
-#from vacuum import Vacuum
+from follow_lane import FollowLane
+from roulette import RouletteT
+from dice_servo import DiceServo
+from vacuum import Vacuum
 #from torpedo import Torpedo
 from roll import Roll
 from sleep import Sleep
@@ -39,10 +39,10 @@ action_object_map = {"move_all": MoveAll,
                      "initialize": Initializer,
                      "acoustic_servo": AcousticServo,
                      "sonar_servo": SonarServo,
-                     #"follow_lane": FollowLane,
-                     #"roulette": RouletteT,
-                     #"dice_servo": DiceServo,
-                     #"vacuum": Vacuum,
+                     "follow_lane": FollowLane,
+                     "roulette": RouletteT,
+                     "dice_servo": DiceServo,
+                     "vacuum": Vacuum,
                      "roll": Roll,
                      "sleep": Sleep}
 
@@ -55,10 +55,10 @@ action_state_map = {"move_all": TaskStatus.MOVE,
                     "dive": TaskStatus.MOVE,
                     "bins_servo": TaskStatus.VISUAL_SERVO,
                     "sonar_servo": TaskStatus.MOVE,
-                    #"follow_lane": TaskStatus.VISUAL_SERVO, #TODO: change TaskStatus?
-                    #"roulette": TaskStatus.VISUAL_SERVO, #TODO: change TaskStatus?
-                    #"dice_servo": TaskStatus.VISUAL_SERVO,
-                    #"vacuum": TaskStatus.SHOOT,
+                    "follow_lane": TaskStatus.VISUAL_SERVO, #TODO: change TaskStatus?
+                    "roulette": TaskStatus.VISUAL_SERVO, #TODO: change TaskStatus?
+                    "dice_servo": TaskStatus.VISUAL_SERVO,
+                    "vacuum": TaskStatus.SHOOT,
                     "roll": TaskStatus.MOVE,
                     "sleep": TaskStatus.MOVE} #TODO: change TaskStatus?
 
