@@ -143,7 +143,12 @@ void missionReportTask(unsigned long time_now) {
 
 void torpedoesCallback(const std_msgs::UInt16& cmd_msg) {
   if (mission_enabled) {
-	servo.write(cmd_msg.data);
+	//servo.write(cmd_msg.data);
+	torpedos[0].write(50);
+	torpedos[1].write(80);
+	delay(2000);
+	torpedos[0].write(120);
+	torpedos[1].write(10);
 	
     }
   } else {
@@ -164,7 +169,7 @@ void loop() {
   vacuumResetTask(time_now);
   missionReportTask(time_now);
   voltageReportTask(time_now);
-
+  
   nh.spinOnce();
 }
 

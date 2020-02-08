@@ -26,6 +26,8 @@ const uint8_t thruster_pins[THRUSTER_COUNT] = {A3, A2, A0, A1, 3, 2, 4, 5};
 const uint8_t torpedo_pins[TORPEDO_COUNT] = {A4,A5};
 int16_t last_thruster_commands[THRUSTER_COUNT] = {0};
 Servo thrusters[THRUSTER_COUNT];
+Servo torpedos[TORPEDO_COUNT];
+
 
 void thrustersCallback(const auv_msgs::ThrusterCommands& msg);
 ros::Subscriber<auv_msgs::ThrusterCommands> thrusters_sub("~thrusters",
