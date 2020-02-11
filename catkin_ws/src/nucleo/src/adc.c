@@ -183,7 +183,7 @@ void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef *hadc)
     }
 
     //Send the min and max voltages via the serial port
-    //This is interpreted by "nucleo.py", which will run the "iter_date()"
+    //This is interpreted by "nucleo.py", which will run the "iter_data()"
     //function if it has "DATA" in the header, and will run rospy.logdebug if it has
     //"[DEBUG]" in the header. Let's have these sent as debug messages to not cloud the 
     //Data stream.
