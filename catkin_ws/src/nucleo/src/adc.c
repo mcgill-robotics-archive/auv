@@ -140,7 +140,7 @@ void Stop_ADC(ADC_HandleTypeDef* hadc)
 }
 
 
-void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef *hadc)
+void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef *hadc){
   //The Conversion complete callback. This function checks
   //if we satisfy the maximum and minimum voltage thresholds
   //to qualify this data as being 'in a ping'. If it turns out that
@@ -153,7 +153,7 @@ void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef *hadc)
   //
   //This function expects only one ADC to be running. This ADC is started by
   //the main.c script!
-{
+
   //Booleans to determine if we are in a ping
   uint8_t min_received = 0;
   uint8_t max_received = 0;
@@ -176,10 +176,10 @@ void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef *hadc)
     }
     //Then, update the max and min voltage values if required
     if(data_1[i]>max_voltage){
-      max_voltage = data_1[i]
+      max_voltage = data_1[i];
     }
     if(data_1[i]<min_voltage){
-      min_voltage=data_1[i]
+      min_voltage=data_1[i];
     }
 
     //Send the min and max voltages via the serial port
@@ -190,20 +190,20 @@ void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef *hadc)
 
     //First, spit out the Minimum value
     write_buffer("[DEBUG]", 7);
-    write_buffer("Lowest Voltage Received ", 24)
-    write_buffer((uint8_t*) min_voltage,3)
-    write_buffer(" \n",3)
+    write_buffer("Lowest Voltage Received ", 24);
+    //write_int(min_voltage); 
+    write_buffer(" \n",3);
 
     //Now do the same thing with the higher value
     write_buffer("[DEBUG]", 7);
-    write_buffer("Highest Voltage Received ", 25)
-    write_buffer((uint8_t*) min_voltage,3)
-    write_buffer(" \n",3)
+    write_buffer("Highest Voltage Received ", 25);
+    //write_int(min_voltage);
+    write_buffer(" \n",3);
 
   //If you have satisfied both the upper and lower voltage thresholds,
   //Fire up all 4 ADCs becuase YOU"RE RECIEVING A PING!
 
-  if (min_recieved && max_received) {
+  if (min_received && max_received) {
     Stop_ADC(&hadc1);
     in_ping = 1;
     Start_ADC(&hadc1, (uint32_t*) data_1);
@@ -213,7 +213,7 @@ void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef *hadc)
   }
 }
 
-
+}
 void HAL_ADC_ConvHalfCpltCallback(ADC_HandleTypeDef* hadc)
 {
   // ADC conversion half-complete.
