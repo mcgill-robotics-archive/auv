@@ -6,6 +6,7 @@ import bitstring as bitstring
 import serial as serial
 from teledyne_navigator.msg import Ensemble
 from teledyne_navigator.serializer import deserialize
+import NumPy
 
 def _get_ensemble(rawPacket):
         #Read all ensemble data.
@@ -20,6 +21,7 @@ def _get_ensemble(rawPacket):
 
 
 if __name__ == "__main__":
+        mountingAngle = 45
         rospy.init_node("teledyne_navigator")  # Starts ROS node for this
 
         port = rospy.get_param("~port")  # hardware settings for DVL
@@ -80,6 +82,50 @@ if __name__ == "__main__":
                     #print(rawPacket)
                     
                     Ensemble = _get_ensemble(rawPacket)
+                    print("============ BEFORE ROTATION ==============")
+                    print(Ensemble.pitch)
+                    print(Ensemble.roll)
+                    print(Ensemble.heading)
+                    print(Ensemble.bottom_translation.x)
+                    print(Ensemble.bottom_translation.y)
+                    print(Ensemble.bottom_translation.z)
+                    print(Ensemble.reference_translation.x)
+                    print(Ensemble.reference_translation.y)
+                    print(Ensemble.reference_translation.z)
+
+                    #rotate headeing by adjustment amount
+                    Ensemble.heading = Ensemble.heading + mountingAngle #rotate this by 45deg
+
+                    # Math for rotation around y axis for bottom translations
+                    x1 = Ensemble.bottom_translation.x
+                    x2 = Ensemble.bottom_translation.y
+                    x3 = Ensemble.bottom_translation.z
+
+                    Ensemble.bottom_translation.x = cos(mountingAngle)*x1 - sin(mountingAngle)*x3
+                    Ensemble.bottom_translation.y = x2
+                    Ensemble.bottom_translation.z = sin(mountingAngle)*x1 + cos(x3)
+
+                    #Math for rotation around y axis for reference translation
+                    x1 = Ensemble.reference_translation.x
+                    x2 = Ensemble.reference_translation.y
+                    x3 = Ensemble.reference_translation.z
+
+                    Ensemble.reference_translation.x = cos(mountingAngle)*x1 - sin(mountingAngle)*x3
+                    Ensemble.reference_translation.y = x2
+                    Ensemble.reference_translation.z = sin(mountingAngle)*x1 + cos(x3)
+
+                    #TODO: Clean these multiplications
+
+                    print("============ AFTER ROTATION ==============")
+                    print(Ensemble.pitch)
+                    print(Ensemble.roll)
+                    print(Ensemble.heading)
+                    print(Ensemble.bottom_translation.x)
+                    print(Ensemble.bottom_translation.y)
+                    print(Ensemble.bottom_translation.z)
+                    print(Ensemble.reference_translation.x)
+                    print(Ensemble.reference_translation.y)
+                    print(Ensemble.reference_translation.z)
                     pub.publish(Ensemble)
                 else:
                     conn.flush()
