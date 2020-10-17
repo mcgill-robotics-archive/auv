@@ -3,7 +3,7 @@ import rospy
 import cv2
 import math
 import numpy as np
-from std_msgs.msg import Float32
+from std_msgs.msg import Float64
 from cv.msg import CvTarget
 from sensor_msgs.msg import Image
 from cv_bridge import CvBridge, CvBridgeError
@@ -11,24 +11,42 @@ from collections import deque
 from dynamic_reconfigure.server import Server
 from cv.cfg import laneDetectorParamsConfig
 
-'''
-	Finds a lane in an image using colormasking
-	The flow of this code is
+''' 
+    Currently, there are two methods in this script, with the intention that 
+    both get tested and we decide on one and archive the other. Both 
+    methods do some image pre-processing, that looks like:
 	1) Gaussian blur
 	2) Increase red channel
-	3) Mask by color
-	4) Find contours in this mask.
-	5) Check if they are large enough to be the lane
-	6) If they are, run canny edge detection to
+	3) Mask by color to produce a binary image
+	
+	At this point, the methods diverge. The old method works by
+	4a) Find contours in this mask.
+	5a) Check if they are large enough to be the lane
+	6a) If they are, run canny edge detection to find the edges
+	7a) Average the angles of the Edges to find the slopes
+	
+	The new method works by
+	4b) Finding the moments
+	5b) using the moments to return the centroid
+	6b) Do a line fit to determine the angle of the lane
+	
+    I strongly suspect the new method with supercede the old;
+    I think it is likely to be more robust. Testing will tell.
 '''
 class LaneDetector():
 
     def __init__(self):
         self.pubTargetLines       = rospy.Publisher('cv/down_cam_target_lines'    , CvTarget, queue_size=1)
         self.pubTargetCentroid    = rospy.Publisher('cv/down_cam_target_centroid' , CvTarget, queue_size=1)
-        self.pubHeadingFit        = rospy.Publisher('cv/down_cam_heading_Fitting' , Float32 , queue_size=1)
-        self.pubHeadingCentroid   = rospy.Publisher('cv/down_cam_heading_Centroid', Float32 , queue_size=1)
-        self.pubHeadingHoughLines = rospy.Publisher('cv/down_cam_heading_Hough'   , Float32 , queue_size=1)       
+        self.pubHeadingFit        = rospy.Publisher('cv/down_cam_heading_Fitting' , Float64 , queue_size=1)
+        self.pubHeadingCentroid   = rospy.Publisher('cv/down_cam_heading_Centroid', Float64 , queue_size=1)
+        self.pubHeadingHoughLines = rospy.Publisher('cv/down_cam_heading_Hough'   , Float64 , queue_size=1) 
+        
+        #The following are two publishers that output Float64s to feed directly into the PIDs. 
+        #I'm having trouble getting the CvTarget data to play nice...which seems very odd, but w/e.
+        self.pubPIDx              = rospy.Publisher('cv/down_cam_PIDx', Float64 , queue_size=1)
+        self.pubPIDy              = rospy.Publisher('cv/down_cam_PIDy', Float64 , queue_size=1)  
+            
         self.bridge               = CvBridge()
         self.sub                  = rospy.Subscriber("/camera_front_1/image_raw", Image, self.callback)
         self.angle_top_lane       = None
@@ -372,8 +390,11 @@ class LaneDetector():
         msgCentroid.gravity.y        = yCentroid
         msgCentroid.gravity.z        = 0
         msgCentroid.probability.data = 1.0
+        
         self.pubTargetCentroid.publish(msgCentroid)   
-
+        self.pubPIDx.publish(xCentroid)
+        self.pubPIDy.publish(yCentroid)   
+        
         ## (The other one is published above in the code where it is generated)
         #### Next, the headings ########################################
         self.pubHeadingCentroid.publish(thetaCentroid) 

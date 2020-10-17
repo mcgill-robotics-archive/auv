@@ -1,0 +1,35 @@
+.battery {
+  position: relative;
+  width: 18vh;
+  height: 6vh;
+  border: 1vh solid $gray-400;
+}
+
+.nubbin {
+  display: block;
+  height: 4vh;
+  width: 1vh;
+  margin: auto 17vh;
+  background: $gray-400;
+}
+
+.batLevel {
+  position: absolute;
+  top: 0;
+  display: block;
+  width: 0;
+  height: 3.3vh;
+  margin: 0.4vh;
+  background: $red;
+  -webkit-transition: width 1s ease;
+  transition: width 1s ease;
+}
+
+.battery-text {
+  font-size: 1em;
+  text-align: center;
+}
+
+.battery-note {
+  font-size: 0.6em;
+}
