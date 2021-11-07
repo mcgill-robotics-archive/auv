@@ -4,6 +4,7 @@ project(cv)
 set_directory_properties(PROPERTIES COMPILE_OPTIONS "-std=c++11")
 
 find_package(catkin REQUIRED COMPONENTS
+  actionlib_msgs
   angles
   auv_msgs
   cmake_modules
@@ -17,6 +18,12 @@ find_package(catkin REQUIRED COMPONENTS
   std_msgs
   tf
   tf_conversions
+  dynamic_reconfigure
+)
+add_action_files(
+  DIRECTORY action
+  FILES
+  Call_ORB.action
 )
 
 find_package(Boost REQUIRED COMPONENTS)
@@ -34,12 +41,18 @@ catkin_python_setup()
 ## Generate added messages and services with any dependencies listed here
 generate_messages(
   DEPENDENCIES
+  actionlib_msgs
   geometry_msgs
   std_msgs
+  sensor_msgs
 )
 
+generate_dynamic_reconfigure_options(
+  config/laneDetectorParams.cfg
+)
 
 catkin_package(CATKIN_DEPENDS
+  actionlib_msgs
   angles
   auv_msgs
   boost
@@ -52,19 +65,21 @@ catkin_package(CATKIN_DEPENDS
   std_msgs
   tf
   tf_conversions
+  dynamic_reconfigure
 )
 
 include_directories(
   ${catkin_INCLUDE_DIRS}
 )
 
-add_executable(lane_detector src/cv/opencv/lane_detector.cpp)
+
+add_executable(lane_detector src/cv/shapeAndColorDetectors/lane_detector.cpp)
 target_link_libraries(lane_detector ${catkin_LIBRARIES} ${OpenCV_LIBRARIES})
 
 
-add_executable(torpedo_target src/cv/opencv/torpedo_targeter.cpp)
+add_executable(torpedo_target src/cv/shapeAndColorDetectors/torpedo_targeter.cpp)
 target_link_libraries(torpedo_target ${catkin_LIBRARIES} ${OpenCV_LIBRARIES})
 
 
-add_executable(bin_detector src/cv/opencv/bin_detector.cpp)
+add_executable(bin_detector src/cv/shapeAndColorDetectors/bin_detector.cpp)
 target_link_libraries(bin_detector ${catkin_LIBRARIES} ${OpenCV_LIBRARIES})

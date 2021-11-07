@@ -1,0 +1,8 @@
+#goal definition
+sensor_msgs/Image TargetImage
+---
+#result definition
+CvTarget target
+---
+#feedback
+float32 percent_complete

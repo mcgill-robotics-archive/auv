@@ -27,15 +27,15 @@ def wrench_to_thrust(thrust_char):
 
     thrusterToForce = matrix([
         # Fx Fy Fz Mx My Mz
-        [0.9, 0, 0, 0, 0, 0],      # surge_port
-        [1.1, 0, 0, 0, 0, 0],     # surge_starboard
-        [0, 1, 0, 0, 0, -0.750],       # sway_bow
-        [0, 1, 0, 0, 0, 0.314],        # sway_stern
+        [1, 0, 0, 0, 0, 0],      # surge_port
+        [1, 0, 0, 0, 0, 0],     # surge_starboard
+        [0, 1, 0, 0, 0, -0.720],       # sway_bow
+        [0, 1, 0, 0, 0, 0.340],        # sway_stern
 
-        [0, 0, 1, -0.162, -0.250, 0],   # heave_bow_port
-        [0, 0, 1, 0.162, -0.250, 0],    # heave_bow_starboard
-        [0, 0, 1, -0.162, 0.450, 0],   # heave_stern_port
-        [0, 0, 1, 0.162, 0.450, 0]      # heave_stern_starboard
+        [0, 0, 1, -0.162, -0.240, 0],   # heave_bow_port
+        [0, 0, 1, 0.162, -0.240, 0],    # heave_bow_starboard
+        [0, 0, 1, -0.162, 0.460, 0],   # heave_stern_port
+        [0, 0, 1, 0.162, 0.460, 0]     # heave_stern_starboard
     ]).T
     forceToThruster = pinv(thrusterToForce)
 
