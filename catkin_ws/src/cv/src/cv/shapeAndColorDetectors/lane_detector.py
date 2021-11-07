@@ -48,7 +48,7 @@ class LaneDetector():
         self.pubPIDy              = rospy.Publisher('cv/down_cam_PIDy', Float64 , queue_size=1)  
             
         self.bridge               = CvBridge()
-        self.sub                  = rospy.Subscriber("/camera_front_1/image_raw", Image, self.callback)
+        self.sub                  = rospy.Subscriber("/image_raw", Image, self.callback)
         self.angle_top_lane       = None
         self.laneFound            = False
         self.smoothQueue          = deque([])
@@ -87,6 +87,7 @@ class LaneDetector():
         except CvBridgeError as e:
             print(e)
 
+        self.display_debug_image(self.debugimgs,img,'Original',0.5,-6000,6000)
         xReturn = None
         yReturn = None
 
@@ -117,7 +118,7 @@ class LaneDetector():
         self.display_debug_image(self.debugimgs,img_bounds,'Colormask bounds',0.5,-6000,6000)
 
         # Filter by Color to obtain a colormask
-        MIN_CONTOUR_SIZE = rospy.get_param("/cv/lanes/orange_cnt_size", 40000)
+        MIN_CONTOUR_SIZE = rospy.get_param("/cv/lanes/orange_cnt_size", 10000)
         mask             = cv2.inRange(img_hvt, lower_cm_bound, upper_cm_bound)
         self.display_debug_image(self.debugimgs,mask,'Colormask Output',0.5,-6000,6000)
 
@@ -149,7 +150,8 @@ class LaneDetector():
             # check contour size
 
             if (cv2.contourArea(biggestCont) < MIN_CONTOUR_SIZE):
-                #print("No lane of sufficient size found")
+                print("No lane of sufficient size found")
+                print(cv2.contourArea(biggestCont), MIN_CONTOUR_SIZE)
                 self.laneFound      = False
                 self.angle_top_lane = None
                 #return
@@ -390,17 +392,21 @@ class LaneDetector():
         msgCentroid.gravity.y        = yCentroid
         msgCentroid.gravity.z        = 0
         msgCentroid.probability.data = 1.0
-        
-        self.pubTargetCentroid.publish(msgCentroid)   
-        self.pubPIDx.publish(xCentroid)
-        self.pubPIDy.publish(yCentroid)   
+          
         
         ## (The other one is published above in the code where it is generated)
         #### Next, the headings ########################################
         self.pubHeadingCentroid.publish(thetaCentroid) 
         self.pubHeadingFit.publish(np.arctan(vy/vx)) 
-        self.pubHeadingHoughLines.publish(self.angle_top_lane) 
 
+        #Only publish something to the Hough Lines topic if the hough lines algorithm has actually been run!
+        if self.angle_top_lane != None:
+            print('Publishing to the Hough Lines topic!')
+            self.pubHeadingHoughLines.publish(self.angle_top_lane) 
+            # Also publish the centroid! 
+            self.pubTargetCentroid.publish(msgCentroid)   
+            #self.pubPIDx.publish(xCentroid)
+            #self.pubPIDy.publish(yCentroid) 
 
         
 
