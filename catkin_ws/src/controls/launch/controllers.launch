@@ -1,9 +1,0 @@
-<!-- Note that this file is meant to be included in the main controls
-     launch file. If this file is launched manually, please note that
-     it depends on the pid parameter server, thrust_mapper, and superimposer -->
-
-<launch>
-    <node name="acoustic_servo" pkg="controls" type="acoustic_servo.py" />
-    <node name="sonar_servo" pkg="controls" type="sonar_servo.py" />
-    <node name="visual_servo" pkg="controls" type="visual_servo.py" />
-</launch>

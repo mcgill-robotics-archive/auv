@@ -1,22 +1,9 @@
 <launch>
-    <node
-		name="XimuPublisher"
-		type="XimuPublisher"
-		pkg="state_estimation"
-    respawn="true" respawn_delay="5"
-	/>
+    <node name="XimuPublisher" type="XimuPublisher" pkg="state_estimation" respawn="true" respawn_delay="5" />
 
-	<node
-		name="tf_broadcaster"
-		type="tf_broadcaster"
-		pkg="state_estimation"
-	/>
+	<node name="tf_broadcaster" type="tf_broadcaster" pkg="state_estimation" />
 
-	<node
-		name="target_broadcaster"
-		type="target_broadcaster"
-		pkg="state_estimation"
-	/>
+	<node name="target_broadcaster" type="target_broadcaster" pkg="state_estimation" />
 
 	<node name="initialize_horizon" type="initialize_horizon" pkg="state_estimation">
         <param name="yaw_drift_tolerance" value="1" />  <!-- in rad/sec -->
@@ -27,10 +14,6 @@
         <param name="window" value="10" />
     </node>
 
-    <node name="state_publisher" type="state_publisher" pkg="state_estimation">
+    <node name="decomposer" type="decomposer.py" pkg="state_estimation">
     </node>
-<!--
-    <node name="bin_detector" type="bin_detector" pkg="state_estimation" />
-    <node name="lane_detector" type="lane_detector" pkg="state_estimation" />
--->
 </launch>
