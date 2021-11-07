@@ -1,8 +1,0 @@
-<launch>
-  <arg name="task_file" default="$(find planner)/config/sandbox.yaml" />
-
-  <node name="planner" pkg="planner" type="planner_node" output="screen">
-    <param name="tasks" value="$(arg task_file)" />
-    <param name="mission_topic" value="/electrical_interface/mission" />
-  </node>
-</launch>

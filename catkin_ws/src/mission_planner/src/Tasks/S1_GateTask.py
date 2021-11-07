@@ -3,9 +3,9 @@ import smach
 import actionlib # No ActionServer implemented yet, we might want TODO this eventually
 import time
 
-from blinky.msg import TaskStatus # Blinky commented out for now TODO
+from auv_msgs.msg import TaskStatus # Blinky commented out for now TODO
 from std_msgs.msg import Bool, Float64
-from planner.msg import DepthAction, DepthGoal, DepthResult, GatePassThroughAction, GatePassThroughGoal, GatePassThroughResult
+from mission_planner.msg import DepthAction, DepthGoal, DepthResult, GatePassThroughAction, GatePassThroughGoal, GatePassThroughResult
 
 class GateTask(smach.State):
     # The gate state : ded reckoning

@@ -5,7 +5,7 @@ import actionlib
 from std_msgs.msg import Bool, Float64
 from geometry_msgs.msg import Point
 from cv.msg import CvTarget
-from planner.msg import LaneDetectorCenteringAction, LaneDetectorCenteringGoal,  LaneDetectorAlignmentAction, LaneDetectorAlignmentGoal
+from mission_planner.msg import LaneDetectorCenteringAction, LaneDetectorCenteringGoal,  LaneDetectorAlignmentAction, LaneDetectorAlignmentGoal
 
 class LaneDetector(smach.State):
     # 0) Assume we see a little bit of the lanes when we enter the state

@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 import rospy
 import actionlib
 import math
@@ -5,7 +6,7 @@ import math
 from std_msgs.msg import Bool, Float64
 from geometry_msgs.msg import Point
 from cv.msg import CvTarget
-from planner.msg import LaneDetectorCenteringAction, LaneDetectorCenteringFeedback, LaneDetectorCenteringResult
+from mission_planner.msg import LaneDetectorCenteringAction, LaneDetectorCenteringFeedback, LaneDetectorCenteringResult
 
 class LaneDetectorCenteringServer():
 

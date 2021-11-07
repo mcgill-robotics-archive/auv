@@ -1,12 +1,36 @@
 <launch>
-    <node name="planner"
-          pkg="planner"
+
+    <!-- Start the mission planner state machine -->
+    <node name="mission_planner"
+          pkg="mission_planner"
           type="MissionPlanner.py"
           respawn="false"
           output="screen">
         <param name="angle_thresh" value="0.175" />
     </node>	
 
+
+    <!-- Start the Action servers needed for the mission planner to run -->
+    <node name="GateDepthServer"
+          pkg="mission_planner"
+          type="GateDepthServer.py">
+    </node>	
+    <node name="GatePassThroughServer"
+          pkg="mission_planner"
+          type="GatePassThroughServer.py">
+    </node>
+    <node name="LaneDetectorAlignmentServer"
+          pkg="mission_planner"
+          type="LaneDetectorAlignmentServer.py">
+    </node>
+    <node name="LaneDetectorCenteringServer"
+          pkg="mission_planner"
+          type="LaneDetectorCenteringServer.py">
+    </node>
+
+
+	<?ignore
+	BLOCK COMMENT FOR ALL THE CONTROLLERS
 	<!--LANE_DETECTOR_YAW-->
 	<node name="controller" pkg="pid" type="controller" ns="lane_yaw_pid" output="screen">
 	    <param name="node_name" value="pid" />
@@ -98,4 +122,7 @@
 	  	<param name="topic_from_controller" value="/controls/superimposer/surge" />
 	  	<param name="topic_from_plant" value="/cv/buoy_distance" />
 	</node>
+
+	END BLOCK COMMENT
+	?>
 </launch>

@@ -8,11 +8,11 @@ import time
 
 from cv.msg import CvTarget
 from std_msgs.msg import Bool, Float64, Float32MultiArray
-from blinky.msg import TaskStatus
+from auv_msgs.msg import TaskStatus
 from geometry_msgs.msg import Vector3Stamped, Point
 from threading import Thread
-from planner.msg import LaneDetectorCenteringAction, LaneDetectorCenteringGoal,  LaneDetectorAlignmentAction, LaneDetectorAlignmentGoal
-from planner.msg import DepthAction, DepthGoal
+from mission_planner.msg import LaneDetectorCenteringAction, LaneDetectorCenteringGoal,  LaneDetectorAlignmentAction, LaneDetectorAlignmentGoal
+from mission_planner.msg import DepthAction, DepthGoal
 
 '''
 I think we should put 2-3 and 4-5 in the same file because they belong to thew same task
@@ -62,23 +62,30 @@ def planner_all_tasks():
         smach.StateMachine.add('GateState', GateTask(), 
                                 transitions={'gatePassed':'LaneDetectorForBuoy',
                                             'gateMissed':'missionFailed'})
-        
-        smach.StateMachine.add('GridSearch', GridSearch(), 
-                                transitions={'missionSucceeded':'missionSucceeded'})
-
-        # The surface task. Finishes up the mission.
-        smach.StateMachine.add('NavitageToSurfacingTask', NavigateToSurfacing(), 
-                                transitions={'missionSucceeded':'missionSucceeded'})
-        
-        smach.StateMachine.add('TouchBuoyTask',TouchBuoy(),
-                                transitions={'TouchedTheBuoy':'missionSucceeded'})
-                                #In competition this will transision into NavigateToSurfacingTask
 
         smach.StateMachine.add('LaneDetectorForBuoy',LaneDetector(),
                                 transitions={'AlignmentSuccess':'NavigateToBuoyTask'})
 
         smach.StateMachine.add('NavigateToBuoyTask',NavigateToBuoy(),
                                 transitions={'BuoyReached':'TouchBuoyTask'})
+
+        smach.StateMachine.add('TouchBuoyTask',TouchBuoy(),
+                                transitions={'TouchedTheBuoy':'NavitageToSurfacingTask'})
+
+        # The surface task. Finishes up the mission.
+        smach.StateMachine.add('NavitageToSurfacingTask', NavigateToSurfacing(), 
+                                transitions={'missionSucceeded':'missionSucceeded'})
+
+        #smach.StateMachine.add('GridSearch', GridSearch(), 
+        #                        transitions={'missionSucceeded':'missionSucceeded'})
+
+
+        
+
+
+
+
+
 
 
     '''

@@ -1,9 +1,10 @@
+#!/usr/bin/env python
 import rospy
 import actionlib
 import time
 
 from std_msgs.msg import Float64, String
-from planner.msg import GatePassThroughAction, GatePassThroughFeedback, GatePassThroughResult
+from mission_planner.msg import GatePassThroughAction, GatePassThroughFeedback, GatePassThroughResult
 
 class GatePassThroughServerClass():
 
