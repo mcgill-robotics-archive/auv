@@ -5,7 +5,7 @@ import actionlib
 from std_msgs.msg import Bool, Float64
 from geometry_msgs.msg import Point
 from cv.msg import CvTarget
-from planner.msg import LaneDetectorAlignmentAction, LaneDetectorAlignmentFeedback, LaneDetectorAlignmentResult
+from mission_planner.msg import LaneDetectorAlignmentAction, LaneDetectorAlignmentFeedback, LaneDetectorAlignmentResult
 
 class LaneDetectorAlignmentServer():
 
