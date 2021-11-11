@@ -23,17 +23,10 @@ SUBSYSTEMS=="usb", ATTRS{idVendor}=="16c0", ATTRS{idProduct}=="04[789]?", MODE:=
 KERNEL=="ttyACM*", ATTRS{idVendor}=="16c0", ATTRS{idProduct}=="04[789]?", MODE:="0666"
 
 
-UBSYSTEM=="video4linux", ATTRS{serial}!="9BB45F50", GOTO="not_frontleft_camera"
-SUBSYSTEM=="video4linux", KERNEL=="video*", SYMLINK+="FrontLeftCamera"
-LABEL="not_frontleft_camera"
+ATTRS{serial}=="9BB45F50", KERNEL=="video*", SYMLINK+="FrontLeftCamera"
+ATTRS{serial}=="B385BFA0", KERNEL=="video*", SYMLINK+="DownCamera"
+#ATTRS{serial}=="B0145F50", KERNEL=="video*", SYMLINK+="NOT_IMPLEMENTED_Camera"
 
-UBSYSTEM=="video4linux", ATTRS{serial}!="B385BFA0", GOTO="not_frontright_camera"
-SUBSYSTEM=="video4linux", KERNEL=="video*", SYMLINK+="FrontRightCamera"
-LABEL="not_frontright_camera"
-
-UBSYSTEM=="video4linux", ATTRS{serial}!="B0145F50", GOTO="not_down_camera"
-SUBSYSTEM=="video4linux", KERNEL=="video*", SYMLINK+="DownCamera"
-LABEL="not_down_camera"
 
 
 
