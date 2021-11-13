@@ -126,8 +126,26 @@ def planner_gate():
     # Execute SMACH plan
     outcome = sm.execute()
 
+def planner_buoy():
+    rospy.init_node('mockMissionPlanner', anonymous=True)
+
+    # Create a SMACH state machine
+    sm = smach.StateMachine(outcomes=['missionFailed', 'missionSucceeded'])
+
+    # Open the container
+    with sm:
+        
+        # Buoy task
+        smach.StateMachine.add('NavigateToBuoy', NavigateToBuoy(), 
+                                transitions={'BuoyReached':'missionSucceeded',
+                                            'BuoyNotReached':'missionFailed'})
+        
+    # Execute SMACH plan
+    outcome = sm.execute()
+
 if __name__ == '__main__':
 
-     planner_all_tasks()
-    #planner_gate()
+    # planner_all_tasks()
+    # planner_gate()
+    planner_buoy()
     # ...

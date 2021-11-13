@@ -2,6 +2,7 @@ import rospy
 import smach
 import actionlib # No ActionServer implemented yet, we might want TODO this eventually
 import math
+import timeit
 
 from std_msgs.msg import Bool, Float64
 from geometry_msgs.msg import Vector3Stamped, Point
@@ -18,7 +19,7 @@ class NavigateToBuoy(smach.State):
     def __init__(self):
 
         # Initialize class as state and define transitions
-        smach.State.__init__(self, outcomes=['BuoyReached'])
+        smach.State.__init__(self, outcomes=['BuoyReached', 'BuoyNotReached'])
 
         # Abstract constants
         self.COUNTS_FOR_STABILITY = 2
@@ -73,8 +74,9 @@ class NavigateToBuoy(smach.State):
             self.stable_counts_centroid = 0
 
     def distance_cb(self, distance):
+        print("Reached callback")
+        print('Distance from buoy: {}'.format(distance.data))
         if(distance.data < self.BUOY_DISTANCE_THRESHOLD)   :
-            print('Distance from buoy: {}'.format(self.distance))
             self.stable_counts_distance += 1
         else:
             self.stable_counts_distance = 0
@@ -103,14 +105,15 @@ class NavigateToBuoy(smach.State):
                 remaining_counts = self.COUNTS_FOR_STABILITY - self.stable_counts_distance
                 rospy.loginfo_throttle(1, 'Moving towards buoy: Need {} more stable readings'.format(remaining_counts))
                 '''
-        while(True):
+        start = timeit.default_timer()
+        while True:
             
             if(self.stable_counts_centroid >= self.COUNTS_FOR_STABILITY):
                 if(self.stable_counts_distance >= self.COUNTS_FOR_STABILITY):
                     self.navigate_to_buoy_heave_pid_enable_pub.publish(False)
                     self.navigate_to_buoy_sway_pid_enable_pub.publish(False)
                     self.distance_to_buoy_pid_enable_pub.publish(False)
-                    return 'ReachedBuoy'
+                    return 'BuoyReached'
                 else:
                     remaining_counts = self.COUNTS_FOR_STABILITY - self.stable_counts_distance
                     rospy.loginfo_throttle(1, 'Moving towards buoy: Need {} more stable readings'.format(remaining_counts))
@@ -120,3 +123,6 @@ class NavigateToBuoy(smach.State):
                 remaining_counts = self.COUNTS_FOR_STABILITY - self.stable_counts_centroid
                 rospy.loginfo_throttle(1, 'Moving towards centroid: Need {} more stable readings'.format(remaining_counts))
                 self.distance_to_buoy_pid_enable_pub.publish(False)
+
+            if timeit.default_timer() - start > 600:
+                return 'BuoyNotReached'
