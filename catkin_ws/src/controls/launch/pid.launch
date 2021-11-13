@@ -77,7 +77,7 @@
 	    <param name="node_name" value="pid" />
 
 	    <!--Default PID Gains (Should load from file eventually)-->
-	    <param name="Kp" value="0.001" />
+	    <param name="Kp" value="-0.001" />
 	    <param name="Ki" value="0.0" />
 	    <param name="Kd" value="0.0" />
 
