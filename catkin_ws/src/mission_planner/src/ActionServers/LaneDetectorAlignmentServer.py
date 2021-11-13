@@ -14,7 +14,7 @@ class LaneDetectorAlignmentServer():
         # self.TARGET_ANGLE = 0 -> variable passed as goal, therefore set in execute_cb()
         self.COUNTS_FOR_STABILITY   = 2 # This should be higher, but we are testing...
         self.current_stable_counts  = 0
-        self.ANGLE_THRESHOLD        = 20 * 3.14 / 180 # Chosen for testing (could be passed in goal
+        self.ANGLE_THRESHOLD        = 5 * 3.14 / 180 # Chosen for testing (could be passed in goal
                                                         # along with the target angle using a
                                                         # custom message? In the future maybe?)
 
@@ -23,7 +23,7 @@ class LaneDetectorAlignmentServer():
             # to start after self.TARGET_ANGLE is set. Only used for stable counts
 
         # Enabling PID
-        self.yaw_pid_enable_pub     = rospy.Publisher('/lane_yaw_pid/enable', Bool, queue_size = 1)
+        self.yaw_pid_enable_pub     = rospy.Publisher('/lane_yaw_pid/pid_enable', Bool, queue_size = 1)
         # Setpoints for PID
         self.yaw_pid_setpoint_pub   = rospy.Publisher('/lane_yaw_pid/setpoint', Float64, queue_size = 1)
         # No need to publish "data" to PID because it can read straight from CV without any data modification
@@ -49,11 +49,13 @@ class LaneDetectorAlignmentServer():
 
         # This is bad practice, but avoids a logical flaw when the subscriber gets to the callback before the VIEWFRAME_CENTER_Y is initialized
         self.down_cam_heading_Hough = rospy.Subscriber('/cv/down_cam_heading_Hough', Float64, self.heading_align_cb)
-        
-        # Set the setpoint
-        self.yaw_pid_setpoint_pub.publish(self.TARGET_ANGLE)
+        rospy.sleep(0.5)
         #Then enable the PID!
         self.yaw_pid_enable_pub.publish(True)
+        rospy.sleep(0.5)
+        # Set the setpoint
+        self.yaw_pid_setpoint_pub.publish(self.TARGET_ANGLE)
+        
 
         # Stay stuck in loop until we are aligned and stable (maybe add timeout in future? This could be done from client)
         while not (self.current_stable_counts >= self.COUNTS_FOR_STABILITY):

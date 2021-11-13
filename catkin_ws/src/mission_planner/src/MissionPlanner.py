@@ -135,10 +135,9 @@ def planner_lane_detector():
                                 transitions={'AlignmentSuccess':'missionSucceeded'})   
     # Execute SMACH plan
     outcome = sm.execute()
-    
-    
+           
 def planner_buoy():
-    rospy.init_node('mockMissionPlanner', anonymous=True)
+    rospy.init_node('MissionPlanner', anonymous=True)
 
 
     # Create a SMACH state machine
@@ -159,6 +158,6 @@ if __name__ == '__main__':
 
     #planner_all_tasks()
     #planner_gate()
-    #planner_buoy()
-    planner_lane_detector()
+    planner_buoy()
+    #planner_lane_detector()
 

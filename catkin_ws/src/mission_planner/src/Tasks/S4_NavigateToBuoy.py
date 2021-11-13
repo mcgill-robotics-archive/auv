@@ -25,8 +25,8 @@ class NavigateToBuoy(smach.State):
         self.COUNTS_FOR_STABILITY = 2
 
         # Task constants
-        self.VIEWFRAME_PIXEL_WIDTH                          = 720 # TODO testing # pixels
-        self.VIEWFRAME_PIXEL_HEIGHT                         = 420 # TODO testing # pixels
+        self.VIEWFRAME_PIXEL_WIDTH                          = 1280 # TODO testing # pixels
+        self.VIEWFRAME_PIXEL_HEIGHT                         = 720 # TODO testing # pixels
         self.VIEWFRAME_CENTER_X                             = self.VIEWFRAME_PIXEL_WIDTH / 2.0
         self.VIEWFRAME_CENTER_Y                             = self.VIEWFRAME_PIXEL_HEIGHT / 2.0
         self.VIEWFRAME_CENTROID_RADIAL_THRESHOLD_TO_CENTER  = 0.05 * self.VIEWFRAME_PIXEL_HEIGHT # in pixels
@@ -38,24 +38,22 @@ class NavigateToBuoy(smach.State):
         self.stable_counts_distance = 0
 
         # Sway PID
-        self.navigate_to_buoy_sway_pid_enable_pub = rospy.Publisher('/buoy_sway_pid/enable', Bool, queue_size = 1)
+        self.navigate_to_buoy_sway_pid_enable_pub   = rospy.Publisher('/buoy_sway_pid/enable', Bool, queue_size = 1)
         self.navigate_to_buoy_sway_pid_setpoint_pub = rospy.Publisher('/buoy_sway_pid/setpoint', Float64, queue_size = 1)
-        self.centroid_delta_x_pub = rospy.Publisher('/navigate_to_buoy/centroid_delta_x', Float64, queue_size = 1)
+        self.centroid_delta_x_pub                   = rospy.Publisher('/navigate_to_buoy/centroid_delta_x', Float64, queue_size = 1)
         # centroid_delta_x is "state data" for sway PID
 
         # Heave PID
-        self.navigate_to_buoy_heave_pid_enable_pub = rospy.Publisher('/buoy_heave_pid/enable', Bool, queue_size = 1)
+        self.navigate_to_buoy_heave_pid_enable_pub   = rospy.Publisher('/buoy_heave_pid/enable', Bool, queue_size = 1)
         self.navigate_to_buoy_heave_pid_setpoint_pub = rospy.Publisher('/buoy_heave_pid/setpoint', Float64, queue_size = 1)
-        self.centroid_delta_y_pub = rospy.Publisher('/navigate_to_buoy/centroid_delta_y', Float64, queue_size = 1)
+        self.centroid_delta_y_pub                    = rospy.Publisher('/navigate_to_buoy/centroid_delta_y', Float64, queue_size = 1)
         # centroid_delta_y is "state data" for sway PID
 
-        self.distance_to_buoy_pid_enable_pub = rospy.Publisher('/buoy_distance_pid/enable', Bool, queue_size = 1)
+        self.distance_to_buoy_pid_enable_pub   = rospy.Publisher('/buoy_distance_pid/enable', Bool, queue_size = 1)
         self.distance_to_buoy_pid_setpoint_pub = rospy.Publisher('/buoy_distance_pid/setpoint', Float64, queue_size = 1)
 
         self.distance_to_buoy_sub = rospy.Subscriber('/cv/buoy_distance', Float64, self.distance_cb)
-
-
-        self.target_sub = rospy.Subscriber('/cv/front_cam_target', Point, self.target_cb) # To put image centroid in middle of cam
+        self.target_sub           = rospy.Subscriber('/cv/front_cam_target', Point, self.target_cb) # To put image centroid in middle of cam
 
     def target_cb(self, point):
         print('Reached callback')

@@ -43,8 +43,8 @@
 	    <!--Set Topics-->
 	  	<!--Setpoint will be "/<ns>/setpoint"-->
 	  	<!--Enable will be "/<ns>/pid_enable"-->
-	  	<param name="topic_from_controller" value="/controls/superimposer/yaw" />
-	  	<param name="topic_from_plant" value="/cv/down_cam_heading_Hough" />
+	  	<param name = "topic_from_controller" value = "/controls/superimposer/yaw" />
+	  	<param name = "topic_from_plant"      value = "/cv/down_cam_heading_Hough" />
 	</node>
 	
 	<!--lane detector SWAY -->
