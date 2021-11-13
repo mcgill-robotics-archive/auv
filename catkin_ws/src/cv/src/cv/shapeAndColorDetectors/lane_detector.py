@@ -405,8 +405,8 @@ class LaneDetector():
             self.pubHeadingHoughLines.publish(self.angle_top_lane) 
             # Also publish the centroid! 
             self.pubTargetCentroid.publish(msgCentroid)   
-            #self.pubPIDx.publish(xCentroid)
-            #self.pubPIDy.publish(yCentroid) 
+            self.pubPIDx.publish(xCentroid)
+            self.pubPIDy.publish(yCentroid) 
 
         
 

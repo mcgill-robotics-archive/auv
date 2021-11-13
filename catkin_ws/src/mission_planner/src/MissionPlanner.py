@@ -126,7 +126,6 @@ def planner_gate():
     # Execute SMACH plan
     outcome = sm.execute()
 
-<<<<<<< HEAD
 def planner_lane_detector():
     rospy.init_node('MissionPlanner', anonymous=True)
     # Create a SMACH state machine

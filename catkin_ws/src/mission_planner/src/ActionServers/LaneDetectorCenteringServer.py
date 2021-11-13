@@ -24,16 +24,12 @@ class LaneDetectorCenteringServer():
         # Publishers to PIDs (we need a different PID for every direction (x, y))
 
         # Sway PID
-        self.sway_pid_enable_pub     = rospy.Publisher('/centroid_x_pid/enable', Bool, queue_size = 1)
-        self.sway_pid_setpoint_pub   = rospy.Publisher('/centroid_x_pid/setpoint', Float64, queue_size = 1)
-        self.delta_x_pub             = rospy.Publisher('/lane_detector/centroid_delta_x', Float64, queue_size = 1)
-        # delta_x is "state data" for sway PID
+        self.sway_pid_enable_pub     = rospy.Publisher('/lane_detector_sway_pid/pid_enable', Bool, queue_size = 1)
+        self.sway_pid_setpoint_pub   = rospy.Publisher('/lane_detector_sway_pid/setpoint', Float64, queue_size = 1)
 
         # Surge PID
-        self.surge_pid_enable_pub    = rospy.Publisher('/centroid_y_pid/enable', Bool, queue_size = 1)
-        self.surge_pid_setpoint_pub  = rospy.Publisher('/centroid_y_pid/setpoint', Float64, queue_size = 1)
-        self.delta_y_pub             = rospy.Publisher('/lane_detector/centroid_delta_y', Float64, queue_size = 1)
-        # delta_y is "state data" for surge PID
+        self.surge_pid_enable_pub    = rospy.Publisher('/lane_detector_surge_pid/pid_enable', Bool, queue_size = 1)
+        self.surge_pid_setpoint_pub  = rospy.Publisher('/lane_detector_surge_pid/setpoint', Float64, queue_size = 1)
 
         # Define the action server, and start it
         self._action_name = 'LDCentering'
@@ -51,8 +47,6 @@ class LaneDetectorCenteringServer():
         self.distance_centroid_to_center = math.sqrt(y_dist_to_center * y_dist_to_center
                                                     + x_dist_to_center * x_dist_to_center)
 
-        self.delta_y_pub.publish(y_dist_to_center)
-        self.delta_x_pub.publish(x_dist_to_center)
         #print('Centroid distance from center: {}'.format(self.distance_centroid_to_center))
 
         if (self.distance_centroid_to_center < self.RADIAL_THRESHOLD):
@@ -78,13 +72,15 @@ class LaneDetectorCenteringServer():
 
         # This is bad practice, but avoids a logical flaw when the subscriber gets to the callback before the VIEWFRAME_CENTER_Y is initialized
         self.centroid_sub = rospy.Subscriber('cv/down_cam_target_centroid', CvTarget, self.centroid_loc_cb)
-
-        # Set the setpoints for the surge and sway PIDs
-        self.surge_pid_setpoint_pub.publish(0)
-        self.sway_pid_setpoint_pub.publish(0)
+        rospy.sleep(0.5)
         #Then enable the pids!
         self.surge_pid_enable_pub.publish(True)
         self.sway_pid_enable_pub.publish(True)
+        rospy.sleep(0.5)
+        # Set the setpoints for the surge and sway PIDs
+        self.surge_pid_setpoint_pub.publish(self.VIEWFRAME_CENTER_Y)
+        self.sway_pid_setpoint_pub.publish(self.VIEWFRAME_CENTER_X)
+
 
         while not (self.current_stable_counts >= self.COUNTS_FOR_STABILITY):
 

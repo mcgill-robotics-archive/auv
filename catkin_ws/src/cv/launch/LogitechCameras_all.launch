@@ -7,11 +7,15 @@
     
     <node ns="camFrontRight" pkg="uvc_camera" type="uvc_camera_node" name="uvc_camera_frontright">
         <param name="device" value="/dev/FrontRightCamera" />
+        <param name="width" value="1280" />
+        <param name="height" value="720" />
     </node>
     ?>
     
     <node ns="camDown" pkg="uvc_camera" type="uvc_camera_node" name="uvc_camera_down">
         <param name="device" value="/dev/DownCamera" />
+        <param name="width" value="1280" />
+        <param name="height" value="720" />
     </node>
     
 </launch>
