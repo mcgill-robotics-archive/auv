@@ -48,7 +48,7 @@ class LaneDetector():
         self.pubPIDy              = rospy.Publisher('cv/down_cam_PIDy', Float64 , queue_size=1)  
             
         self.bridge               = CvBridge()
-        self.sub                  = rospy.Subscriber("/image_raw", Image, self.callback)
+        self.sub                  = rospy.Subscriber("/camDown/image_raw", Image, self.callback)
         self.angle_top_lane       = None
         self.laneFound            = False
         self.smoothQueue          = deque([])

@@ -11,9 +11,4 @@
     <!-- Closed-Loop PID Controllers (for depth, roll, pitch, and yaw) -->
     <include file="$(find controls)/launch/pid.launch" />
 
-    <!-- Open-Loop Controllers (for surge and sway) -->
-    <!-- TODO -->
-
-    <!-- Servo Controllers -->
-    <!-- TODO -->
 </launch>

@@ -126,8 +126,24 @@ def planner_gate():
     # Execute SMACH plan
     outcome = sm.execute()
 
+def planner_lane_detector():
+    rospy.init_node('MissionPlanner', anonymous=True)
+
+    # Create a SMACH state machine
+    sm = smach.StateMachine(outcomes=['missionFailed', 'missionSucceeded'])
+
+    # Open the container
+    with sm:    
+        smach.StateMachine.add('LaneDetectorForBuoy',LaneDetector(),
+                                transitions={'AlignmentSuccess':'missionSucceeded'})
+        
+    # Execute SMACH plan
+    outcome = sm.execute()
+
+
 if __name__ == '__main__':
 
-     planner_all_tasks()
+     #planner_all_tasks()
     #planner_gate()
+    planner_lane_detector()
     # ...

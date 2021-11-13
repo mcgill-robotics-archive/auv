@@ -1,4 +1,15 @@
 <launch>
+    <include file="$(find cv)/launch/LogitechCameras_all.launch"></include>
+    
+    <node
+       pkg="cv"
+       type="lane_detector.py"
+       name="lane_detector_node"
+     />
+
+
+  <?ignore
+  <!-- Static frame transformations for the cameras! I don't think they're necesary if the camera is oriented correctly-->
   <node
     pkg="tf"
     type="static_transform_publisher"
@@ -11,4 +22,7 @@
     name="down_camera_broadcaster"
     args="0 0 1 0 1.57079632679 0 down_camera base_link 100"
   />
+  ?>
+  
+  
 </launch>
