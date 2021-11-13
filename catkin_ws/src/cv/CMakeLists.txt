@@ -12,7 +12,7 @@ find_package(catkin REQUIRED COMPONENTS
   eigen_conversions
   geometry_msgs
   nav_msgs
-  pointgrey_camera_driver
+  # pointgrey_camera_driver
   roscpp
   rospy
   std_msgs
@@ -59,7 +59,7 @@ catkin_package(CATKIN_DEPENDS
   cv_bridge
   darknet_ros
   eigen_conversions
-  pointgrey_camera_driver
+  # pointgrey_camera_driver
   roscpp
   rospy
   std_msgs
